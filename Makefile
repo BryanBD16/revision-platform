@@ -103,5 +103,5 @@ db-clear: ## DELETE all activities, modules and themes (the tables and the users
 	docker compose exec -T db sh -c 'mysql -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE" -e "DELETE FROM revision_activities; DELETE FROM themes;"'
 
 db-seed: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
-db-seed: ## Create the activities of seed/activities (validates every file first)
-	@dotnet run --project $(BACKEND_API) --no-launch-profile -- seed "$(CURDIR)/seed/activities"
+db-seed: ## Create the seed activities, or some of them: make db-seed FILES='csharp-*.json'
+	@dotnet run --project $(BACKEND_API) --no-launch-profile -- seed "$(CURDIR)/seed/activities" $(if $(FILES),"$(FILES)")
