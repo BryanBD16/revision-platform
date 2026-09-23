@@ -53,7 +53,7 @@ describe('Register', () => {
       email: 'ada@example.com',
       password: 'correct horse battery',
     });
-    request.flush({ id: 1, email: 'ada@example.com', displayName: 'Ada Lovelace', roles: [] });
+    request.flush({ id: 1, email: 'ada@example.com', displayName: 'Ada Lovelace', roles: [], permissions: [] });
 
     expect(navigate).toHaveBeenCalledWith('/activities');
   });

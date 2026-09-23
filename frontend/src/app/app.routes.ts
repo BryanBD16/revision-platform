@@ -1,10 +1,12 @@
 import { Routes } from '@angular/router';
+import { AdminPage } from './admin/admin-page/admin-page';
 import { ActivityCreate } from './activities/activity-create/activity-create';
 import { ActivityDetail } from './activities/activity-detail/activity-detail';
 import { ActivityList } from './activities/activity-list/activity-list';
 import { ActivityPlayer } from './activities/activity-player/activity-player';
 import { Account } from './auth/account/account';
-import { signedInGuard } from './auth/auth.guards';
+import { permissionGuard, signedInGuard } from './auth/auth.guards';
+import { PERMISSIONS } from './auth/auth.service';
 import { Register } from './auth/register/register';
 import { SignIn } from './auth/sign-in/sign-in';
 
@@ -17,5 +19,11 @@ export const routes: Routes = [
   { path: 'sign-in', component: SignIn, title: 'Sign in' },
   { path: 'register', component: Register, title: 'Create an account' },
   { path: 'account', component: Account, title: 'Account', canActivate: [signedInGuard] },
+  {
+    path: 'admin',
+    component: AdminPage,
+    title: 'Administration',
+    canActivate: [permissionGuard(PERMISSIONS.manageRoles)],
+  },
   { path: '**', redirectTo: 'activities' },
 ];
