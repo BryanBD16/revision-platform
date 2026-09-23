@@ -1,0 +1,309 @@
+{
+  "title": "How the database works",
+  "description": "MySQL, the tables of the platform, how the data is represented and how the tables are related.",
+  "themes": [
+    "revision-plateforme"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "MySQL and the relational model",
+        "body": "MySQL is a relational database management system (RDBMS). It stores data in tables: each table has a fixed set of columns, each with a type (for example INT, VARCHAR(200), TEXT, DATETIME(6) or JSON), and each row is one record. Programs read and change the data with SQL (Structured Query Language), using statements such as SELECT, INSERT, UPDATE and DELETE.\n\nThe project uses MySQL 8.4, the current long-term support (LTS) release. Its default storage engine, InnoDB, supports transactions (a group of changes that is saved completely or not at all) and foreign keys (rules that keep the references between tables valid).\n\nOne MySQL server can host several databases. In development, the server runs in a Docker container and contains two databases:\n- revision_platform: the development data you see in the application.\n- revision_platform_test: used only by the backend integration tests, which delete and recreate it on every run.\n\nThe application connects with its own MySQL user, revision_platform, not with root. This user only has privileges on these two databases: trying to create any other database fails with \"Access denied\". Giving a program only the rights it needs is called the principle of least privilege: if the application is compromised, the damage is limited.\n\nThe backend never writes SQL by hand. It uses Entity Framework Core (EF Core), an object-relational mapper (ORM): C# classes such as RevisionActivity are mapped to tables, and EF Core generates the SQL. The Pomelo provider translates EF Core's queries into MySQL's dialect of SQL."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why does the backend connect to MySQL as the revision_platform user instead of root?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "It follows the principle of least privilege: the user can only access the two databases the application needs."
+          },
+          {
+            "id": "c2",
+            "text": "Because EF Core cannot connect with the root user."
+          },
+          {
+            "id": "c3",
+            "text": "Because the root user can only be used inside the Docker container."
+          },
+          {
+            "id": "c4",
+            "text": "Because queries run faster with a non-root user."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "root can do anything on the server, including dropping every database. The revision_platform user only has privileges on revision_platform and revision_platform_test, so a bug or an attack through the application cannot touch anything else."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "The tables of the platform",
+        "body": "The schema has four tables for the application data, plus one table managed by EF Core.\n\nrevision_activities: one row per activity.\n- id: INT, auto-increment primary key.\n- title: VARCHAR(200), required.\n- description: TEXT, can be NULL.\n- created_at and updated_at: DATETIME(6), in UTC.\n\nthemes: one row per theme, shared by all activities.\n- id: INT, primary key.\n- name: VARCHAR(100) with a unique index. Its collation, utf8mb4_0900_as_ci, compares text case-insensitively (ci) but accent-sensitively (as): \"Biology\" and \"biology\" are the same value, while \"Resume\" and \"Résumé\" are different.\n- created_at.\n\nactivity_themes: the links between activities and themes.\n- activity_id: foreign key to revision_activities.id.\n- theme_id: foreign key to themes.id.\n- The primary key is the pair (activity_id, theme_id), so an activity cannot be linked twice to the same theme.\n\nrevision_modules: one row per module of an activity.\n- id: INT, primary key.\n- activity_id: foreign key to revision_activities.id.\n- position: the order of the module in its activity, starting at 0. A unique index on (activity_id, position) prevents two modules of the same activity from having the same position.\n- type: VARCHAR(50), for example \"reading\", \"multiple-choice\" or \"matching\".\n- content: a JSON column whose structure depends on the type.\n- created_at and updated_at.\n\n__EFMigrationsHistory: EF Core records here the name of every migration already applied to the database, so that \"make db-migrate\" only applies the new ones.\n\nTable and column names use snake_case (revision_activities, created_at), the usual MySQL convention, while the C# code uses PascalCase (RevisionActivity, CreatedAt). The EFCore.NamingConventions package converts the names automatically."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What does the unique index on (activity_id, position) in revision_modules guarantee?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Two modules of the same activity cannot have the same position."
+          },
+          {
+            "id": "c2",
+            "text": "A position value can only be used once in the whole table."
+          },
+          {
+            "id": "c3",
+            "text": "Modules are always returned sorted by position."
+          },
+          {
+            "id": "c4",
+            "text": "Each activity has at most one module."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The index covers the pair of columns: position 0 exists once in every activity, but never twice in the same one. An index does not sort query results: the backend sorts the modules by position when it builds the response."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "An activity already uses the theme \"Biology\". A new activity is created with the theme \"biology\". What happens?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "A second theme named \"biology\" is created."
+          },
+          {
+            "id": "c2",
+            "text": "The request fails because of the unique index on themes.name."
+          },
+          {
+            "id": "c3",
+            "text": "The existing \"Biology\" theme is reused, because the collation of the name column ignores case."
+          },
+          {
+            "id": "c4",
+            "text": "The existing theme is renamed to \"biology\"."
+          }
+        ],
+        "correctChoiceIds": [
+          "c3"
+        ],
+        "explanation": "Before saving, the backend looks for existing themes with a query on the name column. Because of the utf8mb4_0900_as_ci collation, MySQL considers \"biology\" equal to \"Biology\", so the existing theme is linked to the new activity and keeps its original spelling."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Relations and how the data is represented",
+        "body": "Two kinds of relations connect the tables.\n\nOne-to-many: an activity has many modules, and each module belongs to exactly one activity. The relation is stored on the \"many\" side: each revision_modules row has an activity_id that points to its activity.\n\nMany-to-many: an activity can have several themes, and a theme can be used by several activities. A relational table cannot store a list in one column, so a third table, activity_themes (a join table), stores one row per link. Linking an activity to the themes \"Biology\" and \"Cells\" creates two rows in activity_themes.\n\nThe foreign keys of activity_themes and revision_modules use ON DELETE CASCADE: deleting an activity automatically deletes its modules and its links to themes. The themes themselves are not deleted, because other activities may use them.\n\nModule content is stored as JSON instead of in one table per module type. For example, a multiple-choice module stores:\n{\"question\": \"...\", \"choices\": [{\"id\": \"c1\", \"text\": \"...\"}], \"correctChoiceIds\": [\"c1\"], \"explanation\": null}\nMySQL only checks that the value is valid JSON; each module type's backend code checks its structure before it is saved. The trade-off: adding a new module type needs no migration and no new table, but the database cannot enforce the content's structure with columns and constraints. This is acceptable because the application never searches inside the content: modules are always loaded with their activity.\n\nTimestamps are stored in UTC with microsecond precision (DATETIME(6)). A DATETIME value does not record a time zone, so the backend marks the values as UTC before sending them, and the API returns them with a trailing \"Z\", for example 2026-09-23T03:06:18.742923Z.\n\nThe schema only changes through EF Core migrations: C# files in backend/src/RevisionPlatform.Api/Data/Migrations that each describe one change (create a table, add an index...). They are applied in order, which gives every developer, the tests and a future server the same schema."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In this project, where is the relation between an activity and its themes stored?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "In a themes column of revision_activities containing a comma-separated list."
+          },
+          {
+            "id": "c2",
+            "text": "In an activity_id column of the themes table."
+          },
+          {
+            "id": "c3",
+            "text": "In the activity_themes table, one row per link between an activity and a theme."
+          },
+          {
+            "id": "c4",
+            "text": "In the JSON content of the activity's modules."
+          }
+        ],
+        "correctChoiceIds": [
+          "c3"
+        ],
+        "explanation": "It is a many-to-many relation, so it needs a join table. An activity_id column in themes would allow only one activity per theme, and a comma-separated list could not be protected by foreign keys or indexed."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "An activity with three modules and two themes is deleted. Which statements are true?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Its three rows in revision_modules are deleted."
+          },
+          {
+            "id": "c2",
+            "text": "Its two rows in activity_themes are deleted."
+          },
+          {
+            "id": "c3",
+            "text": "Its two themes are deleted from the themes table."
+          },
+          {
+            "id": "c4",
+            "text": "MySQL refuses the deletion because modules still reference the activity."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1",
+          "c2"
+        ],
+        "explanation": "Both foreign keys that reference revision_activities use ON DELETE CASCADE, so the dependent rows go with the activity. Themes are only referenced by activity_themes; the themes table itself does not depend on the activity, so the themes stay available for other activities."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Where is the structure of a module's JSON content checked before it is saved?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "In the backend, by the module type's code (for example MultipleChoiceModuleType)."
+          },
+          {
+            "id": "c2",
+            "text": "By MySQL, which validates the content against a schema defined on the column."
+          },
+          {
+            "id": "c3",
+            "text": "Only in the browser, by the Angular form of the module."
+          },
+          {
+            "id": "c4",
+            "text": "Nowhere: any JSON is accepted."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The Angular forms validate too, to help the user, but a client can send anything to the API, so the backend is the authority. MySQL itself only rejects text that is not valid JSON."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which statements about the timestamps (created_at, updated_at) are true?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "They are stored in UTC."
+          },
+          {
+            "id": "c2",
+            "text": "DATETIME(6) keeps microseconds."
+          },
+          {
+            "id": "c3",
+            "text": "The API returns them with a trailing \"Z\"."
+          },
+          {
+            "id": "c4",
+            "text": "MySQL stores the time zone with each value."
+          },
+          {
+            "id": "c5",
+            "text": "They are stored as text in ISO 8601 format."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1",
+          "c2",
+          "c3"
+        ],
+        "explanation": "The (6) of DATETIME(6) is the number of fractional-second digits. Because DATETIME has no time zone, the convention \"always UTC\" is enforced by the backend, which also marks the values as UTC so they are serialized with a Z."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "You add a property to an entity class in C#. What must happen before the development database has the new column?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Create a migration with make db-migration NAME=... and apply it with make db-migrate."
+          },
+          {
+            "id": "c2",
+            "text": "Nothing: EF Core adds missing columns when the backend starts."
+          },
+          {
+            "id": "c3",
+            "text": "Run make db-reset so that the tables are recreated."
+          },
+          {
+            "id": "c4",
+            "text": "Add the column in the init script in docker/mysql/init."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The migration records the change in a C# file committed with the code, so every database gets it the same way. The backend does not change the schema by itself, db-reset only deletes the data volume, and the init script only runs when the volume is created."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each database concept with its definition.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Primary key",
+            "definition": "Column (or columns) whose value identifies each row uniquely, like id in revision_activities."
+          },
+          {
+            "id": "p2",
+            "concept": "Foreign key",
+            "definition": "Column that references the primary key of another table, like activity_id in revision_modules."
+          },
+          {
+            "id": "p3",
+            "concept": "Join table",
+            "definition": "Table storing one row per link of a many-to-many relation, like activity_themes."
+          },
+          {
+            "id": "p4",
+            "concept": "Unique index",
+            "definition": "Rejects two rows with the same value, like the one on themes.name."
+          },
+          {
+            "id": "p5",
+            "concept": "Collation",
+            "definition": "Rules used to compare and sort text, for example whether case and accents matter."
+          },
+          {
+            "id": "p6",
+            "concept": "ON DELETE CASCADE",
+            "definition": "Deletes the dependent rows automatically when the row they reference is deleted."
+          },
+          {
+            "id": "p7",
+            "concept": "Migration",
+            "definition": "Versioned description of a schema change, applied in order to every database."
+          },
+          {
+            "id": "p8",
+            "concept": "ORM",
+            "definition": "Library that maps classes to tables and generates the SQL, like EF Core."
+          }
+        ]
+      }
+    }
+  ]
+}

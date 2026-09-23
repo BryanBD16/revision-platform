@@ -1,0 +1,318 @@
+{
+  "title": "The Makefile commands",
+  "description": "How make works, what each command of the Makefile does, and the usual workflows.",
+  "themes": [
+    "revision-plateforme"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "How make works",
+        "body": "make is a build tool that runs commands described in a file named Makefile. The Makefile contains rules:\n\ntarget: prerequisites\n\trecipe\n\n- The target is the name you type, as in make db-up.\n- The prerequisites are other targets run first. \"build: backend-build frontend-build\" has no recipe of its own: make build runs backend-build, then frontend-build.\n- The recipe is the list of shell commands. Each recipe line must start with a tab character, and each line runs in its own shell. That is why a recipe that changes directory writes cd backend && dotnet ef ... on a single line.\n\nmake was designed to build files, and it skips a target when a file with that name is up to date. The .PHONY line declares that the project's targets are commands, not files, so they always run.\n\nThe project's Makefile also uses:\n- A default goal: running make without a target runs help, which lists every target that has a ## comment, using grep and awk.\n- Variables such as BACKEND_DIR := backend, used as $(BACKEND_DIR).\n- -include .env, which reads the MYSQL_* variables of the .env file. The minus sign means \"no error if the file does not exist\".\n- A function: db_connection builds a MySQL connection string from the MYSQL_* variables, and $(call db_connection,name) gives the connection string of the database \"name\".\n- Target-specific exports: \"backend-run: export ConnectionStrings__Default := ...\" sets an environment variable only for that target. This is how the backend receives its connection string without writing the password in any committed file.\n- Escaping: make interprets $ itself, so $$ must be written to pass a single $ to the shell. For example, db-shell uses $$MYSQL_USER so that the shell inside the container expands its own variable."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What does make build do?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "It runs its prerequisites, backend-build and then frontend-build; the build target has no recipe of its own."
+          },
+          {
+            "id": "c2",
+            "text": "It builds the Docker images of the backend and the frontend."
+          },
+          {
+            "id": "c3",
+            "text": "It builds the backend only; the frontend is built by make frontend-run."
+          },
+          {
+            "id": "c4",
+            "text": "It runs the tests, then builds the application."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "A target can be only a list of prerequisites. make test works the same way with backend-test and frontend-test."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "The db-shell recipe contains \"$$MYSQL_USER\". Why are there two dollar signs?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "make turns $$ into $, so the shell inside the container receives $MYSQL_USER and expands it from the container's environment."
+          },
+          {
+            "id": "c2",
+            "text": "It is the MySQL syntax for variables."
+          },
+          {
+            "id": "c3",
+            "text": "It expands the variable twice, for the host and for the container."
+          },
+          {
+            "id": "c4",
+            "text": "It is required because the variable name is in capital letters."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "With a single $, make would read $M as its own variable M, which is empty, and the shell would receive YSQL_USER. The variables used by db-shell exist inside the container, set from compose.yaml."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Running dotnet test directly in backend/ fails with \"TEST_DATABASE_CONNECTION is not set\". Why does make backend-test work?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "The Makefile builds the test connection string from .env and exports it for that target only."
+          },
+          {
+            "id": "c2",
+            "text": "make creates a new test database before each run."
+          },
+          {
+            "id": "c3",
+            "text": "dotnet test must be run with sudo."
+          },
+          {
+            "id": "c4",
+            "text": "make runs the tests inside the MySQL container."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "backend-test exports TEST_DATABASE_CONNECTION with $(call db_connection,$(MYSQL_DATABASE)_test), pointing to revision_platform_test. The tests refuse to run without it, so they can never use the development database by mistake."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "The commands",
+        "body": "Run make to list them. They are grouped by part of the project.\n\nGeneral:\n- make help: lists the commands (also what make alone does).\n- make build: builds the backend and the frontend.\n- make test: runs the backend tests, then the frontend tests.\n\nBackend:\n- make backend-build: dotnet build of the solution.\n- make backend-test: runs the backend tests against revision_platform_test. The database container must be running.\n- make backend-run: starts the API with dotnet watch on http://localhost:5044, restarting it when the code changes. The connection string comes from .env.\n\nFrontend:\n- make frontend-install: npm ci, which installs exactly the versions recorded in package-lock.json.\n- make frontend-build: ng build, the optimized production build.\n- make frontend-test: runs the Vitest tests once (--watch=false).\n- make frontend-run: ng serve on http://localhost:4200, with /api forwarded to the backend.\n\nDatabase schema:\n- make db-migrate: applies the EF Core migrations that are not applied yet to the development database.\n- make db-migration NAME=AddSomething: creates a new migration from the changes made to the entities and to AppDbContext. Without NAME, it stops with a usage message.\n\nDocker and data:\n- make db-up: starts the MySQL container and waits until it is healthy.\n- make db-down: stops and removes the container; the data is kept in the volume.\n- make db-logs: follows the MySQL logs.\n- make db-shell: opens a MySQL prompt as the application user, in the development database.\n- make db-reset: stops the container and deletes the volume, so ALL the data is lost. The next db-up initializes an empty server, then make db-migrate recreates the tables.\n- make db-clear: deletes all activities, modules and themes, but keeps the tables.\n- make db-seed: creates the activities described in seed/activities/*.json by sending each file to POST /api/activities. The backend must be running; it stops at the first error and shows the API's answer."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What is the difference between make db-down and make db-reset?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Both stop and remove the container, but db-reset also deletes the mysql-data volume, so all the data is lost."
+          },
+          {
+            "id": "c2",
+            "text": "db-down deletes the data, db-reset only restarts the container."
+          },
+          {
+            "id": "c3",
+            "text": "db-reset only deletes the activities and keeps the tables."
+          },
+          {
+            "id": "c4",
+            "text": "They are the same command."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "db-reset runs docker compose down --volumes. To only empty the activities while keeping the schema, use make db-clear instead."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which commands need the MySQL container to be running?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "make backend-test"
+          },
+          {
+            "id": "c2",
+            "text": "make db-migrate"
+          },
+          {
+            "id": "c3",
+            "text": "make db-clear"
+          },
+          {
+            "id": "c4",
+            "text": "make frontend-test"
+          },
+          {
+            "id": "c5",
+            "text": "make frontend-build"
+          }
+        ],
+        "correctChoiceIds": [
+          "c1",
+          "c2",
+          "c3"
+        ],
+        "explanation": "The backend tests use revision_platform_test, db-migrate changes the schema and db-clear runs SQL inside the container. The frontend only needs Node.js to build and test; its tests fake the HTTP calls."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why does make frontend-install use npm ci rather than npm install?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "npm ci installs exactly the versions of package-lock.json and fails if the lock file does not match package.json, so everyone gets the same dependencies."
+          },
+          {
+            "id": "c2",
+            "text": "npm ci is the only command that works without internet access."
+          },
+          {
+            "id": "c3",
+            "text": "npm install cannot install Angular."
+          },
+          {
+            "id": "c4",
+            "text": "npm ci also updates the dependencies to their latest versions."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "npm install may update package-lock.json when the version ranges of package.json allow newer versions. npm ci never changes it, which makes installs reproducible."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Usual workflows",
+        "body": "First setup, after cloning the repository:\n1. cp .env.example .env, then choose the passwords (without quotes, \";\" or \"$\").\n2. make db-up\n3. make db-migrate\n4. make frontend-install\n5. make backend-run in one terminal and make frontend-run in another, then open http://localhost:4200.\n6. Optionally, make db-seed in a third terminal to load the revision activities.\n\nEvery day: make db-up if the container is not running, then make backend-run and make frontend-run.\n\nAfter pulling changes: make db-migrate if new migrations were added, and make frontend-install if package-lock.json changed.\n\nChanging the schema: edit the entities or AppDbContext, run make db-migration NAME=DescribeTheChange, review the generated migration, then make db-migrate.\n\nBefore committing: make build and make test must succeed.\n\nStarting over with the data: make db-clear, then make db-seed, keeps the tables and reloads the seed activities. make db-reset, then make db-up and make db-migrate, rebuilds everything from an empty server."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "You pulled changes that add a new file in backend/src/RevisionPlatform.Api/Data/Migrations. What should you run?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "make db-migrate"
+          },
+          {
+            "id": "c2",
+            "text": "make db-migration NAME=Update"
+          },
+          {
+            "id": "c3",
+            "text": "make db-reset"
+          },
+          {
+            "id": "c4",
+            "text": "make frontend-install"
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "db-migrate applies the migrations missing from the database, as listed in __EFMigrationsHistory. db-migration creates a new migration from your own changes, and db-reset would delete all the data for nothing."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What does make db-seed need, and what does it do?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "The backend running on port 5044; it sends each file of seed/activities to POST /api/activities and stops at the first error."
+          },
+          {
+            "id": "c2",
+            "text": "Only the database; it inserts the activities directly with SQL."
+          },
+          {
+            "id": "c3",
+            "text": "Nothing; it replaces the database with a backup."
+          },
+          {
+            "id": "c4",
+            "text": "The frontend running; it fills the creation form automatically."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "Going through the API means the seed activities are validated exactly like the ones created in the application, and the seed files have the same format as the API's create requests."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each command with what it does.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "make db-up",
+            "definition": "Starts the MySQL container and waits until it is healthy."
+          },
+          {
+            "id": "p2",
+            "concept": "make db-down",
+            "definition": "Stops and removes the container, keeping the data volume."
+          },
+          {
+            "id": "p3",
+            "concept": "make db-reset",
+            "definition": "Removes the container and the data volume: all data is lost."
+          },
+          {
+            "id": "p4",
+            "concept": "make db-clear",
+            "definition": "Deletes all activities, modules and themes, keeping the tables."
+          },
+          {
+            "id": "p5",
+            "concept": "make db-migrate",
+            "definition": "Applies the migrations not applied yet to the development database."
+          },
+          {
+            "id": "p6",
+            "concept": "make db-migration NAME=X",
+            "definition": "Creates a new migration from the changes to the entities."
+          },
+          {
+            "id": "p7",
+            "concept": "make backend-run",
+            "definition": "Starts the API on port 5044 and restarts it when the code changes."
+          },
+          {
+            "id": "p8",
+            "concept": "make frontend-run",
+            "definition": "Starts the development server on port 4200, forwarding /api."
+          },
+          {
+            "id": "p9",
+            "concept": "make test",
+            "definition": "Runs the backend tests, then the frontend tests."
+          },
+          {
+            "id": "p10",
+            "concept": "make db-shell",
+            "definition": "Opens a MySQL prompt as the application user."
+          }
+        ]
+      }
+    }
+  ]
+}

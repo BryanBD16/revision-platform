@@ -5,12 +5,12 @@
 
 db_connection = Server=127.0.0.1;Port=$(MYSQL_PORT);Database=$(1);User=$(MYSQL_USER);Password=$(MYSQL_PASSWORD)
 
-.PHONY: help build test db-up db-down db-logs db-shell db-reset \
+.PHONY: help build test db-up db-down db-logs db-shell db-reset db-clear db-seed \
         backend-build backend-test backend-run db-migrate db-migration \
         frontend-install frontend-build frontend-test frontend-run
 
 help: ## List available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'
 
 build: backend-build frontend-build ## Build all components
 
@@ -73,3 +73,16 @@ db-shell: ## Open a MySQL prompt as the application user
 
 db-reset: ## Stop the MySQL container and DELETE all its data
 	docker compose down --volumes
+
+db-clear: ## DELETE all activities, modules and themes (the tables are kept)
+	docker compose exec -T db sh -c 'mysql -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE" -e "DELETE FROM revision_activities; DELETE FROM themes;"'
+
+API_URL := http://localhost:5044
+
+db-seed: ## Create the activities in seed/activities through the API (backend must be running)
+	@for file in seed/activities/*.json; do \
+		response=$$(curl --silent --show-error --fail-with-body \
+			--header 'Content-Type: application/json' --data @"$$file" $(API_URL)/api/activities) \
+			|| { echo "$$file: failed"; echo "$$response"; exit 1; }; \
+		echo "$$file: created"; \
+	done
