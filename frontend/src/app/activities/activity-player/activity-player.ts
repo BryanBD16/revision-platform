@@ -9,6 +9,9 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { SaveAttemptRequest } from '../../attempts/attempt';
+import { AttemptApi } from '../../attempts/attempt-api';
+import { AuthService } from '../../auth/auth.service';
 import { ModulePlayerHost } from '../../modules/module-player-host/module-player-host';
 import { ModuleResult } from '../../modules/module-type';
 import { findModuleType } from '../../modules/module-types';
@@ -24,6 +27,9 @@ import { totalGrade } from './grade';
 })
 export class ActivityPlayer implements OnInit {
   private readonly activityApi = inject(ActivityApi);
+  private readonly attemptApi = inject(AttemptApi);
+
+  protected readonly signedIn = inject(AuthService).signedIn;
 
   /** Bound from the `:id` route parameter. */
   readonly id = input.required<number, unknown>({ transform: numberAttribute });
@@ -40,6 +46,9 @@ export class ActivityPlayer implements OnInit {
     () => this.modules().length > 0 && this.currentIndex() >= this.modules().length,
   );
   protected readonly total = computed(() => totalGrade(this.results()));
+  /** Saving the result of a completed activity; visitors' results are not saved. */
+  protected readonly saveStatus = signal<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  protected readonly saveError = signal<string | null>(null);
 
   ngOnInit(): void {
     this.activityApi.getById(this.id()).subscribe({
@@ -58,9 +67,41 @@ export class ActivityPlayer implements OnInit {
 
   protected next(result: ModuleResult | null): void {
     this.results.update((results) => [...results, result]);
+    if (this.finished() && this.signedIn()) {
+      this.saveResult();
+    }
+  }
+
+  /** Saves the completed activity; also used to retry after a failure. */
+  protected saveResult(): void {
+    const activity = this.activity()!;
+    const request: SaveAttemptRequest = {
+      activityId: activity.id,
+      modules: activity.modules.map((module, index) => ({
+        moduleId: module.id,
+        label: findModuleType(module.type)?.summarize(module.content) ?? null,
+        score: this.results()[index]?.score ?? null,
+        maxScore: this.results()[index]?.maxScore ?? null,
+      })),
+    };
+
+    this.saveStatus.set('saving');
+    this.saveError.set(null);
+    this.attemptApi.save(request).subscribe({
+      next: () => this.saveStatus.set('saved'),
+      error: (error: HttpErrorResponse) => {
+        this.saveStatus.set('error');
+        // A 400 on "modules" means the activity changed while it was being completed.
+        this.saveError.set(
+          error.error?.errors?.modules?.[0] ??
+            'Your result could not be saved. Please try again later.',
+        );
+      },
+    });
   }
 
   protected restart(): void {
     this.results.set([]);
+    this.saveStatus.set('idle');
   }
 }

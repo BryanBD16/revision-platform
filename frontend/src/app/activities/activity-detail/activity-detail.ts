@@ -2,6 +2,10 @@ import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, inject, input, numberAttribute, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { AttemptPage } from '../../attempts/attempt';
+import { AttemptApi } from '../../attempts/attempt-api';
+import { scoreText } from '../../attempts/score';
+import { AuthService } from '../../auth/auth.service';
 import { Activity } from '../activity';
 import { ActivityApi } from '../activity-api';
 import { ActivityThemes } from '../activity-themes/activity-themes';
@@ -14,6 +18,11 @@ import { ActivityThemes } from '../activity-themes/activity-themes';
 export class ActivityDetail implements OnInit {
   private readonly activityApi = inject(ActivityApi);
   private readonly router = inject(Router);
+  private readonly attemptApi = inject(AttemptApi);
+  private readonly signedIn = inject(AuthService).signedIn;
+
+  /** How many of the user's latest results the page shows. */
+  protected readonly recentAttemptCount = 5;
 
   /** Bound from the `:id` route parameter. */
   readonly id = input.required<number, unknown>({ transform: numberAttribute });
@@ -22,6 +31,9 @@ export class ActivityDetail implements OnInit {
   protected readonly status = signal<'loading' | 'loaded' | 'not-found' | 'error'>('loading');
   protected readonly deleting = signal(false);
   protected readonly deleteError = signal<string | null>(null);
+  /** The latest results of the signed-in user for this activity; null for a visitor. */
+  protected readonly attempts = signal<AttemptPage | null>(null);
+  protected readonly scoreText = scoreText;
 
   ngOnInit(): void {
     this.activityApi.getById(this.id()).subscribe({
@@ -32,6 +44,12 @@ export class ActivityDetail implements OnInit {
       error: (error: HttpErrorResponse) =>
         this.status.set(error.status === 404 ? 'not-found' : 'error'),
     });
+
+    if (this.signedIn()) {
+      this.attemptApi
+        .getPage({ activityId: this.id(), pageSize: this.recentAttemptCount })
+        .subscribe({ next: (attempts) => this.attempts.set(attempts), error: () => undefined });
+    }
   }
 
   /** Deletes the activity for good, after confirmation, and goes back to the list. */

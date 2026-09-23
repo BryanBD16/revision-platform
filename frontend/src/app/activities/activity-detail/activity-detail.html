@@ -45,6 +45,27 @@
           <a class="button" [routerLink]="['/activities', activity.id, 'play']">Start activity</a>
         </p>
       }
+
+      @if (attempts(); as attempts) {
+        @if (attempts.totalCount > 0) {
+          <section class="your-results" aria-labelledby="your-results-heading">
+            <h3 id="your-results-heading">Your results</h3>
+            <ul>
+              @for (attempt of attempts.items; track attempt.id) {
+                <li>
+                  <a [routerLink]="['/results', attempt.id]">{{ attempt.completedAt | date: 'medium' }}</a>
+                  · {{ scoreText(attempt.score, attempt.maxScore) ?? 'Not graded' }}
+                </li>
+              }
+            </ul>
+            @if (attempts.totalCount > recentAttemptCount) {
+              <a routerLink="/results" [queryParams]="{ activityId: activity.id }">
+                See all {{ attempts.totalCount }} results for this activity
+              </a>
+            }
+          </section>
+        }
+      }
     }
   }
 }

@@ -89,6 +89,12 @@ describe('multipleChoiceModuleType', () => {
     expect(form.controls.choices.hasError('noCorrectChoice')).toBe(true);
   });
 
+  it('is summarized by its question', () => {
+    const content = { question: 'What is a cell?', choices: [], correctChoiceIds: [], explanation: null };
+
+    expect(multipleChoiceModuleType.summarize(content)).toBe('What is a cell?');
+  });
+
   it('requires at least two choices', () => {
     const form = multipleChoiceModuleType.createForm();
     form.controls.choices.removeAt(1);

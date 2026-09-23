@@ -85,6 +85,23 @@ The first version should allow a user to:
 - Two admins editing the same public activity at the same time are not
   detected: the last one to save wins.
 
+### Saved Results
+
+- When a signed-in user completes an activity, their result is saved
+  automatically: the score of each module and the global score. The
+  answers themselves are not saved. Visitors' results are not saved.
+- The scores are computed by the browser.
+- Each completion is a new attempt; attempts cannot be changed or
+  deleted by the user. They are deleted with the user's account.
+- A saved result does not change when the activity changes afterwards:
+  for each attempt, the user always sees the score of each module and
+  the global score as they were, computed from the modules that existed
+  when the activity was completed. Editing or deleting the activity, or
+  some of its modules, later does not modify or delete past results.
+- The user sees their results on a My results page, and their latest
+  results for an activity on its page. Nobody else sees them, not even
+  admins.
+
 ### Roles and Administration
 
 - Roles are stored in their own table so that new roles can be added;
@@ -127,16 +144,10 @@ be implemented unless explicitly requested.
 - Signing in with a Google account may be added later, next to email
   and password.
 
-### Results and Progress
+### Learning Progress
 
-- The application should eventually save the results of completed
-  revision activities.
-- A saved result does not change when the activity changes afterwards:
-  for each attempt, the user always sees the score of each module and
-  the global score as they were, computed from the modules that existed
-  when the activity was completed. Editing or deleting the activity, or
-  some of its modules, later does not modify or delete past results.
-- The application should eventually track learning progress over time.
+- The application should eventually track learning progress over time,
+  from the saved results.
 
 ### Additional Module Types
 

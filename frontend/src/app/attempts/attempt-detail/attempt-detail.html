@@ -1,0 +1,56 @@
+<a routerLink="/results">← My results</a>
+
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading…</p>
+  }
+  @case ('not-found') {
+    <p class="error">This result does not exist.</p>
+  }
+  @case ('error') {
+    <p class="error">The result could not be loaded. Please try again later.</p>
+  }
+  @case ('loaded') {
+    @if (attempt(); as attempt) {
+      <h2>{{ attempt.activityTitle }}</h2>
+      <p class="meta">Completed {{ attempt.completedAt | date: 'medium' }}</p>
+      @if (attempt.activityId !== null) {
+        <p><a [routerLink]="['/activities', attempt.activityId]">Open the activity</a></p>
+      } @else {
+        <p class="meta">This activity has been deleted. The result is kept as it was.</p>
+      }
+
+      @if (scoreText(attempt.score, attempt.maxScore); as total) {
+        <p class="total-grade">Total grade: <strong>{{ total }}</strong></p>
+      } @else {
+        <p class="meta">This activity had no graded modules.</p>
+      }
+
+      <table class="grades">
+        <thead>
+          <tr>
+            <th scope="col">Module</th>
+            <th scope="col">Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (module of attempt.modules; track module.position) {
+            <tr>
+              <td>
+                {{ module.position + 1 }}. {{ module.label ?? moduleTypeLabel(module.moduleType) }}
+                <span class="meta">({{ moduleTypeLabel(module.moduleType) }})</span>
+              </td>
+              <td>
+                @if (module.score !== null) {
+                  {{ module.score }} / {{ module.maxScore }}
+                } @else {
+                  <span class="meta">Not graded</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+}

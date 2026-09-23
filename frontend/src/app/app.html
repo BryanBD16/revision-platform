@@ -2,6 +2,7 @@
   <h1><a routerLink="/">Course Revision Platform</a></h1>
   <nav class="user-nav" aria-label="Account">
     @if (user(); as user) {
+      <a routerLink="/results">My results</a>
       @if (canManageRoles()) {
         <a routerLink="/admin">Administration</a>
       }

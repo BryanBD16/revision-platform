@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
+using RevisionPlatform.Api.Attempts;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
 using RevisionPlatform.Api.Users;
@@ -19,6 +20,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Theme> Themes => Set<Theme>();
     public DbSet<RevisionModule> RevisionModules => Set<RevisionModule>();
     public DbSet<RoleChange> RoleChanges => Set<RoleChange>();
+    public DbSet<ActivityAttempt> ActivityAttempts => Set<ActivityAttempt>();
+    public DbSet<AttemptModule> AttemptModules => Set<AttemptModule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -65,6 +68,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .HasForeignKey(m => m.ActivityId)
                 .OnDelete(DeleteBehavior.Cascade);
             module.HasIndex(m => new { m.ActivityId, m.Position }).IsUnique();
+        });
+
+        modelBuilder.Entity<ActivityAttempt>(attempt =>
+        {
+            attempt.Property(a => a.ActivityTitle).HasMaxLength(ActivityAttempt.ActivityTitleMaxLength);
+            // A user's results are deleted with their account.
+            attempt.HasOne<AppUser>().WithMany().HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Cascade);
+            // Deleting the activity keeps the attempt, which has its own copy of what it needs.
+            attempt.HasOne<RevisionActivity>().WithMany().HasForeignKey(a => a.ActivityId)
+                .OnDelete(DeleteBehavior.SetNull);
+            attempt.HasMany(a => a.Modules).WithOne().HasForeignKey(m => m.AttemptId).OnDelete(DeleteBehavior.Cascade);
+            // "My results" lists a user's attempts, newest first, optionally for one activity.
+            attempt.HasIndex(a => new { a.UserId, a.CompletedAt });
+        });
+
+        modelBuilder.Entity<AttemptModule>(module =>
+        {
+            module.Property(m => m.ModuleType).HasMaxLength(RevisionModule.TypeMaxLength);
+            module.Property(m => m.Label).HasMaxLength(AttemptModule.LabelMaxLength);
+            module.HasOne<RevisionModule>().WithMany().HasForeignKey(m => m.ModuleId).OnDelete(DeleteBehavior.SetNull);
+            module.HasIndex(m => new { m.AttemptId, m.Position }).IsUnique();
         });
 
         modelBuilder.Entity<Theme>(theme =>

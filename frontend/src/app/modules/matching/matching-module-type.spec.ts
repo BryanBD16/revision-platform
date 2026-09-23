@@ -63,6 +63,18 @@ describe('matchingModuleType', () => {
     expect(['p1', 'p2']).not.toContain(ids[1]);
   });
 
+  it('is summarized by its instructions, or else by its number of pairs', () => {
+    const pairs = [
+      { id: 'p1', concept: 'A', definition: '1' },
+      { id: 'p2', concept: 'B', definition: '2' },
+    ];
+
+    expect(matchingModuleType.summarize({ instructions: 'Match the phases.', pairs })).toBe(
+      'Match the phases.',
+    );
+    expect(matchingModuleType.summarize({ instructions: null, pairs })).toBe('Match 2 concepts');
+  });
+
   it('requires at least two pairs', () => {
     const form = matchingModuleType.createForm();
     form.controls.pairs.removeAt(1);

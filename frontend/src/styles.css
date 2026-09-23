@@ -238,6 +238,10 @@ a {
   cursor: default;
 }
 
+.your-results ul {
+  padding-left: 1.25rem;
+}
+
 .owner-actions {
   display: flex;
   gap: 0.5rem;

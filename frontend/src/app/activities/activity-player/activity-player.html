@@ -56,6 +56,28 @@
               }
             </tbody>
           </table>
+          <div class="save-status" aria-live="polite">
+            @if (!signedIn()) {
+              <p class="meta">
+                <a routerLink="/sign-in" [queryParams]="{ returnUrl: '/activities/' + activity.id }">Sign in</a>
+                to save your results next time.
+              </p>
+            } @else {
+              @switch (saveStatus()) {
+                @case ('saving') {
+                  <p class="meta">Saving your result…</p>
+                }
+                @case ('saved') {
+                  <p class="success">Your result is saved. <a routerLink="/results">See all your results</a></p>
+                }
+                @case ('error') {
+                  <p class="error">{{ saveError() }}</p>
+                  <button type="button" class="button-secondary" (click)="saveResult()">Try again</button>
+                }
+              }
+            }
+          </div>
+
           <div class="actions">
             <button type="button" class="button" (click)="restart()">Start again</button>
             <a class="button-secondary" routerLink="/activities">Back to activities</a>
