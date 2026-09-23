@@ -69,6 +69,22 @@ The first version should allow a user to:
 - Visitors cannot save their results (saving results is a future
   requirement).
 
+### Editing and Deleting Activities
+
+- Every user can edit and delete their own private activities.
+- Admins can edit and delete every public activity, and change the
+  visibility of an activity: an activity made public loses its owner,
+  and a public activity made private belongs to the admin who changed it.
+- The application records who last edited a public activity; the
+  people who can change it see this on the activity page.
+- The Edit and Delete actions appear only on the activity page, only to
+  the people who can change the activity.
+- Deleting an activity is permanent and asks for confirmation.
+- Editing keeps the identity of the modules, choices and pairs that are
+  kept, so that the results saved later still refer to them.
+- Two admins editing the same public activity at the same time are not
+  detected: the last one to save wins.
+
 ### Roles and Administration
 
 - Roles are stored in their own table so that new roles can be added;

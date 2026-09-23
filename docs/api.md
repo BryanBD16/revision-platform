@@ -44,7 +44,8 @@ hide actions, and the API checks the same permissions:
 
 | Permission           | Roles   | Allows                            |
 |----------------------|---------|-----------------------------------|
-| `publish-activities` | `admin` | creating public activities        |
+| `publish-activities` | `admin` | creating public activities, changing the visibility of an activity |
+| `manage-public-activities` | `admin` | editing and deleting any public activity |
 | `manage-roles`       | `admin` | the `/api/admin` endpoints        |
 
 ### `GET /api/auth/me`
@@ -221,9 +222,17 @@ Each activity is `private` or `public`:
     { "id": 1, "position": 0, "type": "reading", "content": { "title": "Introduction", "body": "..." } }
   ],
   "createdAt": "2026-09-23T03:06:18.742923Z",
-  "updatedAt": "2026-09-23T03:06:18.742923Z"
+  "updatedAt": "2026-09-23T03:06:18.742923Z",
+  "canEdit": true,
+  "lastEditedBy": null
 }
 ```
+
+`canEdit` tells whether the caller can edit and delete the activity (see
+[`PUT`](#put-apiactivitiesid)). `lastEditedBy` (`{ "id": 4, "displayName":
+"Grace" }`) is the user who created or last edited the activity; it is
+only given for a public activity, to the people who can edit it, and is
+`null` otherwise (and for the seed activities).
 
 Themes and courses are sorted by name. Modules are sorted by `position` (starting at
 0). `description` can be `null`. The structure of `content` depends on
@@ -324,6 +333,41 @@ use the module's index, e.g. `modules[1].content`:
   }
 }
 ```
+
+A module of a new activity cannot have an `id` (`modules[0].id`).
+
+### `PUT /api/activities/{id}`
+
+Replaces an activity and returns `200` with the updated activity. The
+body is the same as for `POST`, with the same rules, except for:
+
+- `modules[].id`: optional. A module with the `id` of one of the
+  activity's modules updates that module, which **keeps its id**; a
+  module without `id` is new; the activity's modules missing from the
+  list are deleted. The order of the list gives the new positions. An id
+  that is not one of the activity's modules (`modules[i].id`), the same
+  id twice (`modules[i].id`) or a change of the type of an existing
+  module (`modules[i].type`) returns `400`. To change a module's type,
+  remove it and add a new one.
+- `visibility`: optional; when missing, the visibility does not change.
+  Changing it needs the `publish-activities` permission (`403`
+  otherwise). A public activity has no owner; an activity made private
+  belongs to the user who changed it.
+
+Who can edit:
+
+| Activity | Its owner | Admin | Other users | Visitor |
+|---|---|---|---|---|
+| Private | ✅ | `404` (not theirs) | `404` | `401` |
+| Public | – | ✅ (`manage-public-activities`) | `403` | `401` |
+
+The activity records who edited it last (`lastEditedBy`).
+
+### `DELETE /api/activities/{id}`
+
+Deletes the activity for good, with its modules and its links to themes
+and courses, and returns `204`. The same people who can edit an activity
+can delete it, with the same answers otherwise (`401`, `403`, `404`).
 
 ## Module types
 

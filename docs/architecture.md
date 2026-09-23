@@ -77,7 +77,8 @@ No database migration is needed: the content is stored as JSON.
 revision_activities
   id, title, description, created_at (indexed), updated_at,
   visibility ('private' or 'public', indexed),
-  owner_id -> users (cascade delete, null for a public activity)
+  owner_id -> users (cascade delete, null for a public activity),
+  last_edited_by_user_id -> users (set null on delete)
   check: public and no owner, or private and an owner
 
 revision_modules
@@ -213,6 +214,13 @@ client-side. Nothing about a completion is stored.
   an owner or a private activity without one.
 - **Themes and courses stay shared** (one row per name), but the lists
   only return the names used by visible activities.
+- **Editing and deleting** (`PUT` and `DELETE /api/activities/{id}`)
+  follow `ActivityService.CanEdit`: a private activity the caller can see
+  is theirs, and a public activity needs the `manage-public-activities`
+  permission. The detail returns `canEdit` so the frontend shows the
+  actions only to these people. `last_edited_by_user_id` records who
+  created or last edited an activity; it matters for public activities,
+  which have no owner. Deleting is permanent (see below for results).
 - **Seed activities** are created by a backend command (`dotnet run --
   seed <directory>`, `make db-seed`), as public activities. It validates
   every file with `ActivityValidator` before creating any activity. The
@@ -256,8 +264,16 @@ to add:
 - **Content and learner data stay separate.** Activity and module tables
   hold only authored content; no completion, score or user fields.
 - **Module ids are stable.** Editing an activity updates modules in
-  place rather than deleting and recreating them, so future results can
-  reference them.
+  place rather than deleting and recreating them (the request sends the
+  `id` of each kept module), so future results can reference them.
+- **Choice and pair ids are stable too.** The module forms keep the ids
+  of existing choices and pairs, and give new ones a random id
+  (`shared/item-ids.ts`) instead of numbering them, so an id is never
+  reused for another choice after an edit.
+- **Deleting an activity is permanent** for now. Once results are saved,
+  deleting an activity (or a module) will have to decide what happens to
+  them, for example keeping them with a copy of the titles, or replacing
+  the deletion with an archive.
 - **API routes are not public-specific** (`/api/activities`), so they can
   later be scoped to the signed-in user without changing shape.
 
