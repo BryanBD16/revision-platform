@@ -1,5 +1,6 @@
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
+using RevisionPlatform.Api.Users;
 
 namespace RevisionPlatform.Api.Activities;
 
@@ -20,6 +21,13 @@ public class RevisionActivity
 
     /// <summary>The user who owns a private activity; always null for a public activity.</summary>
     public int? OwnerId { get; set; }
+
+    /// <summary>
+    /// The user who created or last edited the activity. Useful for public activities, which
+    /// have no owner and can be edited by any admin. Null for the seed activities.
+    /// </summary>
+    public int? LastEditedByUserId { get; set; }
+    public AppUser? LastEditedBy { get; set; }
 
     public List<Theme> Themes { get; set; } = [];
 

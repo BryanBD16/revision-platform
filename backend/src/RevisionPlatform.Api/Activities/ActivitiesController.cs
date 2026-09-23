@@ -30,7 +30,7 @@ public class ActivitiesController(
     public async Task<ActionResult<ActivityResponse>> GetById(int id)
     {
         // Someone else's private activity also returns 404, so its existence is not revealed.
-        var activity = await activityService.GetByIdAsync(id, User.GetUserId());
+        var activity = await activityService.GetByIdAsync(id, User.GetUserId(), await CanManagePublicAsync());
         return activity is null ? NotFound() : Ok(activity);
     }
 
@@ -53,7 +53,11 @@ public class ActivitiesController(
                 title: "Only admins can create public activities.");
         }
 
-        var activity = await activityService.CreateAsync(validation.Activity, User.GetUserId());
-        return CreatedAtAction(nameof(GetById), new { id = activity.Id }, activity);
+        var id = await activityService.CreateAsync(validation.Activity, User.GetUserId());
+        var activity = await activityService.GetByIdAsync(id, User.GetUserId(), await CanManagePublicAsync());
+        return CreatedAtAction(nameof(GetById), new { id }, activity);
     }
+
+    private async Task<bool> CanManagePublicAsync() =>
+        (await authorizationService.AuthorizeAsync(User, Policies.ManagePublicActivities)).Succeeded;
 }

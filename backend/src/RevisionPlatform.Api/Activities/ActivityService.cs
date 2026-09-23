@@ -79,29 +79,40 @@ public class ActivityService(AppDbContext db)
         return activities;
     }
 
-    /// <summary>Returns the activity, or null if it does not exist or the viewer cannot see it.</summary>
-    public async Task<ActivityResponse?> GetByIdAsync(int id, int? viewerId)
+    /// <summary>
+    /// Returns the activity, or null if it does not exist or the viewer cannot see it.
+    /// <paramref name="canManagePublic"/> tells whether the viewer can edit public activities.
+    /// </summary>
+    public async Task<ActivityResponse?> GetByIdAsync(int id, int? viewerId, bool canManagePublic)
     {
         var activity = await db.RevisionActivities
             .AsNoTracking()
             .VisibleTo(viewerId)
             .Include(a => a.Themes)
             .Include(a => a.Modules)
+            .Include(a => a.LastEditedBy)
             .SingleOrDefaultAsync(a => a.Id == id);
 
-        return activity is null ? null : ToResponse(activity);
+        return activity is null ? null : ToResponse(activity, canManagePublic);
     }
 
     /// <summary>
-    /// Creates an activity. A private activity belongs to <paramref name="ownerId"/>; a public
-    /// activity has no owner.
+    /// Whether a viewer can edit and delete an activity they can see: a private activity
+    /// they can see is theirs; a public activity needs the manage-public-activities permission.
     /// </summary>
-    public async Task<ActivityResponse> CreateAsync(ValidatedActivity request, int? ownerId)
+    public static bool CanEdit(RevisionActivity activity, bool canManagePublic) =>
+        activity.Visibility == ActivityVisibility.Private || canManagePublic;
+
+    /// <summary>
+    /// Creates an activity and returns its id. A private activity belongs to
+    /// <paramref name="creatorId"/>; a public activity has no owner. Seed activities have no creator.
+    /// </summary>
+    public async Task<int> CreateAsync(ValidatedActivity request, int? creatorId)
     {
         var isPublic = request.Visibility == ActivityVisibility.Public;
-        if (!isPublic && ownerId is null)
+        if (!isPublic && creatorId is null)
         {
-            throw new ArgumentException("A private activity needs an owner.", nameof(ownerId));
+            throw new ArgumentException("A private activity needs an owner.", nameof(creatorId));
         }
 
         var now = DateTime.UtcNow;
@@ -111,7 +122,8 @@ public class ActivityService(AppDbContext db)
             Title = request.Title,
             Description = request.Description,
             Visibility = request.Visibility,
-            OwnerId = isPublic ? null : ownerId,
+            OwnerId = isPublic ? null : creatorId,
+            LastEditedByUserId = creatorId,
             CreatedAt = now,
             UpdatedAt = now,
             Themes =
@@ -134,7 +146,7 @@ public class ActivityService(AppDbContext db)
         db.RevisionActivities.Add(activity);
         await db.SaveChangesAsync();
 
-        return ToResponse(activity);
+        return activity.Id;
     }
 
     /// <summary>
@@ -157,7 +169,7 @@ public class ActivityService(AppDbContext db)
             .ToList();
     }
 
-    private static ActivityResponse ToResponse(RevisionActivity activity) => new(
+    private static ActivityResponse ToResponse(RevisionActivity activity, bool canManagePublic) => new(
         activity.Id,
         activity.Title,
         activity.Description,
@@ -169,7 +181,12 @@ public class ActivityService(AppDbContext db)
             .Select(m => new ModuleResponse(m.Id, m.Position, m.Type, JsonSerializer.Deserialize<JsonElement>(m.Content)))
             .ToList(),
         AsUtc(activity.CreatedAt),
-        AsUtc(activity.UpdatedAt));
+        AsUtc(activity.UpdatedAt),
+        CanEdit(activity, canManagePublic),
+        // Only the people who can change a public activity see who last edited it.
+        activity.Visibility == ActivityVisibility.Public && canManagePublic && activity.LastEditedBy is { } editor
+            ? new ActivityEditorResponse(editor.Id, editor.DisplayName)
+            : null);
 
     private static List<ThemeResponse> ToResponse(IEnumerable<Theme> themes, string kind) => themes
         .Where(t => t.Kind == kind)

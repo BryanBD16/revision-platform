@@ -58,7 +58,7 @@ public static class SeedCommand
         foreach (var (file, activity) in activities)
         {
             // Seed activities are shared with everyone: public, without an owner.
-            await activityService.CreateAsync(activity with { Visibility = ActivityVisibility.Public }, ownerId: null);
+            await activityService.CreateAsync(activity with { Visibility = ActivityVisibility.Public }, creatorId: null);
             output.WriteLine($"{Path.GetFileName(file)}: created");
         }
         return 0;

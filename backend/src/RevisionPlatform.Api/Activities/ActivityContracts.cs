@@ -53,7 +53,13 @@ public record ActivityPageResponse(
     int PageSize,
     int TotalCount);
 
-/// <summary>An activity with its modules, in order.</summary>
+/// <summary>The user who last edited an activity.</summary>
+public record ActivityEditorResponse(int Id, string DisplayName);
+
+/// <summary>
+/// An activity with its modules, in order. <c>CanEdit</c> tells whether the caller can edit and
+/// delete it; <c>LastEditedBy</c> is only given to them, for public activities.
+/// </summary>
 public record ActivityResponse(
     int Id,
     string Title,
@@ -63,4 +69,6 @@ public record ActivityResponse(
     string Visibility,
     IReadOnlyList<ModuleResponse> Modules,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    bool CanEdit,
+    ActivityEditorResponse? LastEditedBy);

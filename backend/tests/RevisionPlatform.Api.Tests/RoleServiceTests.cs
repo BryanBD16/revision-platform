@@ -107,7 +107,7 @@ public class RoleServiceTests(ApiFactory factory) : IAsyncLifetime
 
         var me = await client.GetFromJsonAsync<CurrentUserResponse>("/api/auth/me");
         Assert.Equal([RoleNames.Admin], me!.Roles);
-        Assert.Equal([Policies.PublishActivities, Policies.ManageRoles], me.Permissions);
+        Assert.Equal([Policies.PublishActivities, Policies.ManagePublicActivities, Policies.ManageRoles], me.Permissions);
     }
 
     private Task<RoleChangeError?> GrantAsync(string email, string role) =>
