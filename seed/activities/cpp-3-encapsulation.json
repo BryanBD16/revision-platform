@@ -1,0 +1,268 @@
+{
+  "title": "Classes, objects and encapsulation",
+  "description": "Classes and structs, constructors and destructors, access specifiers, const member functions and static members.",
+  "themes": [
+    "C++",
+    "OOP",
+    "Encapsulation"
+  ],
+  "courses": [
+    "Introduction to C++"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Classes and objects",
+        "body": "A class groups data members and member functions. Objects are often created directly as local variables, without new:\n\nclass Dog {\npublic:\n    Dog(std::string name) : name_(name) {}\n    std::string bark() const { return name_ + \" says woof\"; }\nprivate:\n    std::string name_;\n};\n\nDog rex(\"Rex\");\n\nThe constructor Dog(std::string name) initializes name_ in its initializer list (after the :). A local object like rex is destroyed automatically at the end of its block, which runs its destructor, written ~Dog()."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "void play() {\n    Dog rex(\"Rex\");\n    rex.bark();\n}\n\nWhere does rex live, and when is it destroyed?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "On the stack; it is destroyed automatically when play() ends"
+          },
+          {
+            "id": "b",
+            "text": "On the heap; you have to delete it"
+          },
+          {
+            "id": "c",
+            "text": "It is destroyed later by the garbage collector"
+          },
+          {
+            "id": "d",
+            "text": "It lives until the whole program ends"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "A local object has automatic storage: it is created where it is declared and destroyed at the end of the block, with no new and no delete."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What is the difference between class and struct in C++?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Only the default access: private for class, public for struct"
+          },
+          {
+            "id": "b",
+            "text": "A struct cannot have member functions"
+          },
+          {
+            "id": "c",
+            "text": "A struct is a value type and a class a reference type"
+          },
+          {
+            "id": "d",
+            "text": "A struct cannot be inherited from"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "In C++ they are almost the same thing. The value/reference difference is true in C#, not in C++. By convention, struct is used for simple groups of public data."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Logger {\npublic:\n    Logger()  { std::cout << \"open \"; }\n    ~Logger() { std::cout << \"close \"; }\n};\n\nint main() {\n    {\n        Logger logger;\n        std::cout << \"work \";\n    }\n    std::cout << \"end\";\n}\n\nWhat is printed?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "open work close end"
+          },
+          {
+            "id": "b",
+            "text": "open work end close"
+          },
+          {
+            "id": "c",
+            "text": "work end"
+          },
+          {
+            "id": "d",
+            "text": "open close work end"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "logger is created at its declaration (open), the block works, and logger is destroyed at the closing brace of its block (close), before end. This precise timing is what makes destructors so useful in C++."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Encapsulation",
+        "body": "A class decides who can use its members with access specifiers, written as sections:\n- public: everyone.\n- private: only the class's own member functions (the default in a class).\n- protected: the class and the classes that inherit from it.\n\nEncapsulation keeps the data private and lets others use it only through member functions that enforce the rules.\n\nA member function marked const, like std::string bark() const, promises not to change the object. Only const member functions can be called on a const object."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Account {\npublic:\n    void deposit(double amount) { if (amount > 0) balance_ += amount; }\nprivate:\n    double balance_ = 0;\n};\n\nAccount account;\naccount.balance_ = -500;\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It does not compile: balance_ is private"
+          },
+          {
+            "id": "b",
+            "text": "The balance becomes -500"
+          },
+          {
+            "id": "c",
+            "text": "deposit is called automatically with -500"
+          },
+          {
+            "id": "d",
+            "text": "It compiles, but crashes at run time"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Access is checked by the compiler. The only way to change the balance is deposit, which rejects negative amounts: that is encapsulation."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "std::string bark() const { ... }\n\nWhat does the const after the parentheses mean?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "bark promises not to change the object, and can be called on a const object"
+          },
+          {
+            "id": "b",
+            "text": "bark always returns the same string"
+          },
+          {
+            "id": "c",
+            "text": "The returned string cannot be changed"
+          },
+          {
+            "id": "d",
+            "text": "bark can only be called once"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The compiler refuses any change to the data members inside a const member function. Marking read-only functions const is part of a good class design."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Robot {\npublic:\n    static int built;\n    Robot() { ++built; }\n};\nint Robot::built = 0;\n\nRobot a;\nRobot b;\nRobot c;\n\nWhat is Robot::built?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "3"
+          },
+          {
+            "id": "b",
+            "text": "1"
+          },
+          {
+            "id": "c",
+            "text": "0"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "A static data member belongs to the class, not to each object: the three constructors increment the same counter."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which are good encapsulation habits in C++?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Keep the data members private"
+          },
+          {
+            "id": "b",
+            "text": "Mark the member functions that do not change the object const"
+          },
+          {
+            "id": "c",
+            "text": "Make every member public, it is simpler"
+          },
+          {
+            "id": "d",
+            "text": "Return a non-const reference to private data so callers can change it freely"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b"
+        ],
+        "explanation": "Returning a non-const reference to a private member lets anyone change it and bypass the class's rules: it breaks encapsulation as much as making it public."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each term with its meaning.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "public",
+            "definition": "Accessible by any code"
+          },
+          {
+            "id": "p2",
+            "concept": "private",
+            "definition": "Accessible only by the class's member functions"
+          },
+          {
+            "id": "p3",
+            "concept": "protected",
+            "definition": "Accessible by the class and its derived classes"
+          },
+          {
+            "id": "p4",
+            "concept": "Constructor",
+            "definition": "Initializes a new object"
+          },
+          {
+            "id": "p5",
+            "concept": "Destructor (~Name)",
+            "definition": "Runs automatically when an object is destroyed"
+          },
+          {
+            "id": "p6",
+            "concept": "const member function",
+            "definition": "Promises not to change the object"
+          },
+          {
+            "id": "p7",
+            "concept": "static data member",
+            "definition": "Shared by all the objects of the class"
+          }
+        ]
+      }
+    }
+  ]
+}
