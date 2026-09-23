@@ -7,10 +7,11 @@ db_connection = Server=127.0.0.1;Port=$(MYSQL_PORT);Database=$(1);User=$(MYSQL_U
 
 .PHONY: help build test db-up db-down db-logs db-shell db-reset db-clear db-seed \
         backend-build backend-test backend-run db-migrate db-migration \
+        user-list user-grant-role user-revoke-role user-reset-password \
         frontend-install frontend-build frontend-test frontend-run
 
 help: ## List available commands
-	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 
 build: backend-build frontend-build ## Build all components
 
@@ -40,6 +41,30 @@ db-migration: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_
 db-migration: ## Create an EF Core migration: make db-migration NAME=AddSomething
 	@test -n "$(NAME)" || (echo "Usage: make db-migration NAME=AddSomething" && exit 1)
 	cd $(BACKEND_DIR) && dotnet tool restore && dotnet ef migrations add $(NAME) --project src/RevisionPlatform.Api --output-dir Data/Migrations
+
+# --- Users (commands run by the backend on the development database) ---------
+
+# Without the launch profile: the command does not need its URLs or environment.
+user_command = dotnet run --project $(BACKEND_API) --no-launch-profile -- users
+
+user-list: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
+user-list: ## List the users and their roles
+	@$(user_command) list
+
+user-grant-role: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
+user-grant-role: ## Give a role to a user: make user-grant-role EMAIL=ada@example.com ROLE=admin
+	@test -n "$(EMAIL)" -a -n "$(ROLE)" || (echo "Usage: make user-grant-role EMAIL=ada@example.com ROLE=admin" && exit 1)
+	@$(user_command) grant-role "$(EMAIL)" "$(ROLE)"
+
+user-revoke-role: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
+user-revoke-role: ## Remove a role from a user: make user-revoke-role EMAIL=ada@example.com ROLE=admin
+	@test -n "$(EMAIL)" -a -n "$(ROLE)" || (echo "Usage: make user-revoke-role EMAIL=ada@example.com ROLE=admin" && exit 1)
+	@$(user_command) revoke-role "$(EMAIL)" "$(ROLE)"
+
+user-reset-password: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
+user-reset-password: ## Give a user a temporary password: make user-reset-password EMAIL=ada@example.com
+	@test -n "$(EMAIL)" || (echo "Usage: make user-reset-password EMAIL=ada@example.com" && exit 1)
+	@$(user_command) reset-password "$(EMAIL)"
 
 # --- Frontend ----------------------------------------------------------------
 
@@ -74,7 +99,7 @@ db-shell: ## Open a MySQL prompt as the application user
 db-reset: ## Stop the MySQL container and DELETE all its data
 	docker compose down --volumes
 
-db-clear: ## DELETE all activities, modules and themes (the tables are kept)
+db-clear: ## DELETE all activities, modules and themes (the tables and the users are kept)
 	docker compose exec -T db sh -c 'mysql -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE" -e "DELETE FROM revision_activities; DELETE FROM themes;"'
 
 API_URL := http://localhost:5044

@@ -1,11 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
 using RevisionPlatform.Api.Auth;
+using RevisionPlatform.Api.Commands;
 using RevisionPlatform.Api.Data;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// "dotnet run -- users ..." runs a command instead of the web server (see UserCommands).
+var isCommand = args is [UserCommands.Name, ..];
+if (isCommand)
+{
+    // Keep the output of the command readable: no information logs (SQL queries...).
+    builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+    {
+        ["Logging:LogLevel:Default"] = "Warning",
+    });
+}
 
 var connectionString = builder.Configuration.GetConnectionString("Default")
     ?? throw new InvalidOperationException(
@@ -30,6 +42,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+if (isCommand)
+{
+    return await UserCommands.RunAsync(app.Services, args[1..], Console.In, Console.Out);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -45,6 +62,7 @@ app.MapControllers();
 app.MapHealthChecks("/api/health");
 
 app.Run();
+return 0;
 
 // Exposes the implicit Program class to the integration tests (WebApplicationFactory).
 public partial class Program { }
