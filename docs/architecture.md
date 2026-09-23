@@ -28,9 +28,18 @@ A revision activity is an ordered list of modules. Each module has a
   `Validate` and `Normalize`. `ModuleTypeRegistry` resolves the
   implementation from the type key. The activity code never looks inside
   module content.
-- **Frontend:** each module type has its own folder with an editor
-  component and a player component. A registry maps the type key to
-  those components, and a generic host renders them.
+- **Frontend:** each module type has its own folder under
+  `frontend/src/app/modules/` and provides a `ModuleTypeDefinition`: a
+  label, a form factory with its validators, a function converting the
+  form to the API content, an editor component (input `form`) and a
+  player component (input `content`, output `completed`). `MODULE_TYPES`
+  lists the definitions; `ModuleEditorHost` and `ModulePlayerHost` render
+  the editor or player of any type. The activity pages only use these
+  hosts and never depend on a specific module type.
+- **Playing an activity:** the activity player shows one module at a
+  time. When a module's player emits `completed` (for a reading module,
+  when the learner clicks Continue), it moves to the next module, then
+  shows a completion screen. Nothing is saved.
 
 ### Adding a module type (backend)
 
@@ -41,6 +50,15 @@ A revision activity is an ordered list of modules. Each module has a
    `docs/api.md`.
 
 No database migration is needed: the content is stored as JSON.
+
+### Adding a module type (frontend)
+
+1. Create `modules/<type-name>/` with the content interface, an editor
+   component implementing `ModuleEditor`, a player component
+   implementing `ModulePlayer`, and the `ModuleTypeDefinition` (see
+   `modules/reading/`).
+2. Add the definition to `MODULE_TYPES` in `modules/module-types.ts`.
+3. Add tests for the definition, the editor and the player.
 
 ## Database
 

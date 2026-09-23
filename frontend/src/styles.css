@@ -216,3 +216,33 @@ a {
   border-radius: 6px;
   font: inherit;
 }
+
+.reading-body {
+  white-space: pre-line;
+}
+
+.progress {
+  margin: 1rem 0 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+progress {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.completed {
+  margin-top: 1rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+a.button-secondary {
+  text-decoration: none;
+}

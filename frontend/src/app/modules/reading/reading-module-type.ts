@@ -3,6 +3,7 @@ import { notBlank } from '../../shared/validators';
 import { ModuleTypeDefinition } from '../module-type';
 import { READING_LIMITS, ReadingContent } from './reading-content';
 import { ReadingEditor } from './reading-editor/reading-editor';
+import { ReadingPlayer } from './reading-player/reading-player';
 
 export type ReadingForm = FormGroup<{
   title: FormControl<string>;
@@ -28,4 +29,5 @@ export const readingModuleType: ModuleTypeDefinition<ReadingContent, ReadingForm
     return { title: title.trim() || null, body: body.trim() };
   },
   editor: ReadingEditor,
+  player: ReadingPlayer,
 };

@@ -1,4 +1,4 @@
-import { InputSignal, Type } from '@angular/core';
+import { InputSignal, OutputEmitterRef, Type } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 
 /**
@@ -16,8 +16,16 @@ export interface ModuleTypeDefinition<TContent = unknown, TForm extends FormGrou
   toContent(form: TForm): TContent;
   /** Component that edits the content; receives the form from `createForm`. */
   readonly editor: Type<ModuleEditor<TForm>>;
+  /** Component that lets the learner complete the module. */
+  readonly player: Type<ModulePlayer<TContent>>;
 }
 
 export interface ModuleEditor<TForm extends FormGroup = FormGroup> {
   readonly form: InputSignal<TForm>;
+}
+
+export interface ModulePlayer<TContent = unknown> {
+  readonly content: InputSignal<TContent>;
+  /** Emitted when the learner is done with the module and wants to continue. */
+  readonly completed: OutputEmitterRef<void>;
 }
