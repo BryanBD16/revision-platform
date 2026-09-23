@@ -1,0 +1,568 @@
+{
+  "title": "Great books and their authors",
+  "description": "Authors, dates, literary movements and famous lines, from Molière to Stephen King.",
+  "themes": [
+    "Literature",
+    "General knowledge"
+  ],
+  "courses": [],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "A walk through the library",
+        "body": "From Molière's comedies in the 17th century to today's novels, these questions travel through French and English-language literature. Some are easy, some are traps: read every choice before answering!"
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Jules Verne, the author of Twenty Thousand Leagues Under the Seas, lived...",
+        "choices": [
+          {
+            "id": "a",
+            "text": "From 1828 to 1905"
+          },
+          {
+            "id": "b",
+            "text": "From 1756 to 1791"
+          },
+          {
+            "id": "c",
+            "text": "From 1899 to 1961"
+          },
+          {
+            "id": "d",
+            "text": "From 1802 to 1870"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Jules Verne (1828-1905) wrote his \"Extraordinary Voyages\", such as Journey to the Centre of the Earth and Around the World in Eighty Days. 1802-1870 are the dates of Alexandre Dumas."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Stephen King's The Gunslinger (1982) opens with this sentence:\n\n\"The man in black fled across the desert, and the ___ followed.\"",
+        "choices": [
+          {
+            "id": "a",
+            "text": "gunslinger"
+          },
+          {
+            "id": "b",
+            "text": "sheriff"
+          },
+          {
+            "id": "c",
+            "text": "raven"
+          },
+          {
+            "id": "d",
+            "text": "wind"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The gunslinger is Roland Deschain, and The Gunslinger is the first volume of the Dark Tower saga."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In which year was the first Harry Potter book published?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1997"
+          },
+          {
+            "id": "b",
+            "text": "1990"
+          },
+          {
+            "id": "c",
+            "text": "2001"
+          },
+          {
+            "id": "d",
+            "text": "2005"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Harry Potter and the Philosopher's Stone by J.K. Rowling came out in 1997. 2001 is the year of the first film."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Honoré de Balzac gathered almost all his novels, such as Father Goriot, into one huge work. Which one?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The Human Comedy (La Comédie humaine)"
+          },
+          {
+            "id": "b",
+            "text": "The Rougon-Macquart"
+          },
+          {
+            "id": "c",
+            "text": "In Search of Lost Time"
+          },
+          {
+            "id": "d",
+            "text": "Les Misérables"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Balzac (1799-1850) wanted to paint the whole French society of his time: that is realism. The Rougon-Macquart is Zola's cycle, In Search of Lost Time is Proust's, and Les Misérables is Hugo's."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In 1898, Émile Zola published a famous open letter defending Captain Dreyfus. What was its title?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "J'accuse...!"
+          },
+          {
+            "id": "b",
+            "text": "Germinal"
+          },
+          {
+            "id": "c",
+            "text": "Le Cid"
+          },
+          {
+            "id": "d",
+            "text": "Candide"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "\"J'accuse...!\" appeared in the newspaper L'Aurore. Germinal is one of Zola's novels, Le Cid is a play by Corneille and Candide a tale by Voltaire."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In his essay Comme un roman (The Rights of the Reader), Daniel Pennac lists ten rights of the reader. Which of these are among them?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The right not to read"
+          },
+          {
+            "id": "b",
+            "text": "The right to skip pages"
+          },
+          {
+            "id": "c",
+            "text": "The duty to finish every book you start"
+          },
+          {
+            "id": "d",
+            "text": "The right to read only the books a teacher approved"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b"
+        ],
+        "explanation": "The ten rights also include the right not to finish a book, the right to read it again and the right to read out loud. Pennac is also the author of the Malaussène novels, such as The Fairy Gunmother."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Complete this line by Oscar Wilde:\n\n\"I can resist everything except ___.\"",
+        "choices": [
+          {
+            "id": "a",
+            "text": "temptation"
+          },
+          {
+            "id": "b",
+            "text": "chocolate"
+          },
+          {
+            "id": "c",
+            "text": "a good book"
+          },
+          {
+            "id": "d",
+            "text": "boredom"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "It comes from his play Lady Windermere's Fan (1892). Wilde (1854-1900) was known for his wit."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Oscar Wilde's The Picture of Dorian Gray, what grows old and ugly instead of Dorian?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "His portrait"
+          },
+          {
+            "id": "b",
+            "text": "His twin brother"
+          },
+          {
+            "id": "c",
+            "text": "His mirror"
+          },
+          {
+            "id": "d",
+            "text": "His house"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Dorian stays young and beautiful while his painted portrait shows his age and his sins. The novel is a landmark of aestheticism, the movement of \"art for art's sake\"."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Edgar Allan Poe's most famous poem, which bird keeps repeating \"Nevermore\"?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A raven"
+          },
+          {
+            "id": "b",
+            "text": "An owl"
+          },
+          {
+            "id": "c",
+            "text": "A crow"
+          },
+          {
+            "id": "d",
+            "text": "A parrot"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The Raven was published in 1845. Poe (1809-1849) also invented the detective story, and his tales were translated into French by Baudelaire."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "George Orwell (1903-1950), author of Nineteen Eighty-Four, was a pen name. What was his real name?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Eric Arthur Blair"
+          },
+          {
+            "id": "b",
+            "text": "Aldous Huxley"
+          },
+          {
+            "id": "c",
+            "text": "Herbert George Wells"
+          },
+          {
+            "id": "d",
+            "text": "John Ronald Reuel Tolkien"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Eric Blair wrote Animal Farm (1945) and Nineteen Eighty-Four (1949), with its famous \"Big Brother is watching you\". Huxley wrote another dystopia, Brave New World."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In The Hitchhiker's Guide to the Galaxy by Douglas Adams, what is the Answer to the Ultimate Question of Life, the Universe, and Everything?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "42"
+          },
+          {
+            "id": "b",
+            "text": "7"
+          },
+          {
+            "id": "c",
+            "text": "Love"
+          },
+          {
+            "id": "d",
+            "text": "Don't Panic"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "A supercomputer thinks for seven and a half million years to find 42. \"Don't Panic\" is the advice written on the cover of the Guide."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "\"All for one, one for all!\" is the motto of the heroes of...",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The Three Musketeers, by Alexandre Dumas"
+          },
+          {
+            "id": "b",
+            "text": "The Count of Monte Cristo, by Alexandre Dumas"
+          },
+          {
+            "id": "c",
+            "text": "Les Misérables, by Victor Hugo"
+          },
+          {
+            "id": "d",
+            "text": "Treasure Island, by Robert Louis Stevenson"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Dumas (1802-1870) published The Three Musketeers in 1844, the same year he started The Count of Monte Cristo."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Mary Shelley's novel (1818), who is Frankenstein?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Victor Frankenstein, the scientist who creates the creature"
+          },
+          {
+            "id": "b",
+            "text": "The creature made from dead bodies"
+          },
+          {
+            "id": "c",
+            "text": "The village where the story happens"
+          },
+          {
+            "id": "d",
+            "text": "The narrator's ship"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The creature has no name. The subtitle of this Gothic novel, often called the first science fiction novel, is \"The Modern Prometheus\"."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which prize did Michel Houellebecq win in 2010 for The Map and the Territory?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The Prix Goncourt"
+          },
+          {
+            "id": "b",
+            "text": "The Nobel Prize in Literature"
+          },
+          {
+            "id": "c",
+            "text": "The Palme d'Or"
+          },
+          {
+            "id": "d",
+            "text": "The Booker Prize"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The Goncourt is the most famous French literary prize. Houellebecq is also known for Atomised (Les Particules élémentaires) and Submission."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Molière (1622-1673), author of Tartuffe and The Miser, was a stage name. What was his real name?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Jean-Baptiste Poquelin"
+          },
+          {
+            "id": "b",
+            "text": "Jean Racine"
+          },
+          {
+            "id": "c",
+            "text": "Pierre Corneille"
+          },
+          {
+            "id": "d",
+            "text": "François-Marie Arouet"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "French is sometimes called \"the language of Molière\". François-Marie Arouet is Voltaire's real name; Racine and Corneille wrote tragedies in the same century."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Who wrote The Red and the Black (1830), the story of the ambitious Julien Sorel?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Stendhal"
+          },
+          {
+            "id": "b",
+            "text": "Gustave Flaubert"
+          },
+          {
+            "id": "c",
+            "text": "Victor Hugo"
+          },
+          {
+            "id": "d",
+            "text": "Guy de Maupassant"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Stendhal was the pen name of Henri Beyle (1783-1842). He also wrote The Charterhouse of Parma."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each book with its author.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Germinal",
+            "definition": "Émile Zola"
+          },
+          {
+            "id": "p2",
+            "concept": "Father Goriot",
+            "definition": "Honoré de Balzac"
+          },
+          {
+            "id": "p3",
+            "concept": "The Picture of Dorian Gray",
+            "definition": "Oscar Wilde"
+          },
+          {
+            "id": "p4",
+            "concept": "Nineteen Eighty-Four",
+            "definition": "George Orwell"
+          },
+          {
+            "id": "p5",
+            "concept": "The Count of Monte Cristo",
+            "definition": "Alexandre Dumas"
+          },
+          {
+            "id": "p6",
+            "concept": "Frankenstein",
+            "definition": "Mary Shelley"
+          },
+          {
+            "id": "p7",
+            "concept": "Tartuffe",
+            "definition": "Molière"
+          },
+          {
+            "id": "p8",
+            "concept": "The Red and the Black",
+            "definition": "Stendhal"
+          },
+          {
+            "id": "p9",
+            "concept": "Around the World in Eighty Days",
+            "definition": "Jules Verne"
+          },
+          {
+            "id": "p10",
+            "concept": "The Fairy Gunmother",
+            "definition": "Daniel Pennac"
+          }
+        ]
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each author with the literary movement or genre they are known for.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Molière",
+            "definition": "Classicism (17th century)"
+          },
+          {
+            "id": "p2",
+            "concept": "Alexandre Dumas",
+            "definition": "Romanticism and the historical novel"
+          },
+          {
+            "id": "p3",
+            "concept": "Honoré de Balzac",
+            "definition": "Realism"
+          },
+          {
+            "id": "p4",
+            "concept": "Émile Zola",
+            "definition": "Naturalism"
+          },
+          {
+            "id": "p5",
+            "concept": "Oscar Wilde",
+            "definition": "Aestheticism"
+          },
+          {
+            "id": "p6",
+            "concept": "Mary Shelley",
+            "definition": "The Gothic novel"
+          },
+          {
+            "id": "p7",
+            "concept": "George Orwell",
+            "definition": "Dystopian fiction"
+          }
+        ]
+      }
+    }
+  ]
+}

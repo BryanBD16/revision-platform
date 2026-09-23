@@ -64,6 +64,9 @@ to them.
   language and its build, its syntax, encapsulation, inheritance, and
   memory with RAII.
 
+It also contains three general knowledge activities that are not part of
+a course (`general-…`): literature, cult films and Greek mythology.
+
 Each file has the format of a `POST /api/activities` request body. The
 backend does not need to be running:
 
