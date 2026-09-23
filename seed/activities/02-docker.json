@@ -2,7 +2,12 @@
   "title": "Docker and the development database",
   "description": "What Docker is, and how the project uses it to run MySQL during development.",
   "themes": [
-    "revision-plateforme"
+    "Docker",
+    "MySQL",
+    "Development environment"
+  ],
+  "courses": [
+    "Revision Platform"
   ],
   "modules": [
     {

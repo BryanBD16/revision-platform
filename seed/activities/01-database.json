@@ -2,7 +2,13 @@
   "title": "How the database works",
   "description": "MySQL, the tables of the platform, how the data is represented and how the tables are related.",
   "themes": [
-    "revision-plateforme"
+    "Databases",
+    "MySQL",
+    "Entity Framework Core",
+    "Data modeling"
+  ],
+  "courses": [
+    "Revision Platform"
   ],
   "modules": [
     {
@@ -44,7 +50,7 @@
       "type": "reading",
       "content": {
         "title": "The tables of the platform",
-        "body": "The schema has four tables for the application data, plus one table managed by EF Core.\n\nrevision_activities: one row per activity.\n- id: INT, auto-increment primary key.\n- title: VARCHAR(200), required.\n- description: TEXT, can be NULL.\n- created_at and updated_at: DATETIME(6), in UTC.\n\nthemes: one row per theme, shared by all activities.\n- id: INT, primary key.\n- name: VARCHAR(100) with a unique index. Its collation, utf8mb4_0900_as_ci, compares text case-insensitively (ci) but accent-sensitively (as): \"Biology\" and \"biology\" are the same value, while \"Resume\" and \"Résumé\" are different.\n- created_at.\n\nactivity_themes: the links between activities and themes.\n- activity_id: foreign key to revision_activities.id.\n- theme_id: foreign key to themes.id.\n- The primary key is the pair (activity_id, theme_id), so an activity cannot be linked twice to the same theme.\n\nrevision_modules: one row per module of an activity.\n- id: INT, primary key.\n- activity_id: foreign key to revision_activities.id.\n- position: the order of the module in its activity, starting at 0. A unique index on (activity_id, position) prevents two modules of the same activity from having the same position.\n- type: VARCHAR(50), for example \"reading\", \"multiple-choice\" or \"matching\".\n- content: a JSON column whose structure depends on the type.\n- created_at and updated_at.\n\n__EFMigrationsHistory: EF Core records here the name of every migration already applied to the database, so that \"make db-migrate\" only applies the new ones.\n\nTable and column names use snake_case (revision_activities, created_at), the usual MySQL convention, while the C# code uses PascalCase (RevisionActivity, CreatedAt). The EFCore.NamingConventions package converts the names automatically."
+        "body": "The schema has four tables for the application data, plus one table managed by EF Core.\n\nrevision_activities: one row per activity.\n- id: INT, auto-increment primary key.\n- title: VARCHAR(200), required.\n- description: TEXT, can be NULL.\n- created_at and updated_at: DATETIME(6), in UTC.\n\nthemes: one row per theme or course, shared by all activities.\n- id: INT, primary key.\n- name: VARCHAR(100). Its collation, utf8mb4_0900_as_ci, compares text case-insensitively (ci) but accent-sensitively (as): \"Biology\" and \"biology\" are the same value, while \"Resume\" and \"Résumé\" are different.\n- kind: VARCHAR(20), \"topic\" for a theme or \"course\" for a course. A course is stored as a kind of theme, so activities are linked to both through the same join table.\n- A unique index on (kind, name): two themes cannot have the same name, but a theme and a course can.\n- created_at.\n\nactivity_themes: the links between activities and themes.\n- activity_id: foreign key to revision_activities.id.\n- theme_id: foreign key to themes.id.\n- The primary key is the pair (activity_id, theme_id), so an activity cannot be linked twice to the same theme.\n\nrevision_modules: one row per module of an activity.\n- id: INT, primary key.\n- activity_id: foreign key to revision_activities.id.\n- position: the order of the module in its activity, starting at 0. A unique index on (activity_id, position) prevents two modules of the same activity from having the same position.\n- type: VARCHAR(50), for example \"reading\", \"multiple-choice\" or \"matching\".\n- content: a JSON column whose structure depends on the type.\n- created_at and updated_at.\n\n__EFMigrationsHistory: EF Core records here the name of every migration already applied to the database, so that \"make db-migrate\" only applies the new ones.\n\nTable and column names use snake_case (revision_activities, created_at), the usual MySQL convention, while the C# code uses PascalCase (RevisionActivity, CreatedAt). The EFCore.NamingConventions package converts the names automatically."
       }
     },
     {

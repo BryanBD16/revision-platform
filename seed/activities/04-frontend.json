@@ -2,7 +2,13 @@
   "title": "How the frontend works",
   "description": "TypeScript, Angular, and the architecture of the frontend: pages, services, the module type system and grading.",
   "themes": [
-    "revision-plateforme"
+    "Frontend",
+    "Angular",
+    "TypeScript",
+    "Testing"
+  ],
+  "courses": [
+    "Revision Platform"
   ],
   "modules": [
     {
