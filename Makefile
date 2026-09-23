@@ -10,7 +10,7 @@ db_connection = Server=127.0.0.1;Port=$(MYSQL_PORT);Database=$(1);User=$(MYSQL_U
         frontend-install frontend-build frontend-test frontend-run
 
 help: ## List available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'
 
 build: backend-build frontend-build ## Build all components
 
