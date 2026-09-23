@@ -29,10 +29,23 @@ only call the `GET` endpoints.
 ### Current user
 
 ```json
-{ "id": 1, "email": "ada@example.com", "displayName": "Ada", "roles": ["admin"] }
+{
+  "id": 1,
+  "email": "ada@example.com",
+  "displayName": "Ada",
+  "roles": ["admin"],
+  "permissions": ["publish-activities", "manage-roles"]
+}
 ```
 
-`roles` is sorted by name and empty for a regular user.
+`roles` is sorted by name and empty for a regular user. `permissions`
+lists what the user is allowed to do; the frontend uses it to show or
+hide actions, and the API checks the same permissions:
+
+| Permission           | Roles   | Allows                            |
+|----------------------|---------|-----------------------------------|
+| `publish-activities` | `admin` | creating public activities        |
+| `manage-roles`       | `admin` | the `/api/admin` endpoints        |
 
 ### `GET /api/auth/me`
 
@@ -85,6 +98,68 @@ on `currentPassword`. The other sessions of the user are signed out.
 ## Health
 
 `GET /api/health` returns `200` with the text `Healthy`.
+
+## Administration
+
+Only the users with the `manage-roles` permission can call these
+endpoints: others get `401` (not signed in) or `403`.
+
+### `GET /api/admin/users`
+
+Returns a page of users sorted by email: `{ items, page, pageSize,
+totalCount }`, with `page` and `pageSize` as for the activity list, and
+an optional `search` (at most 256 characters) matching the email or the
+display name, ignoring case.
+
+```json
+{
+  "id": 2,
+  "email": "ada@example.com",
+  "displayName": "Ada",
+  "roles": [],
+  "createdAt": "2026-09-23T17:41:08.123456Z",
+  "lockedOut": false
+}
+```
+
+### `GET /api/admin/roles`
+
+Returns the names of the roles, sorted: `["admin"]`.
+
+### `PUT /api/admin/users/{userId}/roles/{role}`
+
+Gives the role to the user. Returns `204`, also when the user already
+has it (nothing is recorded then).
+
+### `DELETE /api/admin/users/{userId}/roles/{role}`
+
+Removes the role from the user. Returns `204`, also when the user does
+not have it. Returns `409` with a title explaining why when an admin
+tries to remove their own admin role, or to remove the last admin.
+
+Both return `404` for an unknown user or role. Each change is recorded
+in the audit trail.
+
+### `GET /api/admin/role-changes`
+
+Returns a page of the audit trail, newest first, with `page` and
+`pageSize`:
+
+```json
+{
+  "id": 7,
+  "user": { "id": 2, "email": "ada@example.com", "displayName": "Ada" },
+  "role": "admin",
+  "action": "granted",
+  "changedBy": { "id": 1, "email": "grace@example.com", "displayName": "Grace" },
+  "origin": "admin page",
+  "changedAt": "2026-09-23T17:45:30.654321Z"
+}
+```
+
+`action` is `granted` or `revoked`. `changedBy` is `null` for a change
+made with a command on the server; `origin` then says
+`command line (<system user>@<machine>)`.
 
 ## Themes and courses
 

@@ -56,6 +56,21 @@ The first version should allow a user to:
   signed out.
 - Visitors who are not signed in can still browse and complete activities.
 
+### Roles and Administration
+
+- Roles are stored in their own table so that new roles can be added;
+  a user can have several roles. The first role is `admin`; a user
+  without a role is a regular user.
+- The first admin is appointed with a command run on the server. After
+  that, admins give and remove roles on an administration page.
+- The last admin cannot lose the admin role, and an admin cannot remove
+  their own admin role.
+- Every role change is recorded: which user, which role, granted or
+  removed, by whom (an admin, or a command on the server) and when.
+  Admins can read this history on the administration page.
+- An admin with access to the server resets a forgotten password with a
+  command, which gives a temporary password to send to the user.
+
 ### Initial Module Types
 
 The MVP supports the following module types:
@@ -76,6 +91,7 @@ be implemented unless explicitly requested.
 - Users should eventually be able to reset a forgotten password
   themselves, with a link sent by email. This needs an email sending
   service and email address confirmation.
+- Until then, an administrator resets the password with a command.
 
 ### Google Sign-In
 

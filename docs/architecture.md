@@ -101,6 +101,11 @@ roles                (ASP.NET Core Identity)
 user_roles
   user_id -> users (cascade delete), role_id -> roles (cascade delete),
   primary key (user_id, role_id)
+
+role_changes         (audit trail of the roles)
+  id, user_id -> users, role_name, action ('granted' or 'revoked'),
+  changed_by_user_id -> users (null for a server command), origin,
+  changed_at (indexed)
 ```
 
 Identity also creates `user_claims`, `user_logins`, `user_tokens` and
@@ -164,9 +169,10 @@ client-side. Nothing about a completion is stored.
 - **Session cookie**, not tokens stored by JavaScript: the cookie is
   HttpOnly, so a script injected in the page cannot steal the session.
 - **The user is checked against the database on every request**
-  (`SecurityStampValidatorOptions.ValidationInterval` is zero). Changing
-  the password or the roles changes the user's security stamp, which
-  ends or refreshes the existing sessions immediately.
+  (`SecurityStampValidatorOptions.ValidationInterval` is zero), and the
+  session is rebuilt from it. A role change therefore applies on the
+  next request, and changing or resetting the password (which changes
+  the security stamp) ends the other sessions immediately.
 - **Cross-site request forgery:** the session cookie is SameSite=Strict,
   and every `POST`, `PUT` and `DELETE` request also needs an anti-forgery
   token (`XsrfCookie`, `ValidateAntiforgeryFilter`). Angular's
@@ -187,6 +193,35 @@ client-side. Nothing about a completion is stored.
 - **Tests** use the real flow: `ApiFactory.CreateApiClient()` keeps the
   cookies and sends the anti-forgery header like the browser, and
   `RegisterAsync()` creates and signs in a user.
+
+## Roles and permissions
+
+- **Roles are rows** of the `roles` table (Identity), linked to users by
+  `user_roles`, so a user can have several roles. A user without a role
+  is a regular user. The roles that the code relies on are created by
+  migrations (`HasData` in `AppDbContext`); `RoleNames` lists them.
+- **The code checks permissions, not roles.** `Auth/Policies.cs` maps
+  each permission (`publish-activities`, `manage-roles`) to the roles
+  that have it. Giving a permission to a new role, such as a future
+  `teacher`, only changes that file. `GET /api/auth/me` returns the
+  permissions so the frontend (`AuthService.can`, `permissionGuard`)
+  shows the same thing the API allows.
+- **`RoleService` is the only way to change roles.** It refuses to
+  remove the last admin or an admin's own admin role, and records each
+  change in `role_changes` in the same transaction.
+- **The first admin is created with a command** on the server
+  (`Commands/UserCommands.cs`, `make user-grant-role`), because nobody
+  can grant a role in the application before an admin exists. Anyone
+  who can run it already controls the database, so it adds no new
+  power. It uses Identity and `RoleService` rather than SQL, shows the
+  account and asks for confirmation (emails are not verified, so the
+  person must check it is the right account), and records the system
+  user and machine in the audit trail. It is never exposed over HTTP.
+  Promoting an email listed in the configuration was rejected: anyone
+  could register that email first. After the first admin, roles are
+  managed on the admin page (`/api/admin`).
+- `Program.cs` runs a command instead of the web server when the first
+  argument is `users` (`dotnet run -- users list`).
 
 ## Designed to evolve toward progress
 
