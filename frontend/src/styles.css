@@ -180,6 +180,19 @@ a {
   cursor: default;
 }
 
+a.button-secondary {
+  text-decoration: none;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
 .modules {
   margin: 0 0 1rem;
   padding: 0;

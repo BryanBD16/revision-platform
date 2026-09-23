@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Activity, ActivitySummary } from './activity';
+import { Activity, ActivityPage, ActivitySummary } from './activity';
 import { ActivityApi } from './activity-api';
 
 describe('ActivityApi', () => {
@@ -40,13 +40,14 @@ describe('ActivityApi', () => {
 
   afterEach(() => http.verify());
 
-  it('gets all activities', () => {
-    let result: ActivitySummary[] | undefined;
-    api.getAll().subscribe((activities) => (result = activities));
+  it('gets a page of activities', () => {
+    const page: ActivityPage = { items: [summary], page: 2, pageSize: 20, totalCount: 21 };
+    let result: ActivityPage | undefined;
+    api.getPage({ page: 2 }).subscribe((p) => (result = p));
 
-    http.expectOne({ method: 'GET', url: '/api/activities' }).flush([summary]);
+    http.expectOne({ method: 'GET', url: '/api/activities?page=2' }).flush(page);
 
-    expect(result).toEqual([summary]);
+    expect(result).toEqual(page);
   });
 
   it('gets one activity by id', () => {

@@ -8,12 +8,18 @@ namespace RevisionPlatform.Api.Activities;
 
 public class ActivityService(AppDbContext db)
 {
-    public async Task<IReadOnlyList<ActivitySummaryResponse>> GetAllAsync()
+    /// <summary>Returns one page of activities, newest first.</summary>
+    public async Task<ActivityPageResponse> GetPageAsync(ActivityListQuery query)
     {
-        var activities = await db.RevisionActivities
-            .AsNoTracking()
+        var matching = db.RevisionActivities.AsNoTracking();
+
+        var totalCount = await matching.CountAsync();
+
+        var activities = await matching
             .OrderByDescending(a => a.CreatedAt)
             .ThenByDescending(a => a.Id)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .Select(a => new
             {
                 a.Id,
@@ -26,7 +32,7 @@ public class ActivityService(AppDbContext db)
             })
             .ToListAsync();
 
-        return activities
+        var items = activities
             .Select(a => new ActivitySummaryResponse(
                 a.Id,
                 a.Title,
@@ -37,6 +43,8 @@ public class ActivityService(AppDbContext db)
                 AsUtc(a.CreatedAt),
                 AsUtc(a.UpdatedAt)))
             .ToList();
+
+        return new ActivityPageResponse(items, query.Page, query.PageSize, totalCount);
     }
 
     public async Task<ActivityResponse?> GetByIdAsync(int id)

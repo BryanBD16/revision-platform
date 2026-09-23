@@ -50,7 +50,25 @@ the module `type` (see [Module types](#module-types)).
 
 ### `GET /api/activities`
 
-Returns all activities as summaries, newest first.
+Returns one page of activity summaries, newest first.
+
+| Parameter  | Default | Rules              |
+|------------|---------|--------------------|
+| `page`     | `1`     | at least 1         |
+| `pageSize` | `20`    | between 1 and 100  |
+
+```json
+{
+  "items": [ /* activity summaries */ ],
+  "page": 2,
+  "pageSize": 20,
+  "totalCount": 45
+}
+```
+
+`totalCount` is the number of activities on all pages. A page after the
+last one returns an empty `items` list. An invalid parameter returns
+`400` with the validation errors keyed by parameter name.
 
 ### `GET /api/activities/{id}`
 

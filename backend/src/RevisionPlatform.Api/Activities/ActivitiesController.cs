@@ -8,9 +8,15 @@ public class ActivitiesController(ActivityService activityService, ActivityValid
     : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ActivitySummaryResponse>>> GetAll()
+    public async Task<ActionResult<ActivityPageResponse>> GetPage([FromQuery] ActivityListRequest request)
     {
-        return Ok(await activityService.GetAllAsync());
+        var validation = ActivityListValidator.Validate(request);
+        if (validation.Query is null)
+        {
+            return ValidationProblem(new ValidationProblemDetails(validation.Errors));
+        }
+
+        return Ok(await activityService.GetPageAsync(validation.Query));
     }
 
     [HttpGet("{id:int}")]

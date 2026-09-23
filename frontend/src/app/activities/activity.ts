@@ -24,6 +24,19 @@ export interface ActivitySummary {
   updatedAt: string;
 }
 
+/** One page of the activity list. */
+export interface ActivityPage {
+  items: ActivitySummary[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+}
+
+/** What the activity list shows. The server uses its default page size. */
+export interface ActivityListQuery {
+  page: number;
+}
+
 export interface Activity {
   id: number;
   title: string;

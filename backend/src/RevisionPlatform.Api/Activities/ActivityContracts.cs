@@ -11,6 +11,9 @@ public record CreateActivityRequest(
     List<CreateModuleRequest?>? Modules,
     List<string?>? Courses = null);
 
+/// <summary>The query parameters of the activity list. Missing values use the defaults.</summary>
+public record ActivityListRequest(int? Page, int? PageSize);
+
 /// <summary>A module to create; its position is its index in the request.</summary>
 public record CreateModuleRequest(string? Type, JsonElement? Content);
 
@@ -29,6 +32,13 @@ public record ActivitySummaryResponse(
     int ModuleCount,
     DateTime CreatedAt,
     DateTime UpdatedAt);
+
+/// <summary>One page of the activity list and the total number of activities.</summary>
+public record ActivityPageResponse(
+    IReadOnlyList<ActivitySummaryResponse> Items,
+    int Page,
+    int PageSize,
+    int TotalCount);
 
 /// <summary>An activity with its modules, in order.</summary>
 public record ActivityResponse(
