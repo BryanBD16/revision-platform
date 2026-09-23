@@ -1,0 +1,84 @@
+<div [formGroup]="form()">
+  <div class="field">
+    <label [for]="id + '-instructions'">
+      Instructions <span class="optional">(optional)</span>
+    </label>
+    <input
+      [id]="id + '-instructions'"
+      type="text"
+      formControlName="instructions"
+      placeholder="Match each concept with its definition."
+    />
+    @if (form().controls.instructions.hasError('maxlength')) {
+      <p class="error">
+        The instructions must be at most {{ limits.instructionsMaxLength }} characters.
+      </p>
+    }
+  </div>
+
+  <fieldset class="field pairs" formArrayName="pairs">
+    <legend>Pairs</legend>
+
+    @for (pair of pairs.controls; track pair; let i = $index) {
+      <div class="pair-row" [formGroupName]="i">
+        <input
+          type="text"
+          formControlName="concept"
+          [attr.aria-label]="'Concept ' + (i + 1)"
+          [placeholder]="'Concept ' + (i + 1)"
+        />
+        <textarea
+          rows="2"
+          formControlName="definition"
+          [attr.aria-label]="'Definition ' + (i + 1)"
+          [placeholder]="'Definition ' + (i + 1)"
+        ></textarea>
+        <button
+          type="button"
+          class="button-secondary"
+          (click)="removePair(i)"
+          [disabled]="pairs.length <= limits.minPairs"
+          [attr.aria-label]="'Remove pair ' + (i + 1)"
+        >
+          Remove
+        </button>
+      </div>
+      @let concept = pair.controls.concept;
+      @let definition = pair.controls.definition;
+      @if (concept.touched && concept.hasError('required')) {
+        <p class="error">Pair {{ i + 1 }} needs a concept.</p>
+      }
+      @if (concept.hasError('maxlength')) {
+        <p class="error">
+          Concept {{ i + 1 }} must be at most {{ limits.conceptMaxLength }} characters.
+        </p>
+      }
+      @if (definition.touched && definition.hasError('required')) {
+        <p class="error">Pair {{ i + 1 }} needs a definition.</p>
+      }
+      @if (definition.hasError('maxlength')) {
+        <p class="error">
+          Definition {{ i + 1 }} must be at most {{ limits.definitionMaxLength }} characters.
+        </p>
+      }
+    }
+
+    @if (pairs.hasError('duplicateConcepts')) {
+      <p class="error">Each concept must be different.</p>
+    }
+    @if (pairs.hasError('duplicateDefinitions')) {
+      <p class="error">Each definition must be different.</p>
+    }
+
+    <div>
+      <button
+        type="button"
+        class="button-secondary"
+        (click)="addPair()"
+        [disabled]="pairs.length >= limits.maxPairs"
+      >
+        Add pair
+      </button>
+    </div>
+  </fieldset>
+</div>

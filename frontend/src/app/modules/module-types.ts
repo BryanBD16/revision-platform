@@ -1,3 +1,4 @@
+import { matchingModuleType } from './matching/matching-module-type';
 import { ModuleTypeDefinition } from './module-type';
 import { multipleChoiceModuleType } from './multiple-choice/multiple-choice-module-type';
 import { readingModuleType } from './reading/reading-module-type';
@@ -7,6 +8,7 @@ import { readingModuleType } from './reading/reading-module-type';
 export const MODULE_TYPES: readonly ModuleTypeDefinition<any, any>[] = [
   readingModuleType,
   multipleChoiceModuleType,
+  matchingModuleType,
 ];
 
 export function findModuleType(type: string): ModuleTypeDefinition | undefined {
