@@ -1,0 +1,57 @@
+<h2>Account</h2>
+
+@if (user(); as user) {
+  <dl class="account-details">
+    <dt>Display name</dt>
+    <dd>{{ user.displayName }}</dd>
+    <dt>Email</dt>
+    <dd>{{ user.email }}</dd>
+  </dl>
+}
+
+<h3>Change the password</h3>
+
+<form class="narrow-form" [formGroup]="form" (ngSubmit)="changePassword()" novalidate>
+  <div class="field">
+    <label for="currentPassword">Current password</label>
+    <input id="currentPassword" type="password" formControlName="currentPassword" autocomplete="current-password" />
+    @if (form.controls.currentPassword.touched && form.controls.currentPassword.hasError('required')) {
+      <p class="error">The current password is required.</p>
+    }
+  </div>
+
+  <div class="field">
+    <label for="newPassword">New password</label>
+    <input id="newPassword" type="password" formControlName="newPassword" autocomplete="new-password" />
+    <p class="hint">At least {{ limits.passwordMinLength }} characters. Your other sessions will be signed out.</p>
+    @let newPassword = form.controls.newPassword;
+    @if (newPassword.touched && newPassword.hasError('required')) {
+      <p class="error">The new password is required.</p>
+    }
+    @if (newPassword.touched && newPassword.hasError('minlength')) {
+      <p class="error">The password must be at least {{ limits.passwordMinLength }} characters.</p>
+    }
+    @if (newPassword.hasError('maxlength')) {
+      <p class="error">The password must be at most {{ limits.passwordMaxLength }} characters.</p>
+    }
+  </div>
+
+  <div class="field">
+    <label for="confirmation">Confirm the new password</label>
+    <input id="confirmation" type="password" formControlName="confirmation" autocomplete="new-password" />
+    @if (form.controls.confirmation.touched && form.hasError('passwordsDiffer')) {
+      <p class="error">The passwords are different.</p>
+    }
+  </div>
+
+  @for (message of errors(); track message) {
+    <p class="error">{{ message }}</p>
+  }
+  @if (status() === 'saved') {
+    <p class="success">The password was changed.</p>
+  }
+
+  <button type="submit" class="button" [disabled]="status() === 'saving'">
+    {{ status() === 'saving' ? 'Saving…' : 'Change the password' }}
+  </button>
+</form>
