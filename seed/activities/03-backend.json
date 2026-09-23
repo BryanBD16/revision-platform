@@ -1,0 +1,280 @@
+{
+  "title": "How the backend works",
+  "description": "The technologies of the backend, how a request travels from HTTP to the database, and the module type system.",
+  "themes": [
+    "revision-plateforme"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Technologies of the backend",
+        "body": "The backend is a REST API written in C# with ASP.NET Core, on .NET 8, a long-term support (LTS) release.\n\n- C# is a statically typed, object-oriented language. The project enables nullable reference types: a string can never be null unless it is declared string?, and the compiler warns when null could slip through.\n- ASP.NET Core is Microsoft's web framework. The API uses controllers: classes whose methods handle HTTP requests, selected by attributes such as [HttpGet] and [Route(\"api/activities\")].\n- Entity Framework Core 8 (EF Core) is the ORM used to read and write MySQL, through the Pomelo.EntityFrameworkCore.MySql provider. EFCore.NamingConventions converts the C# names to snake_case table and column names.\n- Swagger UI (Swashbuckle) lists the endpoints and lets you call them from the browser, at http://localhost:5044/swagger, in development only.\n- xUnit runs the tests. Microsoft.AspNetCore.Mvc.Testing starts the whole API in memory for integration tests.\n\nREST (Representational State Transfer) organizes an API around resources identified by URLs and manipulated with HTTP methods. Here the resource is /api/activities: GET /api/activities lists the activities, GET /api/activities/{id} returns one activity, and POST /api/activities creates one. The API answers with status codes (200 OK, 201 Created, 400 Bad Request, 404 Not Found) and JSON bodies whose property names are in camelCase.\n\nThe code is in backend/: the solution RevisionPlatform.sln, the API project in src/RevisionPlatform.Api and the tests in tests/RevisionPlatform.Api.Tests. Inside the API, the code is organized by feature: Activities/, Themes/, Modules/ (one sub-folder per module type) and Data/ (the DbContext and the migrations)."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which HTTP response does POST /api/activities send when the activity is created?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "201 Created, with the created activity in the body and a Location header containing its URL."
+          },
+          {
+            "id": "c2",
+            "text": "200 OK with an empty body."
+          },
+          {
+            "id": "c3",
+            "text": "204 No Content, with the new id in a header."
+          },
+          {
+            "id": "c4",
+            "text": "201 Created, with only the new id in the body."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "201 Created is the REST status for a successful creation. The controller uses CreatedAtAction, which also builds the Location header, for example /api/activities/12, pointing to GET /api/activities/{id}."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "From an HTTP request to the database",
+        "body": "Program.cs configures the application when it starts:\n- It reads the connection string ConnectionStrings:Default. If it is missing, the application stops immediately with an explanation, instead of failing later on the first request.\n- It registers the services in the dependency injection (DI) container: AppDbContext (the EF Core context) with the MySQL provider, the module types, ActivityValidator and ActivityService.\n- It maps the controllers and the health check endpoint GET /api/health.\n\nDependency injection means a class declares what it needs in its constructor, and ASP.NET Core provides it. ActivitiesController asks for an ActivityService and an ActivityValidator; ActivityService asks for an AppDbContext. Each service has a lifetime: a singleton is created once for the whole application, a scoped service once per HTTP request. AppDbContext is scoped because it tracks the entities loaded during one request and must not be shared between requests running at the same time. That is why ActivityService, which uses it, is scoped too.\n\nCreating an activity with POST /api/activities goes through these steps:\n1. ASP.NET Core deserializes the JSON body into a CreateActivityRequest record. Its properties are nullable, so missing values reach the validator instead of being rejected earlier by the framework with a different error format.\n2. ActivitiesController.Create calls ActivityValidator.Validate. The validator checks the title, the description and the themes, and asks each module's type to validate its content. It returns either a ValidatedActivity with normalized values (trimmed texts, duplicate themes merged) or errors keyed by field, such as \"title\" or \"modules[1].content\".\n3. If there are errors, the controller returns 400 Bad Request with a ValidationProblemDetails body listing them.\n4. Otherwise ActivityService.CreateAsync reuses the existing themes with the same name (ignoring case), creates the missing ones, gives each module its position from its index in the list, and saves everything with a single SaveChangesAsync call.\n5. The controller returns 201 Created with the activity.\n\nReading is simpler: GET /api/activities returns summaries (themes and a moduleCount, without the modules' content), newest first; GET /api/activities/{id} returns the activity with its modules sorted by position, or 404.\n\nThe API never returns the EF Core entities themselves. It returns response records (ActivityResponse, ModuleResponse...), so the JSON format does not change by accident when the database model changes."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "A request contains two modules, and the second one is a reading module with an empty text. What does the API return?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "400 Bad Request, with an error under the key \"modules[1].content\"."
+          },
+          {
+            "id": "c2",
+            "text": "400 Bad Request, with an error under the key \"modules\"."
+          },
+          {
+            "id": "c3",
+            "text": "201 Created: the empty module is saved and can be fixed later."
+          },
+          {
+            "id": "c4",
+            "text": "500 Internal Server Error, because the content column requires a value."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The validator asks the reading module type to validate the content, and reports its errors with the module's index (starting at 0) so the client knows which module is wrong. Nothing is saved when there is an error."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why is ActivityService registered as scoped, while the module types are singletons?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "ActivityService uses AppDbContext, which must not be shared between requests; module types hold no state and can be shared safely."
+          },
+          {
+            "id": "c2",
+            "text": "Singletons are slower, so they are only used for rarely used classes."
+          },
+          {
+            "id": "c3",
+            "text": "Scoped services keep their data between application restarts."
+          },
+          {
+            "id": "c4",
+            "text": "Module types are created once per database, and services once per table."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "A DbContext is not thread-safe and keeps track of the entities of one unit of work, so one instance per request is the rule. A module type only contains validation rules, so one shared instance is enough."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why are the properties of CreateActivityRequest nullable (string?, List<string?>?)?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "So that missing values reach ActivityValidator, which reports them in the project's error format, instead of being rejected earlier by the framework."
+          },
+          {
+            "id": "c2",
+            "text": "Because the corresponding MySQL columns can be NULL."
+          },
+          {
+            "id": "c3",
+            "text": "Because JSON cannot represent non-nullable strings."
+          },
+          {
+            "id": "c4",
+            "text": "To make the requests smaller."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "With [ApiController], ASP.NET Core automatically rejects non-nullable properties that are missing, with error keys such as \"Title\". Making them nullable keeps all the rules, and all the error messages, in one place."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What happens if the backend is started without a connection string?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "It stops at startup with an exception explaining how to set ConnectionStrings__Default."
+          },
+          {
+            "id": "c2",
+            "text": "It starts and uses an in-memory database instead."
+          },
+          {
+            "id": "c3",
+            "text": "It connects to localhost:3306 as root."
+          },
+          {
+            "id": "c4",
+            "text": "It starts, and every request fails later with a 500 error."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "Failing fast at startup makes a configuration problem obvious. The Makefile sets ConnectionStrings__Default from .env, which is why the backend should be started with make backend-run."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "The module type system",
+        "body": "Every module type follows the same contract, IModuleType:\n- Key: the type stored in the database, such as \"reading\", \"multiple-choice\" or \"matching\".\n- Validate(JsonElement content): returns a ModuleContentResult containing either the normalized content to store or the list of errors.\n\nMost module types derive from the generic base class ModuleType<TContent>. It converts the JSON into a C# record (for example MultipleChoiceContent), calls the type's own Validate method to get the errors, then its Normalize method (trim texts, remove duplicates...), and converts the result back to JSON. Content that is not a JSON object, or has wrong types (a number where text is expected), is rejected with \"The content is not valid for a ... module.\"\n\nModuleTypeRegistry receives all the registered module types through dependency injection and finds one from its key. The validator uses it for each module in a request; an unknown key gives the error \"Unknown module type\".\n\nThe module types are registered in one place, AddModuleTypes in ModuleServiceCollectionExtensions. Adding a module type means:\n1. creating a folder Modules/<TypeName>/ with a content record and a class deriving from ModuleType<TContent>;\n2. adding one line in AddModuleTypes;\n3. writing its tests and documenting its content in docs/api.md.\nNo migration is needed, because the content is stored as JSON, and no other class changes: the activity code never looks inside the content.\n\nThe tests are in two groups. Unit tests check each module type's rules directly. Integration tests start the API in memory with WebApplicationFactory (ApiFactory in the tests) and send real HTTP requests. ApiFactory deletes and recreates the revision_platform_test database from the migrations once per test run, and every test starts by emptying the tables. The tests that share the API and the database run in one collection, one after the other. The connection string comes from the TEST_DATABASE_CONNECTION variable, set by make backend-test."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which steps are needed to add a new module type to the backend?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Create a content record and a class deriving from ModuleType<TContent> in Modules/<TypeName>/."
+          },
+          {
+            "id": "c2",
+            "text": "Register the class in AddModuleTypes."
+          },
+          {
+            "id": "c3",
+            "text": "Create a migration that adds a table for the new content."
+          },
+          {
+            "id": "c4",
+            "text": "Add a case for the new type in ActivityService."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1",
+          "c2"
+        ],
+        "explanation": "The activity code only talks to IModuleType through the registry, and the content is stored in the existing JSON column. This is what keeps module types isolated from each other and from the rest of the API."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How do the backend integration tests get a database?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "ApiFactory recreates revision_platform_test from the migrations once per test run, and each test empties the tables first."
+          },
+          {
+            "id": "c2",
+            "text": "They use an in-memory SQLite database."
+          },
+          {
+            "id": "c3",
+            "text": "They use the development database, revision_platform."
+          },
+          {
+            "id": "c4",
+            "text": "They replace AppDbContext with a mock."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "Testing against the real MySQL, with the real migrations, checks the SQL, the collation and the constraints that a fake database would not reproduce. Emptying the tables before each test keeps the tests independent."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each part of the backend with its role.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "ActivitiesController",
+            "definition": "Receives the HTTP requests on /api/activities and chooses the status code."
+          },
+          {
+            "id": "p2",
+            "concept": "ActivityValidator",
+            "definition": "Checks a create request and returns either a normalized activity or errors by field."
+          },
+          {
+            "id": "p3",
+            "concept": "ActivityService",
+            "definition": "Loads and saves activities with EF Core and reuses existing themes."
+          },
+          {
+            "id": "p4",
+            "concept": "AppDbContext",
+            "definition": "EF Core class describing the tables, relations and indexes."
+          },
+          {
+            "id": "p5",
+            "concept": "IModuleType",
+            "definition": "Contract that validates and normalizes the JSON content of one kind of module."
+          },
+          {
+            "id": "p6",
+            "concept": "ModuleTypeRegistry",
+            "definition": "Finds the implementation of a module type from a key such as \"matching\"."
+          },
+          {
+            "id": "p7",
+            "concept": "Program.cs",
+            "definition": "Registers the services for dependency injection and maps the endpoints at startup."
+          },
+          {
+            "id": "p8",
+            "concept": "WebApplicationFactory",
+            "definition": "Starts the whole API in memory so tests can send real HTTP requests."
+          },
+          {
+            "id": "p9",
+            "concept": "Swagger UI",
+            "definition": "Web page listing the endpoints and letting developers call them."
+          }
+        ]
+      }
+    }
+  ]
+}

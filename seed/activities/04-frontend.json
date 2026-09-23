@@ -1,0 +1,318 @@
+{
+  "title": "How the frontend works",
+  "description": "TypeScript, Angular, and the architecture of the frontend: pages, services, the module type system and grading.",
+  "themes": [
+    "revision-plateforme"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "TypeScript and Angular",
+        "body": "TypeScript is JavaScript with static types. You declare the shape of the data, for example:\ninterface ModuleResult { score: number; maxScore: number; }\nand the compiler reports errors, such as a missing property or a string used as a number, before the code runs. Union types describe alternatives (string | null), and generics make reusable code typed (signal<Activity | null>). TypeScript is compiled to JavaScript for the browser, and the types are removed: at runtime, nothing checks that data received from the API really matches its interface.\n\nAngular is a framework for single-page applications (SPA): the browser loads one HTML page, and Angular replaces its content as the user navigates, without reloading the page. The project uses Angular 22.\n\n- A component is a TypeScript class decorated with @Component, with an HTML template and optionally its own CSS. The project uses standalone components: each component lists what it uses in imports, without NgModules.\n- Templates bind the page to the component: {{ value }} displays a value, [property]=\"expression\" sets a property, (event)=\"method()\" reacts to an event, and @if, @for and @switch control what is displayed.\n- Services are classes marked @Injectable, provided by dependency injection. A component obtains them with inject(ActivityApi).\n- Signals hold state: signal(value) creates a value you read with count() and change with set or update; computed() derives a value from other signals and recalculates when they change; effect() runs code when the signals it reads change. Templates that read signals are updated automatically. This project does not use Zone.js: Angular refreshes the page in response to signal changes and events.\n- HttpClient sends HTTP requests and returns RxJS observables; a request starts when the observable is subscribed to.\n- Reactive forms (FormGroup, FormControl, FormArray) describe a form and its validators in TypeScript.\n- The router chooses the component to display from the URL.\n\nThe Angular CLI builds and serves the application: ng serve starts a development server with live reload, ng build produces the optimized files, and ng test runs the unit tests with Vitest."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "A component declares content: MultipleChoiceContent, but the API sends an object with a different shape. What happens?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Nothing checks it at runtime: the types are removed when TypeScript is compiled to JavaScript."
+          },
+          {
+            "id": "c2",
+            "text": "Angular throws a type error as soon as the data arrives."
+          },
+          {
+            "id": "c3",
+            "text": "HttpClient converts the object to match the interface."
+          },
+          {
+            "id": "c4",
+            "text": "The build fails."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "TypeScript checks the code, not the data. The frontend relies on the backend's validation for the content it receives; validating API responses at runtime would need extra code or a library."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which statement about signals is true?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "A computed signal recalculates when a signal it reads changes, and templates that read signals are updated automatically."
+          },
+          {
+            "id": "c2",
+            "text": "A signal must be subscribed to, like an observable, before it can be read."
+          },
+          {
+            "id": "c3",
+            "text": "A computed signal can be changed with set()."
+          },
+          {
+            "id": "c4",
+            "text": "Signals only work together with Zone.js."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "A computed value is read-only: it is derived from other signals. ActivityPlayer uses this: currentIndex and the total grade are computed from the list of results."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Architecture of the frontend",
+        "body": "The application is in frontend/src/app:\n- activities/: the activity feature. activity.ts holds the interfaces (Activity, ActivitySummary, RevisionModule...), ActivityApi is the service that calls the API, and there is one folder per page: activity-list, activity-create, activity-detail and activity-player.\n- modules/: the module type system, with one folder per type (reading, multiple-choice, matching).\n- shared/: code used by several features, such as the notBlank validator.\n\nThe routes are defined in app.routes.ts:\n- /activities: the list (/ redirects to it).\n- /activities/new: the creation form.\n- /activities/:id: the detail page.\n- /activities/:id/play: the activity player.\nThe router is configured with withComponentInputBinding(), so the :id parameter is given to the id input of the page component, declared with input.required.\n\nComponents only handle the display. HTTP calls go through ActivityApi, and each page keeps its state in signals, for example status, which is 'loading', 'loaded', 'not-found' or 'error', and decides what the template shows.\n\nIn development, the frontend runs on http://localhost:4200 with ng serve, and the backend on port 5044. The file proxy.conf.json tells the development server to forward every request to /api to the backend. The browser only talks to localhost:4200, so no CORS configuration (the rules allowing a page to call another origin) is needed. On a server, a web server such as nginx will play the same role.\n\nThe creation form is a reactive form. Its modules are a FormArray: each element contains the module's type and a FormGroup for its content, created by the module type. The form can add, remove and move modules. When it is submitted, each module's form is converted into the JSON content sent to the API.\n\nStyles shared by the whole application (layout, fields, buttons, colors) are in the global styles.css. Each module type's styles are in its own components' CSS files, which Angular limits to that component, so one type's styles cannot affect the rest of the application."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How does the frontend reach the backend in development without any CORS configuration?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "ng serve forwards the requests to /api to http://localhost:5044 (proxy.conf.json), so the browser only talks to localhost:4200."
+          },
+          {
+            "id": "c2",
+            "text": "The backend allows requests from every origin."
+          },
+          {
+            "id": "c3",
+            "text": "Angular connects directly to MySQL."
+          },
+          {
+            "id": "c4",
+            "text": "Browsers do not apply CORS to localhost."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "CORS only applies when a page calls a different origin (scheme, host and port). Through the proxy, every request goes to the origin of the page itself; the development server forwards it to the backend."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How does the ActivityDetail page receive the 7 of the URL /activities/7?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "withComponentInputBinding() in the router configuration binds the :id route parameter to the component's id input."
+          },
+          {
+            "id": "c2",
+            "text": "The component reads window.location and parses the URL."
+          },
+          {
+            "id": "c3",
+            "text": "ActivityApi reads the URL before calling the backend."
+          },
+          {
+            "id": "c4",
+            "text": "Angular stores it in a global variable named id."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The input is declared with input.required and a numberAttribute transform, which converts the text \"7\" into the number 7."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "The module type system and grading",
+        "body": "Every module type provides a ModuleTypeDefinition:\n- type: the key used by the API, such as \"matching\";\n- label: the name shown to users, such as \"Matching\";\n- createForm(): creates the reactive form for its content, with its validators;\n- toContent(form): converts the form into the JSON content sent to the API;\n- editor: the component that edits the content, which receives the form as an input;\n- player: the component that lets the learner complete the module, which receives the content as an input and emits completed.\n\nMODULE_TYPES in modules/module-types.ts lists the definitions. Two generic components render any type:\n- ModuleEditorHost uses NgComponentOutlet to display the editor and pass it the form.\n- ModulePlayerHost creates the player with ViewContainerRef.createComponent, binding its content input and its completed output. It cannot use NgComponentOutlet, which can pass inputs but cannot listen to outputs. An effect recreates the player whenever the module changes.\n\nWhen the learner is done with a module, its player emits completed with a ModuleResult { score, maxScore }, or null for types that are not graded:\n- reading: null (not graded);\n- multiple-choice: 1 out of 1 only if exactly the correct choices are selected (all or nothing), otherwise 0 out of 1;\n- matching: one point per concept matched with its definition, out of the number of pairs.\n\nActivityPlayer stores the results in a signal. The current module is computed from the number of results, so adding a result moves to the next module. At the end, the completion screen shows each module's grade and the total: the sum of the scores divided by the sum of the maximum scores, with a rounded percentage. Modules that are not graded do not count. Everything happens in the browser; nothing is saved yet.\n\nAdding a module type to the frontend means creating its folder with a definition, an editor and a player (plus tests and CSS), and adding the definition to MODULE_TYPES."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which members does a ModuleTypeDefinition provide?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "createForm(), which builds the form of the content with its validators."
+          },
+          {
+            "id": "c2",
+            "text": "toContent(form), which converts the form into the content sent to the API."
+          },
+          {
+            "id": "c3",
+            "text": "An editor component and a player component."
+          },
+          {
+            "id": "c4",
+            "text": "A route for its own page."
+          },
+          {
+            "id": "c5",
+            "text": "The HTTP call that saves the module."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1",
+          "c2",
+          "c3"
+        ],
+        "explanation": "Module types have no routes and no HTTP calls: the activity pages handle those for every type. The definition only describes what is specific to the type."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why does ModulePlayerHost create the player with ViewContainerRef.createComponent instead of NgComponentOutlet?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "It must listen to the player's completed output, and NgComponentOutlet can only pass inputs."
+          },
+          {
+            "id": "c2",
+            "text": "NgComponentOutlet cannot display standalone components."
+          },
+          {
+            "id": "c3",
+            "text": "createComponent loads the player from the server."
+          },
+          {
+            "id": "c4",
+            "text": "Players must be displayed in a separate route."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "ModuleEditorHost only needs to pass the form, so NgComponentOutlet is enough there. The player host uses inputBinding and outputBinding with createComponent to forward the result."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "An activity has a reading module, a multiple-choice question answered correctly, and a matching module of 3 pairs with 2 correct matches. What is the total grade?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "3 / 4 (75%)"
+          },
+          {
+            "id": "c2",
+            "text": "3 / 5 (60%)"
+          },
+          {
+            "id": "c3",
+            "text": "2 / 3 (67%)"
+          },
+          {
+            "id": "c4",
+            "text": "4 / 5 (80%)"
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The reading module is not graded (null), so it is left out. The question gives 1/1 and the matching 2/3: (1 + 2) / (1 + 3) = 3/4 = 75%."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why does the matching player never show the definitions in their original order?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Otherwise the options would line up with the concepts, and the first concept would always match the first definition."
+          },
+          {
+            "id": "c2",
+            "text": "Because HTML select elements sort their options alphabetically."
+          },
+          {
+            "id": "c3",
+            "text": "To make the grading faster."
+          },
+          {
+            "id": "c4",
+            "text": "Because the API returns the definitions in a random order."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The pairs are stored with each concept next to its definition. The shuffle function shuffles the definitions and, if the result happens to be the original order, moves the first one to the end."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each Angular or TypeScript concept with its definition.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Component",
+            "definition": "Class with a template and styles that displays part of the page, like ActivityList."
+          },
+          {
+            "id": "p2",
+            "concept": "Template",
+            "definition": "HTML with Angular syntax such as {{ }}, [property], (event) and @for."
+          },
+          {
+            "id": "p3",
+            "concept": "signal()",
+            "definition": "Holds a value and notifies the code and the templates that read it when it changes."
+          },
+          {
+            "id": "p4",
+            "concept": "computed()",
+            "definition": "Read-only value derived from other signals, recalculated when they change."
+          },
+          {
+            "id": "p5",
+            "concept": "Service",
+            "definition": "Injectable class shared by components, like ActivityApi for the HTTP calls."
+          },
+          {
+            "id": "p6",
+            "concept": "FormArray",
+            "definition": "Form control holding a list, used for the modules and the choices."
+          },
+          {
+            "id": "p7",
+            "concept": "Router",
+            "definition": "Chooses the component to display from the URL, without reloading the page."
+          },
+          {
+            "id": "p8",
+            "concept": "Decorator",
+            "definition": "Annotation such as @Component that gives Angular information about a class."
+          },
+          {
+            "id": "p9",
+            "concept": "Interface",
+            "definition": "TypeScript type describing the shape of an object, checked only when compiling."
+          },
+          {
+            "id": "p10",
+            "concept": "Observable",
+            "definition": "Stream of values returned by HttpClient; the request starts when it is subscribed to."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -51,6 +51,21 @@ restarts. The scripts in `docker/mysql/init/` run only when that volume
 is first created; run `make db-reset` then `make db-up` to apply changes
 to them.
 
+### Seed data
+
+`seed/activities/` contains revision activities about the project itself
+(database, Docker, backend, frontend and Makefile), with the theme
+`revision-plateforme`. Each file is a request body for
+`POST /api/activities`. With the backend running:
+
+```sh
+make db-clear   # optional: delete all activities, modules and themes
+make db-seed    # create the seed activities through the API
+```
+
+`db-seed` stops at the first file the API rejects and shows the
+validation errors. Running it twice creates the activities twice.
+
 ## Backend
 
 The ASP.NET Core API is in `backend/` (`src/RevisionPlatform.Api`,
@@ -99,21 +114,23 @@ so the backend must be running too. Tests use Vitest.
 
 Run `make` to list all commands.
 
-| Command                      | Description                                      |
-|------------------------------|--------------------------------------------------|
-| `make build`                 | Build all components                             |
-| `make test`                  | Run all tests                                    |
-| `make backend-build`         | Build the backend                                |
-| `make backend-test`          | Run the backend tests                            |
-| `make backend-run`           | Run the API with hot reload                      |
-| `make frontend-install`      | Install frontend dependencies                    |
-| `make frontend-build`        | Build the frontend                               |
-| `make frontend-test`         | Run the frontend tests once                      |
-| `make frontend-run`          | Run the frontend dev server                      |
-| `make db-migrate`            | Apply migrations to the development database     |
-| `make db-migration NAME=...` | Create a migration                               |
-| `make db-up`                 | Start the MySQL container and wait until healthy |
-| `make db-down`               | Stop the MySQL container (data is kept)          |
-| `make db-logs`               | Follow the MySQL container logs                  |
-| `make db-shell`              | Open a MySQL prompt as the application user      |
-| `make db-reset`              | Stop the container and **delete all its data**   |
+| Command                      | Description                                          |
+|------------------------------|------------------------------------------------------|
+| `make build`                 | Build all components                                 |
+| `make test`                  | Run all tests                                        |
+| `make backend-build`         | Build the backend                                    |
+| `make backend-test`          | Run the backend tests                                |
+| `make backend-run`           | Run the API with hot reload                          |
+| `make frontend-install`      | Install frontend dependencies                        |
+| `make frontend-build`        | Build the frontend                                   |
+| `make frontend-test`         | Run the frontend tests once                          |
+| `make frontend-run`          | Run the frontend dev server                          |
+| `make db-migrate`            | Apply migrations to the development database         |
+| `make db-migration NAME=...` | Create a migration                                   |
+| `make db-up`                 | Start the MySQL container and wait until healthy     |
+| `make db-down`               | Stop the MySQL container (data is kept)              |
+| `make db-logs`               | Follow the MySQL container logs                      |
+| `make db-shell`              | Open a MySQL prompt as the application user          |
+| `make db-reset`              | Stop the container and **delete all its data**       |
+| `make db-clear`              | Delete all activities, modules and themes            |
+| `make db-seed`               | Create the seed activities (backend must be running) |
