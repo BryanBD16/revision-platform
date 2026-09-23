@@ -10,6 +10,7 @@ let nextId = 0;
   selector: 'app-multiple-choice-editor',
   imports: [ReactiveFormsModule],
   templateUrl: './multiple-choice-editor.html',
+  styleUrl: './multiple-choice-editor.css',
 })
 export class MultipleChoiceEditor implements ModuleEditor<MultipleChoiceForm> {
   readonly form = input.required<MultipleChoiceForm>();

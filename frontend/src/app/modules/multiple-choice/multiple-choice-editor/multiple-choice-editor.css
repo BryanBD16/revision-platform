@@ -1,0 +1,24 @@
+.choices {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+}
+
+.choices legend {
+  font-weight: 600;
+}
+
+.choice-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.choice-row input[type='text'] {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font: inherit;
+}
