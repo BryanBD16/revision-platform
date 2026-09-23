@@ -53,21 +53,29 @@ to them.
 
 ### Seed data
 
-`seed/activities/` contains revision activities about the project itself
-(database, Docker, backend, frontend and Makefile). They are all part of
-the course `Revision Platform` and have themes describing their content
-(for example `MySQL`, `Angular` or `Testing`). Each file has the format of
-a `POST /api/activities` request body. The backend does not need to be
-running:
+`seed/activities/` contains two courses:
+
+- `Revision Platform` (`01-…` to `05-…`): the project itself (database,
+  Docker, backend, frontend and Makefile), with themes such as `MySQL`,
+  `Angular` or `Testing`.
+- `Introduction to C#` (`csharp-…`): five short activities on the
+  language, its syntax, encapsulation, inheritance and ASP.NET Core.
+
+Each file has the format of a `POST /api/activities` request body. The
+backend does not need to be running:
 
 ```sh
-make db-clear   # optional: delete all activities, modules and themes
-make db-seed    # create the seed activities, as public activities
+make db-clear                        # optional: delete all activities, modules and themes
+make db-seed                         # create all the seed activities, as public activities
+make db-seed FILES='csharp-*.json'   # create only some of them
 ```
 
-`db-seed` first validates every file with the same rules as the API; if
+`db-seed` first validates the files with the same rules as the API; if
 one is invalid, it shows the errors and creates nothing. Running it
-twice creates the activities twice.
+twice creates the activities twice, so use `FILES` to add new seed files
+to a database that already has the others. `db-clear` also cuts the
+saved results off from their activities (the results themselves are
+kept).
 
 ### Users and the first admin
 
@@ -156,7 +164,7 @@ Run `make` to list all commands.
 | `make db-shell`              | Open a MySQL prompt as the application user          |
 | `make db-reset`              | Stop the container and **delete all its data**       |
 | `make db-clear`              | Delete all activities, modules and themes            |
-| `make db-seed`               | Create the seed activities as public activities      |
+| `make db-seed [FILES=...]`   | Create the seed activities (or some) as public activities |
 | `make user-list`             | List the users and their roles                       |
 | `make user-grant-role EMAIL=... ROLE=...` | Give a role to a user (asks for confirmation) |
 | `make user-revoke-role EMAIL=... ROLE=...` | Remove a role from a user (asks for confirmation) |

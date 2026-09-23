@@ -5,7 +5,8 @@ namespace RevisionPlatform.Api.Commands;
 
 /// <summary>
 /// Creates the activities described by the JSON files of a directory (see seed/activities),
-/// run with <c>dotnet run -- seed &lt;directory&gt;</c>. Each file is a request body for
+/// run with <c>dotnet run -- seed &lt;directory&gt; [pattern]</c>. The optional pattern selects
+/// some of the files, such as <c>csharp-*.json</c>. Each file is a request body for
 /// POST /api/activities. All the files are validated before any activity is created.
 /// </summary>
 public static class SeedCommand
@@ -16,11 +17,13 @@ public static class SeedCommand
 
     public static async Task<int> RunAsync(IServiceProvider services, string[] args, TextWriter output)
     {
-        if (args is not [var directory])
+        if (args.Length is not (1 or 2))
         {
-            output.WriteLine("Usage: seed <directory>");
+            output.WriteLine("Usage: seed <directory> [pattern, for example csharp-*.json]");
             return 1;
         }
+        var directory = args[0];
+        var pattern = args.Length == 2 ? args[1] : "*.json";
         if (!Directory.Exists(directory))
         {
             output.WriteLine($"Error: the directory '{directory}' does not exist.");
@@ -31,9 +34,16 @@ public static class SeedCommand
         var validator = scope.ServiceProvider.GetRequiredService<ActivityValidator>();
         var activityService = scope.ServiceProvider.GetRequiredService<ActivityService>();
 
+        var files = Directory.GetFiles(directory, pattern).Order().ToList();
+        if (files.Count == 0)
+        {
+            output.WriteLine($"Error: no file of '{directory}' matches '{pattern}'.");
+            return 1;
+        }
+
         var activities = new List<(string File, ValidatedActivity Activity)>();
         var valid = true;
-        foreach (var file in Directory.GetFiles(directory, "*.json").Order())
+        foreach (var file in files)
         {
             var errors = Validate(file, validator, out var activity);
             if (activity is null)

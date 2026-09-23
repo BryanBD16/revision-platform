@@ -1,0 +1,262 @@
+{
+  "title": "C# in a nutshell",
+  "description": "What kind of language C# is, how a C# program runs on .NET, and value versus reference types.",
+  "themes": [
+    "C#",
+    ".NET"
+  ],
+  "courses": [
+    "Introduction to C#"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "A language made for .NET",
+        "body": "C# (say \"C sharp\") is a general-purpose, object-oriented language created at Microsoft by Anders Hejlsberg and released in 2000. It is statically typed: the compiler knows the type of every value and rejects many mistakes before the program even runs.\n\nC# code does not run by itself. The compiler (called Roslyn) turns it into Intermediate Language (IL), stored in an assembly: a .dll file. When the program starts, the .NET runtime (the CLR) compiles that IL into machine code just in time (JIT), and a garbage collector frees the memory of the objects nobody uses anymore.\n\nToday's .NET is open source and runs on Windows, Linux and macOS."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "You run dotnet build on a C# project. What does the compiler produce?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Intermediate Language (IL) in an assembly, a .dll file"
+          },
+          {
+            "id": "b",
+            "text": "Machine code for your processor, and nothing else"
+          },
+          {
+            "id": "c",
+            "text": "JavaScript that runs in the browser"
+          },
+          {
+            "id": "d",
+            "text": "Java bytecode for the JVM"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The C# compiler produces IL. The .NET runtime turns it into machine code while the program runs (JIT compilation). Compiling straight to machine code (Native AOT) is possible, but it is an option, not the default."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "C# is statically typed. What does that mean?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The compiler knows the type of every expression, so int n = \"hello\"; is rejected before the program runs"
+          },
+          {
+            "id": "b",
+            "text": "Every variable has to be declared with the static keyword"
+          },
+          {
+            "id": "c",
+            "text": "Types are only checked while the program runs"
+          },
+          {
+            "id": "d",
+            "text": "You always have to write the type: var is not allowed"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Static typing means type errors are found at compile time. static is an unrelated keyword, and var is still statically typed: the compiler infers the type."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "var total = 42;\ntotal = \"forty-two\";\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It does not compile: var made total an int"
+          },
+          {
+            "id": "b",
+            "text": "total now contains the text \"forty-two\""
+          },
+          {
+            "id": "c",
+            "text": "total now contains 42 again, the text is ignored"
+          },
+          {
+            "id": "d",
+            "text": "It compiles, but throws an exception when it runs"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "var does not mean \"any type\". The compiler infers int from 42, and total stays an int forever, so assigning a string is a compile error."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Value types and reference types",
+        "body": "Every C# type is either a value type or a reference type.\n\nValue types (int, double, bool, char, enums and structs) hold their value directly. Copying the variable copies the value: the two copies are independent.\n\nReference types (classes, arrays, lists, string...) live on the heap; the variable only holds a reference to the object. Copying the variable copies the reference, so both variables point to the same object.\n\nstring is a reference type, but it is immutable: a method like ToUpper() returns a new string instead of changing the existing one."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int a = 1;\nint b = a;\nb = 2;\n\nWhat is the value of a now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1"
+          },
+          {
+            "id": "b",
+            "text": "2"
+          },
+          {
+            "id": "c",
+            "text": "0"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "int is a value type: b = a copies the value 1 into b. Changing b afterwards does not touch a."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "var p = new List<int> { 1 };\nvar q = p;\nq.Add(2);\n\nHow many items does p contain?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "2"
+          },
+          {
+            "id": "b",
+            "text": "1"
+          },
+          {
+            "id": "c",
+            "text": "0"
+          },
+          {
+            "id": "d",
+            "text": "It depends on the garbage collector"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "List<int> is a class, so a reference type: q = p copies the reference, and p and q are the same list. Adding through q is visible through p."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Who frees the memory of the objects your program no longer uses?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The garbage collector of the .NET runtime, automatically"
+          },
+          {
+            "id": "b",
+            "text": "You, by calling delete on each object"
+          },
+          {
+            "id": "c",
+            "text": "The operating system, but only when the program ends"
+          },
+          {
+            "id": "d",
+            "text": "The compiler, which inserts free() calls at build time"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The garbage collector finds objects that nothing references anymore and reclaims their memory. For resources like files or connections, you still call Dispose (often with using)."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which statements about .NET today are true?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It runs on Windows, Linux and macOS"
+          },
+          {
+            "id": "b",
+            "text": "It is open source"
+          },
+          {
+            "id": "c",
+            "text": "It only runs on Windows"
+          },
+          {
+            "id": "d",
+            "text": "C# is the only language that runs on .NET"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b"
+        ],
+        "explanation": "Since .NET Core, .NET is open source and cross-platform. Other languages run on it too, such as F# and Visual Basic, because they all compile to the same IL."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each piece of .NET with its role.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "CLR",
+            "definition": "The runtime that loads and runs .NET programs"
+          },
+          {
+            "id": "p2",
+            "concept": "IL",
+            "definition": "The intermediate code the C# compiler produces"
+          },
+          {
+            "id": "p3",
+            "concept": "JIT compiler",
+            "definition": "Turns IL into machine code while the program runs"
+          },
+          {
+            "id": "p4",
+            "concept": "Garbage collector",
+            "definition": "Frees the memory of objects that are no longer referenced"
+          },
+          {
+            "id": "p5",
+            "concept": "Assembly",
+            "definition": "A compiled .dll or .exe file containing IL"
+          },
+          {
+            "id": "p6",
+            "concept": "NuGet",
+            "definition": "The package manager for .NET libraries"
+          }
+        ]
+      }
+    }
+  ]
+}

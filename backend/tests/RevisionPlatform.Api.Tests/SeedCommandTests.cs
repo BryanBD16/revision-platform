@@ -54,6 +54,32 @@ public class SeedCommandTests(ApiFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Seed_CreatesOnlyTheFilesMatchingThePattern()
+    {
+        File.WriteAllText(Path.Combine(_directory, "01-project.json"), Valid);
+        File.WriteAllText(Path.Combine(_directory, "csharp-1.json"), Valid.Replace("Cells", "C# basics"));
+
+        var output = new StringWriter();
+        var exitCode = await SeedCommand.RunAsync(factory.Services, [_directory, "csharp-*.json"], output);
+
+        Assert.Equal(0, exitCode);
+        Assert.Equal(["C# basics"], await TitlesAsync());
+    }
+
+    [Fact]
+    public async Task Seed_ReportsAPatternMatchingNoFile()
+    {
+        File.WriteAllText(Path.Combine(_directory, "01.json"), Valid);
+
+        var output = new StringWriter();
+        var exitCode = await SeedCommand.RunAsync(factory.Services, [_directory, "python-*.json"], output);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("matches 'python-*.json'", output.ToString());
+        Assert.Empty(await TitlesAsync());
+    }
+
+    [Fact]
     public async Task Seed_ReportsAMissingDirectory()
     {
         var (exitCode, output) = await RunAsync(Path.Combine(_directory, "missing"));
