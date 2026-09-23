@@ -9,6 +9,7 @@ for the architectural decisions.
 
 - Docker Engine with the Compose plugin
 - .NET 8 SDK
+- Node.js 24 (the version is pinned in `.nvmrc`; with nvm, run `nvm use`)
 - make
 
 Your user must be allowed to use Docker without `sudo`:
@@ -62,19 +63,37 @@ The API listens on `http://localhost:5044`. Health check:
 `GET /api/health`. In development, Swagger UI is available at
 `/swagger`.
 
+## Frontend
+
+The Angular app is in `frontend/`. Install its dependencies once, then
+start the dev server:
+
+```sh
+make frontend-install
+make frontend-run
+```
+
+The app is served on `http://localhost:4200`. Requests to `/api` are
+forwarded to the backend on port 5044 (see `frontend/proxy.conf.json`),
+so the backend must be running too. Tests use Vitest.
+
 ## Commands
 
 Run `make` to list all commands.
 
-| Command              | Description                                      |
-|----------------------|--------------------------------------------------|
-| `make build`         | Build all components                             |
-| `make test`          | Run all tests                                    |
-| `make backend-build` | Build the backend                                |
-| `make backend-test`  | Run the backend tests                            |
-| `make backend-run`   | Run the API with hot reload                      |
-| `make db-up`         | Start the MySQL container and wait until healthy |
-| `make db-down`       | Stop the MySQL container (data is kept)          |
-| `make db-logs`       | Follow the MySQL container logs                  |
-| `make db-shell`      | Open a MySQL prompt as the application user      |
-| `make db-reset`      | Stop the container and **delete all its data**   |
+| Command                 | Description                                      |
+|-------------------------|--------------------------------------------------|
+| `make build`            | Build all components                             |
+| `make test`             | Run all tests                                    |
+| `make backend-build`    | Build the backend                                |
+| `make backend-test`     | Run the backend tests                            |
+| `make backend-run`      | Run the API with hot reload                      |
+| `make frontend-install` | Install frontend dependencies                    |
+| `make frontend-build`   | Build the frontend                               |
+| `make frontend-test`    | Run the frontend tests once                      |
+| `make frontend-run`     | Run the frontend dev server                      |
+| `make db-up`            | Start the MySQL container and wait until healthy |
+| `make db-down`          | Stop the MySQL container (data is kept)          |
+| `make db-logs`          | Follow the MySQL container logs                  |
+| `make db-shell`         | Open a MySQL prompt as the application user      |
+| `make db-reset`         | Stop the container and **delete all its data**   |

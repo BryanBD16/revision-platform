@@ -1,14 +1,15 @@
 .DEFAULT_GOAL := help
 
 .PHONY: help build test db-up db-down db-logs db-shell db-reset \
-        backend-build backend-test backend-run
+        backend-build backend-test backend-run \
+        frontend-install frontend-build frontend-test frontend-run
 
 help: ## List available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-14s %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'
 
-build: backend-build ## Build all components
+build: backend-build frontend-build ## Build all components
 
-test: backend-test ## Run all tests
+test: backend-test frontend-test ## Run all tests
 
 # --- Backend -----------------------------------------------------------------
 
@@ -23,6 +24,22 @@ backend-test: ## Run the backend tests
 
 backend-run: ## Run the backend API with hot reload (http://localhost:5044)
 	dotnet watch --project $(BACKEND_API) run
+
+# --- Frontend ----------------------------------------------------------------
+
+FRONTEND_DIR := frontend
+
+frontend-install: ## Install frontend dependencies from the lock file
+	npm --prefix $(FRONTEND_DIR) ci
+
+frontend-build: ## Build the frontend
+	npm --prefix $(FRONTEND_DIR) run build
+
+frontend-test: ## Run the frontend tests once
+	npm --prefix $(FRONTEND_DIR) test -- --watch=false
+
+frontend-run: ## Run the frontend dev server (http://localhost:4200, /api proxied)
+	npm --prefix $(FRONTEND_DIR) start
 
 # --- Database (Docker) -------------------------------------------------------
 
