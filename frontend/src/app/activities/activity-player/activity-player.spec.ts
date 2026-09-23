@@ -60,6 +60,7 @@ describe('ActivityPlayer', () => {
       title: 'Cell biology',
       description: null,
       themes: [],
+      courses: [],
       modules,
       createdAt: '2026-09-23T03:06:18Z',
       updatedAt: '2026-09-23T03:06:18Z',

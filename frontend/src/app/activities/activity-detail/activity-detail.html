@@ -14,6 +14,9 @@
     @if (activity(); as activity) {
       <h2>{{ activity.title }}</h2>
       <ul class="themes">
+        @for (course of activity.courses; track course.id) {
+          <li class="theme course" title="Course">{{ course.name }}</li>
+        }
         @for (theme of activity.themes; track theme.id) {
           <li class="theme">{{ theme.name }}</li>
         }

@@ -1,5 +1,5 @@
 /**
- * Parses a comma-separated list of theme names: trims each name, drops empty
+ * Parses a comma-separated list of theme or course names: trims each name, drops empty
  * ones and removes duplicates ignoring case (keeping the first spelling).
  */
 export function parseThemeNames(text: string): string[] {

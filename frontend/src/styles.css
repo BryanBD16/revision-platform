@@ -11,6 +11,8 @@
   --color-success-bg: #dafbe1;
   --color-theme-bg: #ddf4ff;
   --color-theme-text: #0550ae;
+  --color-course-bg: #fbefff;
+  --color-course-text: #6639ba;
 }
 
 *,
@@ -111,6 +113,11 @@ a {
   background: var(--color-theme-bg);
   color: var(--color-theme-text);
   font-size: 0.875rem;
+}
+
+.theme.course {
+  background: var(--color-course-bg);
+  color: var(--color-course-text);
 }
 
 .meta,

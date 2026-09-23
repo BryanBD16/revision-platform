@@ -13,6 +13,7 @@ describe('ActivityApi', () => {
     title: 'Cell biology',
     description: null,
     themes: [{ id: 1, name: 'Biology' }],
+    courses: [],
     modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
@@ -23,6 +24,7 @@ describe('ActivityApi', () => {
     title: 'Cell biology',
     description: null,
     themes: [{ id: 1, name: 'Biology' }],
+    courses: [],
     moduleCount: 1,
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
@@ -61,6 +63,7 @@ describe('ActivityApi', () => {
       title: 'Cell biology',
       description: null,
       themes: ['Biology'],
+      courses: ['BIO 101'],
       modules: [{ type: 'reading', content: { title: null, body: 'Text' } }],
     };
     let result: Activity | undefined;

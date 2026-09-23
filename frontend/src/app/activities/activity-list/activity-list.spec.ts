@@ -25,7 +25,7 @@ describe('ActivityList', () => {
     return (fixture.nativeElement as HTMLElement).textContent ?? '';
   }
 
-  it('shows each activity with its themes and a link to it', async () => {
+  it('shows each activity with its themes, courses and a link to it', async () => {
     const activities: ActivitySummary[] = [
       {
         id: 7,
@@ -35,6 +35,7 @@ describe('ActivityList', () => {
           { id: 1, name: 'Biology' },
           { id: 2, name: 'Cells' },
         ],
+        courses: [{ id: 3, name: 'BIO 101' }],
         moduleCount: 2,
         createdAt: '2026-09-23T03:06:18Z',
         updatedAt: '2026-09-23T03:06:18Z',
@@ -51,6 +52,9 @@ describe('ActivityList', () => {
     expect(link?.getAttribute('href')).toBe('/activities/7');
     expect(text()).toContain('Biology');
     expect(text()).toContain('Cells');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.course')?.textContent).toContain(
+      'BIO 101',
+    );
     expect(text()).toContain('2 modules');
   });
 

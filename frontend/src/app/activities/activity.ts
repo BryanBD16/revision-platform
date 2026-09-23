@@ -1,3 +1,4 @@
+/** A theme or a course. */
 export interface Theme {
   id: number;
   name: string;
@@ -17,6 +18,7 @@ export interface ActivitySummary {
   title: string;
   description: string | null;
   themes: Theme[];
+  courses: Theme[];
   moduleCount: number;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +29,7 @@ export interface Activity {
   title: string;
   description: string | null;
   themes: Theme[];
+  courses: Theme[];
   modules: RevisionModule[];
   createdAt: string;
   updatedAt: string;
@@ -36,6 +39,7 @@ export interface CreateActivityRequest {
   title: string;
   description: string | null;
   themes: string[];
+  courses: string[];
   modules: { type: string; content: unknown }[];
 }
 
