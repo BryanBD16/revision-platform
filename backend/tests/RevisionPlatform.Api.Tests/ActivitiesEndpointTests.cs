@@ -186,6 +186,26 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Create_AcceptsMatchingModules()
+    {
+        var created = await CreateAsync(new CreateActivityRequest("Title", null, ["Biology"],
+        [
+            new CreateModuleRequest("matching", Json(new
+            {
+                pairs = new[]
+                {
+                    new { id = "p1", concept = "Mitosis", definition = "Division into two identical cells" },
+                    new { id = "p2", concept = "Meiosis", definition = "Division producing gametes" },
+                },
+            })),
+        ]));
+
+        var module = Assert.Single(created.Modules);
+        Assert.Equal("matching", module.Type);
+        Assert.Equal(2, module.Content.GetProperty("pairs").GetArrayLength());
+    }
+
+    [Fact]
     public async Task GetAll_ReturnsModuleCount()
     {
         await CreateAsync(new CreateActivityRequest("Title", null, ["Biology"], [Reading("One"), Reading("Two")]));

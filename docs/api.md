@@ -138,3 +138,30 @@ Surrounding spaces are removed from all texts and ids.
 
 Grading (in the browser): the answer is correct, 1 out of 1, only if the
 learner selects exactly the correct choices; otherwise 0 out of 1.
+
+### `matching`
+
+Concepts to match with their definitions, with optional instructions.
+
+```json
+{
+  "instructions": "Match each process with its definition.",
+  "pairs": [
+    { "id": "p1", "concept": "Mitosis", "definition": "Division into two identical cells" },
+    { "id": "p2", "concept": "Meiosis", "definition": "Division producing gametes" }
+  ]
+}
+```
+
+- `instructions`: optional, at most 500 characters; blank instructions
+  are stored as `null`.
+- `pairs`: 2 to 10 pairs. Each `id` is required, unique within the module
+  and at most 50 characters. Each `concept` (at most 200 characters) and
+  each `definition` (at most 1000 characters) is required and must be
+  different from the others in the module, ignoring case, so that every
+  match is unambiguous.
+
+Surrounding spaces are removed from all texts and ids.
+
+Grading (in the browser): one point per concept matched with its
+definition, out of the number of pairs (e.g. 2 out of 3).
