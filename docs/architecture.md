@@ -32,7 +32,8 @@ A revision activity is an ordered list of modules. Each module has a
   `frontend/src/app/modules/` and provides a `ModuleTypeDefinition`: a
   label, a form factory with its validators, a function converting the
   form to the API content, an editor component (input `form`) and a
-  player component (input `content`, output `completed`). `MODULE_TYPES`
+  player component (input `content`, output `completed` with the module's
+  result). `MODULE_TYPES`
   lists the definitions; `ModuleEditorHost` and `ModulePlayerHost` render
   the editor or player of any type. The activity pages only use these
   hosts and never depend on a specific module type.
@@ -40,6 +41,12 @@ A revision activity is an ordered list of modules. Each module has a
   time. When a module's player emits `completed` (for a reading module,
   when the learner clicks Continue), it moves to the next module, then
   shows a completion screen. Nothing is saved.
+- **Grading:** `completed` carries the module's result: `{ score,
+  maxScore }`, or `null` for module types that are not graded (reading).
+  The completion screen lists the grade of each module and a total: the
+  sum of the scores over the sum of the maximum scores, as a fraction and
+  a rounded percentage. Modules that are not graded do not count. The
+  grade is computed in the browser.
 
 ### Adding a module type (backend)
 

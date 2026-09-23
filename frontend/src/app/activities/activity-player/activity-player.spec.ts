@@ -36,6 +36,13 @@ describe('ActivityPlayer', () => {
     await fixture.whenStable();
   }
 
+  /** The cells of the grade table, row by row. */
+  function gradeRows(): string[][] {
+    return [...element.querySelectorAll('.grades tbody tr')].map((row) =>
+      [...row.querySelectorAll('td')].map((cell) => cell.textContent!.trim()),
+    );
+  }
+
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [ActivityPlayer],
@@ -64,6 +71,18 @@ describe('ActivityPlayer', () => {
     await clickButton('Continue');
     expect(element.textContent).toContain('Activity completed');
     expect(element.textContent).toContain('all 2 modules');
+  });
+
+  it('shows that reading modules are not graded', async () => {
+    await load(activity([reading(0, 'First text'), reading(1, 'Second text')]));
+    await clickButton('Continue');
+    await clickButton('Continue');
+
+    expect(gradeRows()).toEqual([
+      ['1. Reading', 'Not graded'],
+      ['2. Reading', 'Not graded'],
+    ]);
+    expect(element.textContent).toContain('This activity has no graded modules.');
   });
 
   it('starts again from the first module', async () => {

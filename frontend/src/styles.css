@@ -246,3 +246,20 @@ progress {
 a.button-secondary {
   text-decoration: none;
 }
+
+.total-grade {
+  font-size: 1.125rem;
+}
+
+.grades {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
+
+.grades th,
+.grades td {
+  padding: 0.375rem 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}

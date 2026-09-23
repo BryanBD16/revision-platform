@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { ModulePlayer } from '../../module-type';
+import { ModulePlayer, ModuleResult } from '../../module-type';
 import { ReadingContent } from '../reading-content';
 
 @Component({
@@ -8,5 +8,5 @@ import { ReadingContent } from '../reading-content';
 })
 export class ReadingPlayer implements ModulePlayer<ReadingContent> {
   readonly content = input.required<ReadingContent>();
-  readonly completed = output<void>();
+  readonly completed = output<ModuleResult | null>();
 }

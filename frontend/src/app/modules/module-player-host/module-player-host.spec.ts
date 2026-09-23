@@ -23,7 +23,7 @@ describe('ModulePlayerHost', () => {
 
     expect(element.querySelector('app-reading-player')?.textContent).toContain('Some text');
     element.querySelector('button')!.click();
-    expect(completed).toHaveBeenCalledOnce();
+    expect(completed).toHaveBeenCalledExactlyOnceWith(null);
   });
 
   it('replaces the player when the module changes', async () => {
@@ -49,6 +49,6 @@ describe('ModulePlayerHost', () => {
 
     expect(element.textContent).toContain('Unknown module type "unknown"');
     element.querySelector('button')!.click();
-    expect(completed).toHaveBeenCalledOnce();
+    expect(completed).toHaveBeenCalledExactlyOnceWith(null);
   });
 });
