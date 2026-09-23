@@ -1,3 +1,5 @@
+using RevisionPlatform.Api.Shared;
+
 namespace RevisionPlatform.Api.Activities;
 
 /// <summary>
@@ -13,30 +15,13 @@ public record ActivityListValidationResult(ActivityListQuery? Query, Dictionary<
 
 public static class ActivityListValidator
 {
-    public const int DefaultPageSize = 20;
-    public const int MaxPageSize = 100;
     public const int MaxThemeIds = 20;
 
     public static ActivityListValidationResult Validate(ActivityListRequest request)
     {
         var errors = new Dictionary<string, string[]>();
 
-        var page = request.Page ?? 1;
-        var pageSize = request.PageSize ?? DefaultPageSize;
-
-        if (pageSize is < 1 or > MaxPageSize)
-        {
-            errors["pageSize"] = [$"The page size must be between 1 and {MaxPageSize}."];
-        }
-
-        if (page < 1)
-        {
-            errors["page"] = ["The page must be at least 1."];
-        }
-        else if ((long)(page - 1) * pageSize > int.MaxValue)
-        {
-            errors["page"] = ["The page is too large."];
-        }
+        var (page, pageSize) = Paging.Validate(request.Page, request.PageSize, errors);
 
         var title = request.Title?.Trim();
         if (title?.Length > RevisionActivity.TitleMaxLength)

@@ -2,11 +2,20 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, map, of, tap } from 'rxjs';
 
+/** What a user is allowed to do; the API checks the same permissions. */
+export const PERMISSIONS = {
+  publishActivities: 'publish-activities',
+  manageRoles: 'manage-roles',
+} as const;
+
+export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
+
 export interface CurrentUser {
   id: number;
   email: string;
   displayName: string;
   roles: string[];
+  permissions: Permission[];
 }
 
 export interface RegisterRequest {
@@ -47,6 +56,11 @@ export class AuthService {
   /** The signed-in user, or null for a visitor. */
   readonly user = this.currentUser.asReadonly();
   readonly signedIn = computed(() => this.currentUser() !== null);
+
+  /** Whether the signed-in user has a permission. Only hides what the API would refuse anyway. */
+  can(permission: Permission): boolean {
+    return this.currentUser()?.permissions.includes(permission) ?? false;
+  }
 
   /** Loads the signed-in user. A failure leaves the visitor signed out. */
   load(): Observable<void> {

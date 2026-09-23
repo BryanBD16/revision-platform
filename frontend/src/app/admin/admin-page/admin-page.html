@@ -1,0 +1,105 @@
+<h2>Administration</h2>
+
+@if (error(); as error) {
+  <p class="error" role="alert">{{ error }}</p>
+}
+
+<section aria-labelledby="users-heading">
+  <h3 id="users-heading">Users</h3>
+
+  <div class="field">
+    <label for="user-search">Search</label>
+    <input id="user-search" type="search" [formControl]="search" placeholder="Email or display name" />
+  </div>
+
+  @if (users(); as page) {
+    @if (page.items.length === 0) {
+      <p class="empty">No users found.</p>
+    } @else {
+      <div class="table-scroll">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th scope="col">User</th>
+              <th scope="col">Created</th>
+              @for (role of roles(); track role) {
+                <th scope="col">{{ role }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of page.items; track user.id) {
+              <tr>
+                <td>
+                  <strong>{{ user.displayName }}</strong>
+                  @if (isCurrentUser(user)) {
+                    <span class="meta">(you)</span>
+                  }
+                  @if (user.lockedOut) {
+                    <span class="badge-locked">Locked</span>
+                  }
+                  <br />
+                  <span class="meta">{{ user.email }}</span>
+                </td>
+                <td class="meta">{{ user.createdAt | date: 'mediumDate' }}</td>
+                @for (role of roles(); track role) {
+                  <td>
+                    <input
+                      type="checkbox"
+                      [checked]="user.roles.includes(role)"
+                      [disabled]="busy()"
+                      (change)="toggleRole(user, role, $event)"
+                      [attr.aria-label]="'Role ' + role + ' of ' + user.email"
+                    />
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <nav class="pagination" aria-label="Pages of users">
+      @if (page.page > 1) {
+        <button type="button" class="button-secondary" (click)="showUsersPage(page.page - 1)">← Previous</button>
+      }
+      <span class="meta">{{ page.totalCount }} {{ page.totalCount === 1 ? 'user' : 'users' }}</span>
+      @if (hasNextPage(page)) {
+        <button type="button" class="button-secondary" (click)="showUsersPage(page.page + 1)">Next →</button>
+      }
+    </nav>
+  } @else {
+    <p>Loading users…</p>
+  }
+</section>
+
+<section aria-labelledby="changes-heading">
+  <h3 id="changes-heading">Role changes</h3>
+
+  @if (changes(); as page) {
+    @if (page.items.length === 0) {
+      <p class="empty">No role changes yet.</p>
+    } @else {
+      <ul class="role-changes">
+        @for (change of page.items; track change.id) {
+          <li>
+            <span class="meta">{{ change.changedAt | date: 'medium' }}</span>
+            {{ change.changedBy?.displayName ?? 'A server command' }}
+            {{ change.action === 'granted' ? 'gave' : 'removed' }} the role <strong>{{ change.role }}</strong>
+            {{ change.action === 'granted' ? 'to' : 'from' }} {{ change.user.displayName }} ({{ change.user.email }})
+            <span class="meta">· {{ change.origin }}</span>
+          </li>
+        }
+      </ul>
+      <nav class="pagination" aria-label="Pages of role changes">
+        @if (page.page > 1) {
+          <button type="button" class="button-secondary" (click)="showChangesPage(page.page - 1)">← Newer</button>
+        }
+        @if (hasNextPage(page)) {
+          <button type="button" class="button-secondary" (click)="showChangesPage(page.page + 1)">Older →</button>
+        }
+      </nav>
+    }
+  }
+</section>

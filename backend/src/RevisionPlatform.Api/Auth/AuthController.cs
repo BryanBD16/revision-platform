@@ -13,6 +13,7 @@ namespace RevisionPlatform.Api.Auth;
 public class AuthController(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
+    IAuthorizationService authorizationService,
     IAntiforgery antiforgery) : ControllerBase
 {
     private const string InvalidCredentials = "The email or the password is incorrect.";
@@ -148,7 +149,16 @@ public class AuthController(
     private async Task<CurrentUserResponse> ToResponseAsync(AppUser user)
     {
         var roles = await userManager.GetRolesAsync(user);
-        return new CurrentUserResponse(user.Id, user.Email!, user.DisplayName, roles.Order().ToList());
+        var principal = await signInManager.CreateUserPrincipalAsync(user);
+        var permissions = new List<string>();
+        foreach (var policy in Policies.All)
+        {
+            if ((await authorizationService.AuthorizeAsync(principal, policy)).Succeeded)
+            {
+                permissions.Add(policy);
+            }
+        }
+        return new CurrentUserResponse(user.Id, user.Email!, user.DisplayName, roles.Order().ToList(), permissions);
     }
 
     /// <summary>Converts the errors of Identity to validation errors keyed by field.</summary>

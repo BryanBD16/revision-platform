@@ -1,6 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { AuthService } from './auth/auth.service';
+import { AuthService, PERMISSIONS } from './auth/auth.service';
 
 @Component({
   imports: [RouterLink, RouterOutlet],
@@ -13,6 +13,7 @@ export class App {
   private readonly router = inject(Router);
 
   protected readonly user = this.auth.user;
+  protected readonly canManageRoles = computed(() => this.auth.can(PERMISSIONS.manageRoles));
 
   protected signOut(): void {
     this.auth.signOut().subscribe(() => this.router.navigateByUrl('/activities'));

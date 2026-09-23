@@ -67,6 +67,26 @@ make db-seed    # create the seed activities through the API
 `db-seed` stops at the first file the API rejects and shows the
 validation errors. Running it twice creates the activities twice.
 
+### Users and the first admin
+
+Create an account in the application (**Create an account** in the
+header), then make yourself admin from the terminal:
+
+```sh
+make user-list                                          # check the account
+make user-grant-role EMAIL=you@example.com ROLE=admin   # asks for confirmation
+```
+
+After that, admins give and remove roles on the **Administration** page;
+every change is recorded, with who made it. The commands stay available
+for people with access to the server, for example if every admin is
+locked out:
+
+- `make user-reset-password EMAIL=...` gives the user a random temporary
+  password (to send privately), unlocks the account and signs out all
+  its sessions. The user changes it on the **Account** page.
+- The commands refuse to remove the last admin.
+
 ## Backend
 
 The ASP.NET Core API is in `backend/` (`src/RevisionPlatform.Api`,
@@ -135,3 +155,7 @@ Run `make` to list all commands.
 | `make db-reset`              | Stop the container and **delete all its data**       |
 | `make db-clear`              | Delete all activities, modules and themes            |
 | `make db-seed`               | Create the seed activities (backend must be running) |
+| `make user-list`             | List the users and their roles                       |
+| `make user-grant-role EMAIL=... ROLE=...` | Give a role to a user (asks for confirmation) |
+| `make user-revoke-role EMAIL=... ROLE=...` | Remove a role from a user (asks for confirmation) |
+| `make user-reset-password EMAIL=...` | Give a user a temporary password          |

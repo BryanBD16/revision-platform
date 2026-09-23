@@ -18,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<RevisionActivity> RevisionActivities => Set<RevisionActivity>();
     public DbSet<Theme> Themes => Set<Theme>();
     public DbSet<RevisionModule> RevisionModules => Set<RevisionModule>();
+    public DbSet<RoleChange> RoleChanges => Set<RoleChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -87,6 +88,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             });
         });
         modelBuilder.Entity<IdentityUserRole<int>>().ToTable("user_roles");
+        modelBuilder.Entity<RoleChange>(change =>
+        {
+            change.Property(c => c.RoleName).HasMaxLength(256);
+            change.Property(c => c.Action).HasMaxLength(RoleChange.ActionMaxLength);
+            change.Property(c => c.Origin).HasMaxLength(RoleChange.OriginMaxLength);
+            // The audit trail must stay complete: a user with role changes cannot be deleted
+            // without deciding what happens to them.
+            change.HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Restrict);
+            change.HasOne(c => c.ChangedBy).WithMany().HasForeignKey(c => c.ChangedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            change.HasIndex(c => c.ChangedAt);
+        });
         modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("user_claims");
         modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("user_logins");
         modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_tokens");

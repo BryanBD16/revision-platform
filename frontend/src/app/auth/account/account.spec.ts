@@ -18,7 +18,7 @@ describe('Account', () => {
     TestBed.inject(AuthService).signIn({ email: 'ada@example.com', password: 'p' }).subscribe();
     http
       .expectOne('/api/auth/sign-in')
-      .flush({ id: 1, email: 'ada@example.com', displayName: 'Ada', roles: [] });
+      .flush({ id: 1, email: 'ada@example.com', displayName: 'Ada', roles: [], permissions: [] });
     fixture = TestBed.createComponent(Account);
     element = fixture.nativeElement;
     await fixture.whenStable();

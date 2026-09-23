@@ -8,7 +8,13 @@ describe('AuthService', () => {
   let auth: AuthService;
   let http: HttpTestingController;
 
-  const ada: CurrentUser = { id: 1, email: 'ada@example.com', displayName: 'Ada', roles: [] };
+  const ada: CurrentUser = {
+    id: 1,
+    email: 'ada@example.com',
+    displayName: 'Ada',
+    roles: [],
+    permissions: [],
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -64,6 +70,16 @@ describe('AuthService', () => {
     auth.signIn({ email: 'ada@example.com', password: 'p' }).subscribe();
     http.expectOne({ method: 'POST', url: '/api/auth/sign-in' }).flush(ada);
     expect(auth.user()).toEqual(ada);
+  });
+
+  it('tells whether the signed-in user has a permission', () => {
+    expect(auth.can('manage-roles')).toBe(false);
+
+    auth.signIn({ email: 'ada@example.com', password: 'p' }).subscribe();
+    http.expectOne('/api/auth/sign-in').flush({ ...ada, permissions: ['manage-roles'] });
+
+    expect(auth.can('manage-roles')).toBe(true);
+    expect(auth.can('publish-activities')).toBe(false);
   });
 
   it('forgets the user after signing out', () => {

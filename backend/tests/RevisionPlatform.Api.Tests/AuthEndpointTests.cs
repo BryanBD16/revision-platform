@@ -35,6 +35,7 @@ public class AuthEndpointTests(ApiFactory factory) : IAsyncLifetime
         Assert.Equal("ada@example.com", user!.Email);
         Assert.Equal("Ada Lovelace", user.DisplayName);
         Assert.Empty(user.Roles);
+        Assert.Empty(user.Permissions);
         Assert.Equivalent(user, await MeAsync(_client), strict: true);
     }
 
