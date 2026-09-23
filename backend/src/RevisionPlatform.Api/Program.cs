@@ -9,8 +9,8 @@ using RevisionPlatform.Api.Themes;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// "dotnet run -- users ..." runs a command instead of the web server (see UserCommands).
-var isCommand = args is [UserCommands.Name, ..];
+// "dotnet run -- users ..." or "-- seed ..." runs a command instead of the web server.
+var isCommand = CommandRunner.IsCommand(args);
 if (isCommand)
 {
     // Keep the output of the command readable: no information logs (SQL queries...).
@@ -46,7 +46,7 @@ var app = builder.Build();
 
 if (isCommand)
 {
-    return await UserCommands.RunAsync(app.Services, args[1..], Console.In, Console.Out);
+    return await CommandRunner.RunAsync(app.Services, args);
 }
 
 if (app.Environment.IsDevelopment())
