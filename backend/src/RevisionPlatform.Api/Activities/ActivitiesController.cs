@@ -4,10 +4,11 @@ namespace RevisionPlatform.Api.Activities;
 
 [ApiController]
 [Route("api/activities")]
-public class ActivitiesController(ActivityService activityService) : ControllerBase
+public class ActivitiesController(ActivityService activityService, ActivityValidator activityValidator)
+    : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ActivityResponse>>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<ActivitySummaryResponse>>> GetAll()
     {
         return Ok(await activityService.GetAllAsync());
     }
@@ -22,13 +23,13 @@ public class ActivitiesController(ActivityService activityService) : ControllerB
     [HttpPost]
     public async Task<ActionResult<ActivityResponse>> Create(CreateActivityRequest request)
     {
-        var errors = ActivityValidator.Validate(request);
-        if (errors.Count > 0)
+        var validation = activityValidator.Validate(request);
+        if (validation.Activity is null)
         {
-            return ValidationProblem(new ValidationProblemDetails(errors));
+            return ValidationProblem(new ValidationProblemDetails(validation.Errors));
         }
 
-        var activity = await activityService.CreateAsync(request);
+        var activity = await activityService.CreateAsync(validation.Activity);
         return CreatedAtAction(nameof(GetById), new { id = activity.Id }, activity);
     }
 }
