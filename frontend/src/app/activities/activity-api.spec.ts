@@ -14,6 +14,7 @@ describe('ActivityApi', () => {
     description: null,
     themes: [{ id: 1, name: 'Biology' }],
     courses: [],
+    visibility: 'public',
     modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
@@ -25,6 +26,7 @@ describe('ActivityApi', () => {
     description: null,
     themes: [{ id: 1, name: 'Biology' }],
     courses: [],
+    visibility: 'public',
     moduleCount: 1,
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
@@ -44,7 +46,7 @@ describe('ActivityApi', () => {
     const page: ActivityPage = { items: [summary], page: 2, pageSize: 20, totalCount: 21 };
     let result: ActivityPage | undefined;
     api
-      .getPage({ page: 2, title: null, courseId: null, themeIds: [] })
+      .getPage({ page: 2, title: null, courseId: null, themeIds: [], visibility: null })
       .subscribe((p) => (result = p));
 
     http.expectOne({ method: 'GET', url: '/api/activities?page=2' }).flush(page);
@@ -53,10 +55,14 @@ describe('ActivityApi', () => {
   });
 
   it('sends the filters that are set', () => {
-    api.getPage({ page: 1, title: 'cell', courseId: 3, themeIds: [1, 2] }).subscribe();
+    api
+      .getPage({ page: 1, title: 'cell', courseId: 3, themeIds: [1, 2], visibility: 'private' })
+      .subscribe();
 
     http
-      .expectOne('/api/activities?page=1&title=cell&courseId=3&themeIds=1&themeIds=2')
+      .expectOne(
+        '/api/activities?page=1&title=cell&courseId=3&themeIds=1&themeIds=2&visibility=private',
+      )
       .flush({ items: [], page: 1, pageSize: 20, totalCount: 0 });
   });
 
@@ -75,6 +81,7 @@ describe('ActivityApi', () => {
       description: null,
       themes: ['Biology'],
       courses: ['BIO 101'],
+      visibility: 'private' as const,
       modules: [{ type: 'reading', content: { title: null, body: 'Text' } }],
     };
     let result: Activity | undefined;

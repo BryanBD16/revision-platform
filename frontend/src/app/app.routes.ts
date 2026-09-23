@@ -13,7 +13,12 @@ import { SignIn } from './auth/sign-in/sign-in';
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'activities' },
   { path: 'activities', component: ActivityList, title: 'Revision activities' },
-  { path: 'activities/new', component: ActivityCreate, title: 'New activity' },
+  {
+    path: 'activities/new',
+    component: ActivityCreate,
+    title: 'New activity',
+    canActivate: [signedInGuard],
+  },
   { path: 'activities/:id', component: ActivityDetail, title: 'Revision activity' },
   { path: 'activities/:id/play', component: ActivityPlayer, title: 'Revision activity' },
   { path: 'sign-in', component: SignIn, title: 'Sign in' },

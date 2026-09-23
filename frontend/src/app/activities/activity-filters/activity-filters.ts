@@ -2,7 +2,7 @@ import { Component, computed, effect, input, output, signal } from '@angular/cor
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, map } from 'rxjs';
-import { ActivityListQuery, Theme } from '../activity';
+import { ActivityListQuery, Theme, Visibility } from '../activity';
 import { EMPTY_QUERY, hasFilters } from '../activity-list/activity-list-query';
 
 /** Delay after the last key press before the title filter is applied. */
@@ -40,6 +40,8 @@ export class ActivityFilters {
   readonly query = input.required<ActivityListQuery>();
   readonly themes = input.required<Theme[]>();
   readonly courses = input.required<Theme[]>();
+  /** Visitors only see public activities, so the visibility filter is for signed-in users. */
+  readonly showVisibility = input(false);
   readonly queryChange = output<ActivityListQuery>();
 
   protected readonly title = new FormControl('', { nonNullable: true });
@@ -127,6 +129,10 @@ export class ActivityFilters {
     if (!this.query().themeIds.includes(theme.id)) {
       this.update({ themeIds: [...this.query().themeIds, theme.id] });
     }
+  }
+
+  protected selectVisibility(value: string): void {
+    this.update({ visibility: value === '' ? null : (value as Visibility) });
   }
 
   protected removeTheme(id: number): void {

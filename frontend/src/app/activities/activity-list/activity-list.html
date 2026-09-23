@@ -7,6 +7,7 @@
   [query]="query()"
   [themes]="themes()"
   [courses]="courses()"
+  [showVisibility]="signedIn()"
   (queryChange)="applyQuery($event)"
 />
 
@@ -26,6 +27,9 @@
       @for (activity of result.items; track activity.id) {
         <li class="card">
           <a class="activity-title" [routerLink]="['/activities', activity.id]">{{ activity.title }}</a>
+          @if (activity.visibility === 'private') {
+            <span class="badge-private">Private</span>
+          }
           <app-activity-themes [courses]="activity.courses" [themes]="activity.themes" />
           <p class="meta">
             {{ activity.moduleCount }} {{ activity.moduleCount === 1 ? 'module' : 'modules' }}

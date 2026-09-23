@@ -102,12 +102,6 @@ db-reset: ## Stop the MySQL container and DELETE all its data
 db-clear: ## DELETE all activities, modules and themes (the tables and the users are kept)
 	docker compose exec -T db sh -c 'mysql -u"$$MYSQL_USER" -p"$$MYSQL_PASSWORD" "$$MYSQL_DATABASE" -e "DELETE FROM revision_activities; DELETE FROM themes;"'
 
-API_URL := http://localhost:5044
-
-db-seed: ## Create the activities in seed/activities through the API (backend must be running)
-	@for file in seed/activities/*.json; do \
-		response=$$(curl --silent --show-error --fail-with-body \
-			--header 'Content-Type: application/json' --data @"$$file" $(API_URL)/api/activities) \
-			|| { echo "$$file: failed"; echo "$$response"; exit 1; }; \
-		echo "$$file: created"; \
-	done
+db-seed: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
+db-seed: ## Create the activities of seed/activities (validates every file first)
+	@dotnet run --project $(BACKEND_API) --no-launch-profile -- seed "$(CURDIR)/seed/activities"

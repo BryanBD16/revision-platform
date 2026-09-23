@@ -32,6 +32,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             // The list is sorted by creation date.
             activity.HasIndex(a => a.CreatedAt);
 
+            activity.Property(a => a.Visibility).HasMaxLength(RevisionActivity.VisibilityMaxLength);
+            // Deleting a user deletes their private activities.
+            activity.HasOne<AppUser>().WithMany().HasForeignKey(a => a.OwnerId).OnDelete(DeleteBehavior.Cascade);
+            activity.HasIndex(a => a.Visibility);
+            // A private activity always has an owner, a public one never has.
+            activity.ToTable(table => table.HasCheckConstraint(
+                "ck_revision_activities_visibility_owner",
+                "(visibility = 'public' AND owner_id IS NULL) OR (visibility = 'private' AND owner_id IS NOT NULL)"));
+
             activity
                 .HasMany(a => a.Themes)
                 .WithMany()

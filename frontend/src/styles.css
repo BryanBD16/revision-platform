@@ -150,6 +150,18 @@ a {
   font-size: 0.875rem;
 }
 
+.badge-private {
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
 .theme.course {
   background: var(--color-course-bg);
   color: var(--color-course-text);
@@ -183,6 +195,7 @@ a {
 
 /* Text fields only: checkboxes and radio buttons keep their natural size. */
 .field input:not([type='checkbox'], [type='radio']),
+.field select,
 .field textarea {
   width: 100%;
   padding: 0.5rem;
@@ -254,6 +267,20 @@ a.button-secondary {
   gap: 1rem;
   flex-wrap: wrap;
   margin-top: 1rem;
+}
+
+.visibility {
+  padding: 0;
+  border: none;
+}
+
+.visibility legend {
+  padding: 0;
+  font-weight: 600;
+}
+
+.visibility label {
+  font-weight: normal;
 }
 
 .modules {

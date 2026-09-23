@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using RevisionPlatform.Api.Activities;
+using RevisionPlatform.Api.Auth;
 
 namespace RevisionPlatform.Api.Themes;
 
@@ -10,12 +11,12 @@ public class ThemesController(ThemeService themeService) : ControllerBase
     [HttpGet("api/themes")]
     public async Task<ActionResult<IReadOnlyList<ThemeResponse>>> GetThemes()
     {
-        return Ok(await themeService.GetAllAsync(ThemeKind.Topic));
+        return Ok(await themeService.GetAllAsync(ThemeKind.Topic, User.GetUserId()));
     }
 
     [HttpGet("api/courses")]
     public async Task<ActionResult<IReadOnlyList<ThemeResponse>>> GetCourses()
     {
-        return Ok(await themeService.GetAllAsync(ThemeKind.Course));
+        return Ok(await themeService.GetAllAsync(ThemeKind.Course, User.GetUserId()));
     }
 }

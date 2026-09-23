@@ -6,9 +6,15 @@ namespace RevisionPlatform.Api.Activities;
 /// A list request that passed validation, with the defaults applied. An activity is listed
 /// only if it matches every filter that is set: its title contains <see cref="Title"/>
 /// (ignoring case), it is part of the course <see cref="CourseId"/> and it has all the
-/// themes <see cref="ThemeIds"/>.
+/// themes <see cref="ThemeIds"/>, and it has the <see cref="Visibility"/>.
 /// </summary>
-public record ActivityListQuery(int Page, int PageSize, string? Title, int? CourseId, IReadOnlyList<int> ThemeIds);
+public record ActivityListQuery(
+    int Page,
+    int PageSize,
+    string? Title,
+    int? CourseId,
+    IReadOnlyList<int> ThemeIds,
+    string? Visibility = null);
 
 /// <summary>Either the validated query, or validation errors keyed by parameter name.</summary>
 public record ActivityListValidationResult(ActivityListQuery? Query, Dictionary<string, string[]> Errors);
@@ -35,6 +41,11 @@ public static class ActivityListValidator
             errors["themeIds"] = [$"At most {MaxThemeIds} themes can be selected."];
         }
 
+        if (request.Visibility is not null && !ActivityVisibility.All.Contains(request.Visibility))
+        {
+            errors["visibility"] = ["The visibility must be 'private' or 'public'."];
+        }
+
         if (errors.Count > 0)
         {
             return new ActivityListValidationResult(null, errors);
@@ -45,7 +56,8 @@ public static class ActivityListValidator
             pageSize,
             string.IsNullOrEmpty(title) ? null : title,
             request.CourseId,
-            themeIds);
+            themeIds,
+            request.Visibility);
         return new ActivityListValidationResult(query, errors);
     }
 }

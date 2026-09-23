@@ -12,7 +12,12 @@
   }
   @case ('loaded') {
     @if (activity(); as activity) {
-      <h2>{{ activity.title }}</h2>
+      <h2>
+        {{ activity.title }}
+        @if (activity.visibility === 'private') {
+          <span class="badge-private">Private</span>
+        }
+      </h2>
       <app-activity-themes [courses]="activity.courses" [themes]="activity.themes" />
       @if (activity.description) {
         <p class="description">{{ activity.description }}</p>

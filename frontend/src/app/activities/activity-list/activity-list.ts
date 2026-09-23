@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { catchError, map, of, switchMap } from 'rxjs';
+import { AuthService } from '../../auth/auth.service';
 import { ThemeApi } from '../../themes/theme-api';
 import { ActivityListQuery, ActivityPage } from '../activity';
 import { ActivityApi } from '../activity-api';
@@ -20,6 +21,8 @@ export class ActivityList {
   private readonly themeApi = inject(ThemeApi);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+
+  protected readonly signedIn = inject(AuthService).signedIn;
 
   // Without the suggestions, the filters still show the list but cannot be applied.
   protected readonly themes = toSignal(this.themeApi.getThemes().pipe(catchError(() => of([]))), {

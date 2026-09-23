@@ -9,13 +9,20 @@ public record CreateActivityRequest(
     string? Description,
     List<string?>? Themes,
     List<CreateModuleRequest?>? Modules,
-    List<string?>? Courses = null);
+    List<string?>? Courses = null,
+    string? Visibility = null);
 
 /// <summary>
 /// The query parameters of the activity list. Missing values use the defaults and
 /// missing filters are not applied. <c>ThemeIds</c> is repeated: <c>?themeIds=1&amp;themeIds=2</c>.
 /// </summary>
-public record ActivityListRequest(int? Page, int? PageSize, string? Title, int? CourseId, List<int>? ThemeIds);
+public record ActivityListRequest(
+    int? Page,
+    int? PageSize,
+    string? Title,
+    int? CourseId,
+    List<int>? ThemeIds,
+    string? Visibility = null);
 
 /// <summary>A module to create; its position is its index in the request.</summary>
 public record CreateModuleRequest(string? Type, JsonElement? Content);
@@ -32,6 +39,7 @@ public record ActivitySummaryResponse(
     string? Description,
     IReadOnlyList<ThemeResponse> Themes,
     IReadOnlyList<ThemeResponse> Courses,
+    string Visibility,
     int ModuleCount,
     DateTime CreatedAt,
     DateTime UpdatedAt);
@@ -50,6 +58,7 @@ public record ActivityResponse(
     string? Description,
     IReadOnlyList<ThemeResponse> Themes,
     IReadOnlyList<ThemeResponse> Courses,
+    string Visibility,
     IReadOnlyList<ModuleResponse> Modules,
     DateTime CreatedAt,
     DateTime UpdatedAt);

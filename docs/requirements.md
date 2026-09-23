@@ -56,6 +56,19 @@ The first version should allow a user to:
   signed out.
 - Visitors who are not signed in can still browse and complete activities.
 
+### Private and Public Activities
+
+- Every signed-in user can create private activities, which only they
+  can see. Visitors who are not signed in cannot create activities.
+- Only admins can create public activities, which everyone sees,
+  including visitors. Public activities have no owner.
+- Admins do not see the private activities of other users.
+- The seed activities are public.
+- Signed-in users can filter the list by visibility (public or their own
+  private activities).
+- Visitors cannot save their results (saving results is a future
+  requirement).
+
 ### Roles and Administration
 
 - Roles are stored in their own table so that new roles can be added;
@@ -113,10 +126,3 @@ Future module types may include:
 - Flashcards
 - Ordering exercises
 - Fill-in-the-blank exercises
-
-### Personal and Public Activities
-
-- Revision activities should eventually be either personal (visible
-  only to their owner) or public.
-- The activity list should then also be filtered by this visibility.
-- This depends on user accounts.
