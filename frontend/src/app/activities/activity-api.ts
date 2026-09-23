@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Activity, ActivityListQuery, ActivityPage, CreateActivityRequest } from './activity';
+import { Activity, ActivityListQuery, ActivityPage, SaveActivityRequest } from './activity';
 
 @Injectable({ providedIn: 'root' })
 export class ActivityApi {
@@ -29,7 +29,7 @@ export class ActivityApi {
     return this.http.get<Activity>(`${this.baseUrl}/${id}`);
   }
 
-  create(request: CreateActivityRequest): Observable<Activity> {
+  create(request: SaveActivityRequest): Observable<Activity> {
     return this.http.post<Activity>(this.baseUrl, request);
   }
 }

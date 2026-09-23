@@ -60,13 +60,17 @@ export interface Activity {
   updatedAt: string;
 }
 
-export interface CreateActivityRequest {
+/**
+ * The body to create or update an activity. When updating, a module with an `id` is an
+ * existing module (it keeps its id); a module without one is new.
+ */
+export interface SaveActivityRequest {
   title: string;
   description: string | null;
   themes: string[];
   courses: string[];
   visibility: Visibility;
-  modules: { type: string; content: unknown }[];
+  modules: { id?: number; type: string; content: unknown }[];
 }
 
 /** Limits enforced by the API (see docs/api.md). */
