@@ -2,7 +2,7 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { ModulePlayer, ModuleResult } from '../../module-type';
 import { scoreMatching } from '../grading';
 import { MatchingContent } from '../matching-content';
-import { shuffle } from '../shuffle';
+import { shuffleAvoidingOriginalOrder } from '../shuffle';
 
 let nextId = 0;
 
@@ -20,7 +20,7 @@ export class MatchingPlayer implements ModulePlayer<MatchingContent> {
 
   /** The definitions offered in each dropdown, in a random order. */
   protected readonly options = computed(() =>
-    shuffle(this.content().pairs).map(({ id, definition }) => ({ id, definition })),
+    shuffleAvoidingOriginalOrder(this.content().pairs).map(({ id, definition }) => ({ id, definition })),
   );
 
   /** For each concept's pair id, the pair id of the chosen definition. */
