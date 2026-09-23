@@ -16,7 +16,13 @@ public record CreateActivityRequest(
 /// The query parameters of the activity list. Missing values use the defaults and
 /// missing filters are not applied. <c>ThemeIds</c> is repeated: <c>?themeIds=1&amp;themeIds=2</c>.
 /// </summary>
-public record ActivityListRequest(int? Page, int? PageSize, string? Title, int? CourseId, List<int>? ThemeIds);
+public record ActivityListRequest(
+    int? Page,
+    int? PageSize,
+    string? Title,
+    int? CourseId,
+    List<int>? ThemeIds,
+    string? Visibility = null);
 
 /// <summary>A module to create; its position is its index in the request.</summary>
 public record CreateModuleRequest(string? Type, JsonElement? Content);

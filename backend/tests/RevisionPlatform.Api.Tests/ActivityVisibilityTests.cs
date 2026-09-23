@@ -113,6 +113,29 @@ public class ActivityVisibilityTests(ApiFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task List_FiltersByVisibilityTogetherWithTheOtherFilters()
+    {
+        await CreateAsync(_admin, Request("Cells for everyone", ActivityVisibility.Public));
+        await CreateAsync(_ada, Request("My cells"));
+        await CreateAsync(_ada, Request("My plants"));
+
+        Assert.Equal(["My plants", "My cells"], await TitlesAsync(_ada, "?visibility=private"));
+        Assert.Equal(["Cells for everyone"], await TitlesAsync(_ada, "?visibility=public"));
+        Assert.Equal(["My cells"], await TitlesAsync(_ada, "?visibility=private&title=cells"));
+        Assert.Empty(await TitlesAsync(_bob, "?visibility=private"));
+    }
+
+    [Fact]
+    public async Task List_RejectsAnUnknownVisibility()
+    {
+        var response = await _ada.GetAsync("/api/activities?visibility=friends");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.Equal(["visibility"], problem!.Errors.Keys);
+    }
+
+    [Fact]
     public async Task GetById_HidesThePrivateActivitiesOfOthers()
     {
         var activity = await CreateAsync(_ada, Request("Ada's"));
@@ -173,9 +196,9 @@ public class ActivityVisibilityTests(ApiFactory factory) : IAsyncLifetime
         return (await response.Content.ReadFromJsonAsync<ActivityResponse>())!;
     }
 
-    private static async Task<List<string>> TitlesAsync(HttpClient client)
+    private static async Task<List<string>> TitlesAsync(HttpClient client, string query = "")
     {
-        var page = await client.GetFromJsonAsync<ActivityPageResponse>("/api/activities");
+        var page = await client.GetFromJsonAsync<ActivityPageResponse>($"/api/activities{query}");
         return page!.Items.Select(a => a.Title).ToList();
     }
 

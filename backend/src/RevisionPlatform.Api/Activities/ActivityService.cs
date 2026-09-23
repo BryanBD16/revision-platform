@@ -71,6 +71,11 @@ public class ActivityService(AppDbContext db)
             activities = activities.Where(a => a.Themes.Any(t => t.Id == themeId && t.Kind == ThemeKind.Topic));
         }
 
+        if (query.Visibility is not null)
+        {
+            activities = activities.Where(a => a.Visibility == query.Visibility);
+        }
+
         return activities;
     }
 
