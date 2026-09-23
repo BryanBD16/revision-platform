@@ -25,7 +25,16 @@ describe('activity list query', () => {
       title: 'cell',
       courseId: 3,
       themeIds: [1, 2],
+      visibility: null,
     });
+  });
+
+  it('reads the visibility from the URL, ignoring unknown values', () => {
+    expect(queryFromParams(convertToParamMap({ visibility: 'private' })).visibility).toBe(
+      'private',
+    );
+    expect(queryFromParams(convertToParamMap({ visibility: 'public' })).visibility).toBe('public');
+    expect(queryFromParams(convertToParamMap({ visibility: 'friends' })).visibility).toBeNull();
   });
 
   it('ignores a blank title and an invalid course', () => {
@@ -40,12 +49,22 @@ describe('activity list query', () => {
       title: null,
       courseId: null,
       themeIds: null,
+      visibility: null,
     });
-    expect(paramsFromQuery({ page: 4, title: 'cell', courseId: 3, themeIds: [1, 2] })).toEqual({
+    expect(
+      paramsFromQuery({
+        page: 4,
+        title: 'cell',
+        courseId: 3,
+        themeIds: [1, 2],
+        visibility: 'public',
+      }),
+    ).toEqual({
       page: 4,
       title: 'cell',
       courseId: 3,
       themeIds: [1, 2],
+      visibility: 'public',
     });
   });
 
@@ -54,5 +73,6 @@ describe('activity list query', () => {
     expect(hasFilters({ ...EMPTY_QUERY, title: 'cell' })).toBe(true);
     expect(hasFilters({ ...EMPTY_QUERY, courseId: 3 })).toBe(true);
     expect(hasFilters({ ...EMPTY_QUERY, themeIds: [1] })).toBe(true);
+    expect(hasFilters({ ...EMPTY_QUERY, visibility: 'private' })).toBe(true);
   });
 });

@@ -140,6 +140,24 @@ describe('ActivityFilters', () => {
     expect(emitted).toEqual([EMPTY_QUERY]);
   });
 
+  it('filters by visibility for signed-in users', async () => {
+    await create({ page: 2 });
+    fixture.componentRef.setInput('showVisibility', true);
+    await fixture.whenStable();
+    const select = element.querySelector<HTMLSelectElement>('#filter-visibility')!;
+
+    select.value = 'private';
+    select.dispatchEvent(new Event('change'));
+
+    expect(emitted).toEqual([{ ...EMPTY_QUERY, visibility: 'private' }]);
+  });
+
+  it('does not offer the visibility filter to visitors', async () => {
+    await create();
+
+    expect(element.querySelector('#filter-visibility')).toBeNull();
+  });
+
   it('offers to clear only when a filter is set', async () => {
     await create();
 

@@ -19,6 +19,9 @@ export class ActivityApi {
     for (const themeId of query.themeIds) {
       params = params.append('themeIds', themeId);
     }
+    if (query.visibility !== null) {
+      params = params.set('visibility', query.visibility);
+    }
     return this.http.get<ActivityPage>(this.baseUrl, { params });
   }
 

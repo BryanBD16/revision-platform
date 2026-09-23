@@ -10,10 +10,11 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService, PERMISSIONS } from '../../auth/auth.service';
 import { ModuleEditorHost } from '../../modules/module-editor-host/module-editor-host';
 import { MODULE_TYPES, findModuleType } from '../../modules/module-types';
 import { notBlank } from '../../shared/validators';
-import { ACTIVITY_LIMITS } from '../activity';
+import { ACTIVITY_LIMITS, Visibility } from '../activity';
 import { ActivityApi } from '../activity-api';
 import { parseThemeNames } from '../theme-names';
 
@@ -55,6 +56,8 @@ export class ActivityCreate {
 
   protected readonly limits = ACTIVITY_LIMITS;
   protected readonly moduleTypes = MODULE_TYPES;
+  /** Only the users allowed to publish choose the visibility; the others create private activities. */
+  protected readonly canPublish = inject(AuthService).can(PERMISSIONS.publishActivities);
 
   protected readonly form = new FormGroup({
     title: new FormControl('', {
@@ -67,6 +70,7 @@ export class ActivityCreate {
     }),
     themes: new FormControl('', { nonNullable: true, validators: [validThemeNames] }),
     courses: new FormControl('', { nonNullable: true, validators: [validCourseNames] }),
+    visibility: new FormControl<Visibility>('private', { nonNullable: true }),
     modules: new FormArray<ModuleForm>([], { validators: [atLeastOne] }),
   });
 
@@ -111,7 +115,7 @@ export class ActivityCreate {
       return;
     }
 
-    const { title, description, themes, courses } = this.form.getRawValue();
+    const { title, description, themes, courses, visibility } = this.form.getRawValue();
     this.submitting.set(true);
     this.serverErrors.set([]);
 
@@ -121,6 +125,7 @@ export class ActivityCreate {
         description: description.trim() || null,
         themes: parseThemeNames(themes),
         courses: parseThemeNames(courses),
+        visibility: this.canPublish ? visibility : 'private',
         modules: this.modules.controls.map((module) => {
           const type = module.controls.type.value;
           return { type, content: findModuleType(type)!.toContent(module.controls.content) };

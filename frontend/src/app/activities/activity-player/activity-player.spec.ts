@@ -61,6 +61,7 @@ describe('ActivityPlayer', () => {
       description: null,
       themes: [],
       courses: [],
+      visibility: 'public',
       modules,
       createdAt: '2026-09-23T03:06:18Z',
       updatedAt: '2026-09-23T03:06:18Z',

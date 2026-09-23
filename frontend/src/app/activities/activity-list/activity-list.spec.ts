@@ -39,6 +39,7 @@ describe('ActivityList', () => {
       description: null,
       themes: [],
       courses: [],
+      visibility: 'public',
       moduleCount: 1,
       createdAt: '2026-09-23T03:06:18Z',
       updatedAt: '2026-09-23T03:06:18Z',
@@ -87,6 +88,20 @@ describe('ActivityList', () => {
     expect(themes).toContain('Biology');
     expect(themes).toContain('Cells');
     expect(text()).toContain('2 modules');
+  });
+
+  it('marks the private activities', async () => {
+    await open(
+      '/activities',
+      page([{ ...summary(1, 'Mine'), visibility: 'private' }, summary(2, 'Everyone')], 1, 2),
+      '/api/activities?page=1',
+    );
+
+    const cards = [...element().querySelectorAll('.activity-list .card')];
+    expect(cards.map((card) => card.querySelector('.badge-private') !== null)).toEqual([
+      true,
+      false,
+    ]);
   });
 
   it('loads the page from the URL and links to the other pages', async () => {

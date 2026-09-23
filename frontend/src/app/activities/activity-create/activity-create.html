@@ -47,6 +47,22 @@
     }
   </div>
 
+  @if (canPublish) {
+    <fieldset class="field visibility">
+      <legend>Visibility</legend>
+      <label>
+        <input type="radio" formControlName="visibility" value="private" />
+        Private: only you can see it
+      </label>
+      <label>
+        <input type="radio" formControlName="visibility" value="public" />
+        Public: everyone can see it, and it has no owner
+      </label>
+    </fieldset>
+  } @else {
+    <p class="hint">This activity will be private: only you can see it.</p>
+  }
+
   <fieldset class="modules">
     <legend>Modules</legend>
 

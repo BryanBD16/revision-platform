@@ -1,3 +1,6 @@
+/** A private activity is seen only by its owner; a public one by everyone. */
+export type Visibility = 'private' | 'public';
+
 /** A theme or a course. */
 export interface Theme {
   id: number;
@@ -19,6 +22,7 @@ export interface ActivitySummary {
   description: string | null;
   themes: Theme[];
   courses: Theme[];
+  visibility: Visibility;
   moduleCount: number;
   createdAt: string;
   updatedAt: string;
@@ -41,6 +45,7 @@ export interface ActivityListQuery {
   title: string | null;
   courseId: number | null;
   themeIds: number[];
+  visibility: Visibility | null;
 }
 
 export interface Activity {
@@ -49,6 +54,7 @@ export interface Activity {
   description: string | null;
   themes: Theme[];
   courses: Theme[];
+  visibility: Visibility;
   modules: RevisionModule[];
   createdAt: string;
   updatedAt: string;
@@ -59,6 +65,7 @@ export interface CreateActivityRequest {
   description: string | null;
   themes: string[];
   courses: string[];
+  visibility: Visibility;
   modules: { type: string; content: unknown }[];
 }
 

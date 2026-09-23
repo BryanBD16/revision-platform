@@ -48,6 +48,17 @@
         <p class="error">No theme is named “{{ name }}”.</p>
       }
     </div>
+
+    @if (showVisibility()) {
+      <div class="field">
+        <label for="filter-visibility">Visibility</label>
+        <select id="filter-visibility" (change)="selectVisibility($any($event.target).value)">
+          <option value="" [selected]="query().visibility === null">All</option>
+          <option value="public" [selected]="query().visibility === 'public'">Public</option>
+          <option value="private" [selected]="query().visibility === 'private'">Private (mine)</option>
+        </select>
+      </div>
+    }
   </div>
 
   @if (hasFilters()) {

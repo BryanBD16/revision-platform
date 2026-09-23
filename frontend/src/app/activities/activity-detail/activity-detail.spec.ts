@@ -32,6 +32,7 @@ describe('ActivityDetail', () => {
       description: 'Chapter 3',
       themes: [{ id: 1, name: 'Biology' }],
       courses: [{ id: 2, name: 'BIO 101' }],
+      visibility: 'private',
       modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
       createdAt: '2026-09-23T03:06:18Z',
       updatedAt: '2026-09-23T03:06:18Z',
