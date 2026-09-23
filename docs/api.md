@@ -107,3 +107,34 @@ A text to read.
 - `body`: required, at most 20000 characters.
 
 Surrounding spaces are removed from both.
+
+### `multiple-choice`
+
+A question with 2 to 10 choices, one or more of which are correct, and
+an optional explanation shown after answering.
+
+```json
+{
+  "question": "What is a cell?",
+  "choices": [
+    { "id": "c1", "text": "The basic unit of life" },
+    { "id": "c2", "text": "A planet" }
+  ],
+  "correctChoiceIds": ["c1"],
+  "explanation": "All living organisms are made of cells."
+}
+```
+
+- `question`: required, at most 1000 characters.
+- `choices`: 2 to 10 choices. Each `id` is required, unique within the
+  question and at most 50 characters; each `text` is required and at
+  most 500 characters.
+- `correctChoiceIds`: at least one id, each matching a choice. They are
+  stored without duplicates, in the order of the choices.
+- `explanation`: optional, at most 2000 characters; a blank explanation
+  is stored as `null`.
+
+Surrounding spaces are removed from all texts and ids.
+
+Grading (in the browser): the answer is correct, 1 out of 1, only if the
+learner selects exactly the correct choices; otherwise 0 out of 1.

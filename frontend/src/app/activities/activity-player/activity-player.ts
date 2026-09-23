@@ -10,8 +10,11 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ModulePlayerHost } from '../../modules/module-player-host/module-player-host';
+import { ModuleResult } from '../../modules/module-type';
+import { findModuleType } from '../../modules/module-types';
 import { Activity } from '../activity';
 import { ActivityApi } from '../activity-api';
+import { totalGrade } from './grade';
 
 /** Takes the learner through the modules of an activity, one at a time. */
 @Component({
@@ -27,13 +30,16 @@ export class ActivityPlayer implements OnInit {
 
   protected readonly activity = signal<Activity | null>(null);
   protected readonly status = signal<'loading' | 'loaded' | 'not-found' | 'error'>('loading');
-  protected readonly currentIndex = signal(0);
+  /** The result of each completed module, in order; `null` for modules that are not graded. */
+  protected readonly results = signal<(ModuleResult | null)[]>([]);
+  protected readonly currentIndex = computed(() => this.results().length);
 
   protected readonly modules = computed(() => this.activity()?.modules ?? []);
   protected readonly currentModule = computed(() => this.modules()[this.currentIndex()]);
   protected readonly finished = computed(
     () => this.modules().length > 0 && this.currentIndex() >= this.modules().length,
   );
+  protected readonly total = computed(() => totalGrade(this.results()));
 
   ngOnInit(): void {
     this.activityApi.getById(this.id()).subscribe({
@@ -46,11 +52,15 @@ export class ActivityPlayer implements OnInit {
     });
   }
 
-  protected next(): void {
-    this.currentIndex.update((index) => index + 1);
+  protected moduleLabel(type: string): string {
+    return findModuleType(type)?.label ?? type;
+  }
+
+  protected next(result: ModuleResult | null): void {
+    this.results.update((results) => [...results, result]);
   }
 
   protected restart(): void {
-    this.currentIndex.set(0);
+    this.results.set([]);
   }
 }

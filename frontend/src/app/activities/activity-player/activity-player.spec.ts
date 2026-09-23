@@ -14,6 +14,31 @@ describe('ActivityPlayer', () => {
     return { id: position + 1, position, type: 'reading', content: { title: null, body } };
   }
 
+  function question(position: number, text: string): RevisionModule {
+    return {
+      id: position + 1,
+      position,
+      type: 'multiple-choice',
+      content: {
+        question: text,
+        choices: [
+          { id: 'right', text: 'Right answer' },
+          { id: 'wrong', text: 'Wrong answer' },
+        ],
+        correctChoiceIds: ['right'],
+        explanation: null,
+      },
+    };
+  }
+
+  async function answer(choiceText: string): Promise<void> {
+    const label = [...element.querySelectorAll('.choice')].find((l) => l.textContent?.includes(choiceText));
+    label!.querySelector('input')!.click();
+    await fixture.whenStable();
+    await clickButton('Check answer');
+    await clickButton('Continue');
+  }
+
   function activity(modules: RevisionModule[]): Activity {
     return {
       id: 3,
@@ -34,6 +59,13 @@ describe('ActivityPlayer', () => {
   async function clickButton(label: string): Promise<void> {
     [...element.querySelectorAll('button')].find((b) => b.textContent?.includes(label))!.click();
     await fixture.whenStable();
+  }
+
+  /** The cells of the grade table, row by row. */
+  function gradeRows(): string[][] {
+    return [...element.querySelectorAll('.grades tbody tr')].map((row) =>
+      [...row.querySelectorAll('td')].map((cell) => cell.textContent!.trim()),
+    );
   }
 
   beforeEach(() => {
@@ -66,6 +98,35 @@ describe('ActivityPlayer', () => {
     expect(element.textContent).toContain('all 2 modules');
   });
 
+  it('shows that reading modules are not graded', async () => {
+    await load(activity([reading(0, 'First text'), reading(1, 'Second text')]));
+    await clickButton('Continue');
+    await clickButton('Continue');
+
+    expect(gradeRows()).toEqual([
+      ['1. Reading', 'Not graded'],
+      ['2. Reading', 'Not graded'],
+    ]);
+    expect(element.textContent).toContain('This activity has no graded modules.');
+  });
+
+  it('shows the grade of each module and the total grade', async () => {
+    await load(
+      activity([reading(0, 'Text'), question(1, 'First question'), question(2, 'Second question')]),
+    );
+
+    await clickButton('Continue');
+    await answer('Right answer');
+    await answer('Wrong answer');
+
+    expect(gradeRows()).toEqual([
+      ['1. Reading', 'Not graded'],
+      ['2. Multiple choice', '1 / 1'],
+      ['3. Multiple choice', '0 / 1'],
+    ]);
+    expect(element.querySelector('.total-grade')?.textContent).toMatch(/Total grade:\s*1 \/ 2\s*\(50%\)/);
+  });
+
   it('starts again from the first module', async () => {
     await load(activity([reading(0, 'First text')]));
     await clickButton('Continue');
@@ -73,6 +134,7 @@ describe('ActivityPlayer', () => {
     await clickButton('Start again');
 
     expect(element.textContent).toContain('Module 1 of 1');
+    expect(element.querySelector('.grades')).toBeNull();
     expect(element.textContent).toContain('First text');
   });
 

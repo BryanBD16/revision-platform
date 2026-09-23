@@ -168,6 +168,24 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Create_AcceptsMultipleChoiceModules()
+    {
+        var created = await CreateAsync(new CreateActivityRequest("Title", null, ["Biology"],
+        [
+            new CreateModuleRequest("multiple-choice", Json(new
+            {
+                question = "What is a cell?",
+                choices = new[] { new { id = "a", text = "A unit of life" }, new { id = "b", text = "A planet" } },
+                correctChoiceIds = new[] { "a" },
+            })),
+        ]));
+
+        var module = Assert.Single(created.Modules);
+        Assert.Equal("multiple-choice", module.Type);
+        Assert.Equal("What is a cell?", module.Content.GetProperty("question").GetString());
+    }
+
+    [Fact]
     public async Task GetAll_ReturnsModuleCount()
     {
         await CreateAsync(new CreateActivityRequest("Title", null, ["Biology"], [Reading("One"), Reading("Two")]));

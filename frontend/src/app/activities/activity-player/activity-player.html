@@ -20,6 +20,38 @@
         <section class="card completed">
           <h2>Activity completed</h2>
           <p>You went through all {{ modules().length }} modules of “{{ activity.title }}”.</p>
+
+          @if (total(); as total) {
+            <p class="total-grade">
+              Total grade: <strong>{{ total.score }} / {{ total.maxScore }}</strong>
+              ({{ total.percentage }}%)
+            </p>
+          } @else {
+            <p class="meta">This activity has no graded modules.</p>
+          }
+
+          <table class="grades">
+            <thead>
+              <tr>
+                <th scope="col">Module</th>
+                <th scope="col">Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (module of modules(); track module.id; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}. {{ moduleLabel(module.type) }}</td>
+                  <td>
+                    @if (results()[i]; as result) {
+                      {{ result.score }} / {{ result.maxScore }}
+                    } @else {
+                      <span class="meta">Not graded</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
           <div class="actions">
             <button type="button" class="button" (click)="restart()">Start again</button>
             <a class="button-secondary" routerLink="/activities">Back to activities</a>
@@ -29,7 +61,7 @@
         <p class="progress">Module {{ currentIndex() + 1 }} of {{ modules().length }}</p>
         <progress [value]="currentIndex()" [max]="modules().length"></progress>
         <section class="card">
-          <app-module-player-host [module]="module" (completed)="next()" />
+          <app-module-player-host [module]="module" (completed)="next($event)" />
         </section>
       }
     }

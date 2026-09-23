@@ -25,7 +25,7 @@ describe('ReadingPlayer', () => {
     expect(element.querySelector('h3')).toBeNull();
   });
 
-  it('completes when the learner continues', async () => {
+  it('completes without a grade when the learner continues', async () => {
     fixture.componentRef.setInput('content', { title: null, body: 'Some text' });
     await fixture.whenStable();
     const completed = vi.fn();
@@ -33,6 +33,6 @@ describe('ReadingPlayer', () => {
 
     element.querySelector('button')!.click();
 
-    expect(completed).toHaveBeenCalledOnce();
+    expect(completed).toHaveBeenCalledExactlyOnceWith(null);
   });
 });

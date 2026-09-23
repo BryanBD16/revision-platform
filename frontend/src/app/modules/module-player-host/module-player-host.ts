@@ -11,6 +11,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { RevisionModule } from '../../activities/activity';
+import { ModuleResult } from '../module-type';
 import { findModuleType } from '../module-types';
 
 /** Renders the player of any module type and forwards its completion. */
@@ -19,14 +20,14 @@ import { findModuleType } from '../module-types';
   template: `
     @if (!player()) {
       <p class="error">Unknown module type "{{ module().type }}".</p>
-      <button type="button" class="button" (click)="completed.emit()">Skip</button>
+      <button type="button" class="button" (click)="completed.emit(null)">Skip</button>
     }
     <ng-container #container />
   `,
 })
 export class ModulePlayerHost {
   readonly module = input.required<RevisionModule>();
-  readonly completed = output<void>();
+  readonly completed = output<ModuleResult | null>();
 
   protected readonly player = computed(() => findModuleType(this.module().type)?.player);
   private readonly container = viewChild.required('container', { read: ViewContainerRef });
@@ -44,7 +45,7 @@ export class ModulePlayerHost {
           container.createComponent(player, {
             bindings: [
               inputBinding('content', () => content),
-              outputBinding('completed', () => this.completed.emit()),
+              outputBinding<ModuleResult | null>('completed', (result) => this.completed.emit(result)),
             ],
           });
         }

@@ -24,8 +24,17 @@ export interface ModuleEditor<TForm extends FormGroup = FormGroup> {
   readonly form: InputSignal<TForm>;
 }
 
+/** The grade obtained on a module, e.g. 1 out of 1. */
+export interface ModuleResult {
+  score: number;
+  maxScore: number;
+}
+
 export interface ModulePlayer<TContent = unknown> {
   readonly content: InputSignal<TContent>;
-  /** Emitted when the learner is done with the module and wants to continue. */
-  readonly completed: OutputEmitterRef<void>;
+  /**
+   * Emitted when the learner is done with the module and wants to continue,
+   * with the grade obtained, or `null` for module types that are not graded.
+   */
+  readonly completed: OutputEmitterRef<ModuleResult | null>;
 }
