@@ -30,8 +30,10 @@ A revision activity is an ordered list of modules. Each module has a
   module content.
 - **Frontend:** each module type has its own folder under
   `frontend/src/app/modules/` and provides a `ModuleTypeDefinition`: a
-  label, a form factory with its validators, a function converting the
-  form to the API content, an editor component (input `form`) and a
+  label, a form factory with its validators (empty, or filled with
+  existing content), a function converting the form to the API content,
+  a `summarize(content)` function giving a short label saved with the
+  results, an editor component (input `form`) and a
   player component (input `content`, output `completed` with the module's
   result). `MODULE_TYPES`
   lists the definitions; `ModuleEditorHost` and `ModulePlayerHost` render
@@ -40,7 +42,8 @@ A revision activity is an ordered list of modules. Each module has a
 - **Playing an activity:** the activity player shows one module at a
   time. When a module's player emits `completed` (for a reading module,
   when the learner clicks Continue), it moves to the next module, then
-  shows a completion screen. Nothing is saved.
+  shows a completion screen, which saves the result of a signed-in user
+  (see [Saved results](#saved-results)).
 - **Grading:** `completed` carries the module's result: `{ score,
   maxScore }`, or `null` for module types that are not graded (reading).
   The completion screen lists the grade of each module and a total: the
@@ -160,9 +163,23 @@ and future personal activities must never be sent to other users.
 
 ### Completing an activity
 
-In the first iteration, completing an activity happens entirely in the
-browser: the player walks through the modules and checks answers
-client-side. Nothing about a completion is stored.
+Completing an activity happens in the browser: the player walks through
+the modules and grades the answers client-side. Only the resulting
+scores are sent to the server, for signed-in users.
+
+```
+activity_attempts
+  id, user_id -> users (cascade delete),
+  activity_id -> revision_activities (set null on delete),
+  activity_title (copy), score, max_score (null if nothing graded),
+  completed_at; index (user_id, completed_at)
+
+attempt_modules
+  id, attempt_id -> activity_attempts (cascade delete),
+  module_id -> revision_modules (set null on delete),
+  position (unique per attempt), module_type, label (copy),
+  score, max_score (null for a module that is not graded)
+```
 
 ## Authentication
 
@@ -255,11 +272,34 @@ client-side. Nothing about a completion is stored.
 - `Program.cs` runs a command instead of the web server when the first
   argument is `users` (`dotnet run -- users list`).
 
+## Saved results
+
+- **The browser computes the scores.** When a signed-in user completes
+  an activity, the player sends `POST /api/attempts` with the score of
+  each module and its label (`summarize`). The answers are not sent or
+  stored. The correct answers are already in the activity sent to the
+  browser, so grading on the server would not prevent cheating; it only
+  concerns the user's own results.
+- **The server checks and completes the attempt** (`AttemptService`):
+  the user must see the activity, the modules must be exactly its
+  current modules in order (otherwise the activity changed during the
+  attempt: `400`), and each score must be between 0 and its maximum. The
+  server copies the activity title and the module types, and computes the
+  global score from the graded modules.
+- **An attempt never changes afterwards.** It stores copies of what it
+  shows, and its links to the activity and modules become null when they
+  are deleted (MySQL `SET NULL`). There is no endpoint to change or
+  delete an attempt; attempts are deleted with the user's account.
+- **Only its owner sees an attempt,** admins included: someone else's
+  attempt returns `404`.
+- **Frontend:** `AttemptApi`, the My results page (`/results`, optionally
+  `?activityId=`), the attempt page (`/results/:id`) and the "Your
+  results" section of the activity page.
+
 ## Designed to evolve toward progress
 
-Long term, the application will have saved results and learning
-progress. None of this is implemented yet, but the design keeps it easy
-to add:
+Long term, the application will track learning progress. The design
+keeps it easy to add:
 
 - **Content and learner data stay separate.** Activity and module tables
   hold only authored content; no completion, score or user fields.
@@ -270,14 +310,9 @@ to add:
   of existing choices and pairs, and give new ones a random id
   (`shared/item-ids.ts`) instead of numbering them, so an id is never
   reused for another choice after an edit.
-- **Results will not depend on the current activity.** An attempt will
-  store what is needed to show it later: the activity title, and for each
-  module its title or type, its score and its maximum score, with the
-  global score computed from these modules. The links to the activity and
-  its modules will be optional references (set to null when they are
-  deleted), used to group attempts, not to recompute them. Deleting an
-  activity or a module, which is permanent, therefore never changes or
-  deletes past results.
+- **Results do not depend on the current activity** (see
+  [Saved results](#saved-results)), so deleting an activity or a module,
+  which is permanent, never changes or deletes past results.
 - **API routes are not public-specific** (`/api/activities`), so they can
   later be scoped to the signed-in user without changing shape.
 
@@ -286,7 +321,7 @@ Expected future additions:
 | Concept | Addition |
 |---|---|
 | Google sign-in (optional) | Identity's `user_logins` table and `AddGoogle()` |
-| Saved results | `activity_attempts`, `module_responses` (response JSON per module type), each with a copy of the titles and scores at the time of the attempt |
+| Reviewing answers | a nullable response JSON column on `attempt_modules` |
 | Learning progress | derived from attempts; a summary table only if needed |
 | Server-side answer checking | per-type `Evaluate(content, response)`; learner view without answers |
 

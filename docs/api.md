@@ -369,6 +369,71 @@ Deletes the activity for good, with its modules and its links to themes
 and courses, and returns `204`. The same people who can edit an activity
 can delete it, with the same answers otherwise (`401`, `403`, `404`).
 
+## Results
+
+Only for signed-in users (`401` otherwise). A user only ever sees their
+own attempts: someone else's attempt returns `404`.
+
+### Attempt
+
+```json
+{
+  "id": 7,
+  "activityId": 3,
+  "activityTitle": "Cell biology",
+  "score": 1,
+  "maxScore": 3,
+  "completedAt": "2026-09-23T22:01:44.123456Z",
+  "modules": [
+    { "moduleId": 10, "position": 0, "moduleType": "reading", "label": "Introduction", "score": null, "maxScore": null },
+    { "moduleId": 11, "position": 1, "moduleType": "multiple-choice", "label": "What is a cell?", "score": 1, "maxScore": 1 },
+    { "moduleId": null, "position": 2, "moduleType": "matching", "label": null, "score": 0, "maxScore": 2 }
+  ]
+}
+```
+
+An attempt is kept as it was when the activity was completed. The title
+and module types are copies. `activityId` and `moduleId` become `null`
+when the activity or module is deleted. `score` and `maxScore` are
+`null` for a module that is not graded, and for the whole attempt when
+no module is graded.
+
+### `POST /api/attempts`
+
+Saves a completed activity and returns `201` with the attempt.
+
+```json
+{
+  "activityId": 3,
+  "modules": [
+    { "moduleId": 10, "label": "Introduction", "score": null, "maxScore": null },
+    { "moduleId": 11, "label": "What is a cell?", "score": 1, "maxScore": 1 }
+  ]
+}
+```
+
+- `activityId`: required; an activity the user can see (`404` otherwise).
+- `modules`: exactly the activity's modules, in order, identified by
+  `moduleId` (`400` on `modules` otherwise, for example when the activity
+  changed during the attempt).
+- `label`: optional, at most 1000 characters: what the module is about.
+- `score` and `maxScore`: both `null` for a module that is not graded,
+  or both given with `0 ≤ score ≤ maxScore` and `1 ≤ maxScore ≤ 1000`
+  (`400` on `modules[i].score` otherwise). The scores are computed by
+  the browser; the server adds up the graded modules for the global score.
+
+Attempts cannot be changed or deleted.
+
+### `GET /api/attempts`
+
+Returns a page of the user's attempts, newest first, without their
+modules: `{ items, page, pageSize, totalCount }`, with `page` and
+`pageSize` as for the activity list and an optional `activityId`.
+
+### `GET /api/attempts/{id}`
+
+Returns one of the user's attempts with its modules.
+
 ## Module types
 
 ### `reading`
