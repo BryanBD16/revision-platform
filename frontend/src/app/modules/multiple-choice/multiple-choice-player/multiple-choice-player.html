@@ -4,7 +4,7 @@
     <p class="hint">Select all the correct answers.</p>
   }
 
-  @for (choice of content().choices; track choice.id) {
+  @for (choice of choices(); track choice.id) {
     @let isSelected = selected().has(choice.id);
     @let isCorrect = isCorrectChoice(choice.id);
     <label

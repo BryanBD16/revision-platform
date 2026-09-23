@@ -50,12 +50,24 @@ describe('MultipleChoicePlayer', () => {
     fixture.componentInstance.completed.subscribe(completed);
   });
 
+  afterEach(() => vi.restoreAllMocks());
+
   it('shows the question with one radio button per choice', async () => {
     await show({});
 
     expect(element.textContent).toContain('What is a cell?');
     expect(inputs().map((input) => input.type)).toEqual(['radio', 'radio', 'radio']);
     expect(element.textContent).not.toContain('Select all the correct answers.');
+  });
+
+  it('shows the choices in a shuffled order', async () => {
+    // With 0, the shuffle turns [a, b, c] into [b, c, a].
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+
+    await show({});
+
+    const texts = [...element.querySelectorAll('.choice')].map((choice) => choice.textContent?.trim());
+    expect(texts).toEqual(['A planet', 'A living unit', 'The basic unit of life']);
   });
 
   it('can only check the answer once a choice is selected', async () => {
