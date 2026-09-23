@@ -39,6 +39,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.RevisionActivities.ExecuteDeleteAsync();
         await db.Themes.ExecuteDeleteAsync();
+        // Deleting a user also deletes its roles, claims, logins and tokens (cascade).
+        await db.Users.ExecuteDeleteAsync();
     }
 
     Task IAsyncLifetime.DisposeAsync() => Task.CompletedTask;
