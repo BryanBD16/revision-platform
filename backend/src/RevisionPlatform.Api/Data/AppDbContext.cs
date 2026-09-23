@@ -47,7 +47,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             theme.Property(t => t.Name)
                 .HasMaxLength(Theme.NameMaxLength)
                 .UseCollation("utf8mb4_0900_as_ci");
-            theme.HasIndex(t => t.Name).IsUnique();
+            theme.Property(t => t.Kind).HasMaxLength(Theme.KindMaxLength);
+            // A topic and a course can have the same name.
+            theme.HasIndex(t => new { t.Kind, t.Name }).IsUnique();
         });
     }
 }

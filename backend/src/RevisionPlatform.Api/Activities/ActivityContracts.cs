@@ -8,11 +8,13 @@ public record CreateActivityRequest(
     string? Title,
     string? Description,
     List<string?>? Themes,
-    List<CreateModuleRequest?>? Modules);
+    List<CreateModuleRequest?>? Modules,
+    List<string?>? Courses = null);
 
 /// <summary>A module to create; its position is its index in the request.</summary>
 public record CreateModuleRequest(string? Type, JsonElement? Content);
 
+/// <summary>A topic or a course.</summary>
 public record ThemeResponse(int Id, string Name);
 
 public record ModuleResponse(int Id, int Position, string Type, JsonElement Content);
@@ -23,6 +25,7 @@ public record ActivitySummaryResponse(
     string Title,
     string? Description,
     IReadOnlyList<ThemeResponse> Themes,
+    IReadOnlyList<ThemeResponse> Courses,
     int ModuleCount,
     DateTime CreatedAt,
     DateTime UpdatedAt);
@@ -33,6 +36,7 @@ public record ActivityResponse(
     string Title,
     string? Description,
     IReadOnlyList<ThemeResponse> Themes,
+    IReadOnlyList<ThemeResponse> Courses,
     IReadOnlyList<ModuleResponse> Modules,
     DateTime CreatedAt,
     DateTime UpdatedAt);
