@@ -8,5 +8,10 @@ public record SignInRequest(string? Email, string? Password);
 
 public record ChangePasswordRequest(string? CurrentPassword, string? NewPassword);
 
-/// <summary>The signed-in user.</summary>
-public record CurrentUserResponse(int Id, string Email, string DisplayName, IReadOnlyList<string> Roles);
+/// <summary>The signed-in user, with its roles and what it is allowed to do (see <see cref="Policies"/>).</summary>
+public record CurrentUserResponse(
+    int Id,
+    string Email,
+    string DisplayName,
+    IReadOnlyList<string> Roles,
+    IReadOnlyList<string> Permissions);

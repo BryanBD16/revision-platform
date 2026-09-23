@@ -65,7 +65,8 @@ public static class AuthServiceCollectionExtensions
         // a password reset or a locked account applies immediately.
         services.Configure<SecurityStampValidatorOptions>(options => options.ValidationInterval = TimeSpan.Zero);
 
-        services.AddAuthorization();
+        services.AddAuthorization(Policies.Add);
+        services.AddScoped<RoleService>();
 
         services.AddAntiforgery(options =>
         {
