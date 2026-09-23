@@ -1,0 +1,32 @@
+<div class="page-header">
+  <h2>Revision activities</h2>
+  <a class="button" routerLink="/activities/new">New activity</a>
+</div>
+
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading activities…</p>
+  }
+  @case ('error') {
+    <p class="error">The activities could not be loaded. Please try again later.</p>
+  }
+  @case ('loaded') {
+    @if (activities().length === 0) {
+      <p class="empty">No activities yet. Create the first one.</p>
+    } @else {
+      <ul class="activity-list">
+        @for (activity of activities(); track activity.id) {
+          <li class="card">
+            <a class="activity-title" [routerLink]="['/activities', activity.id]">{{ activity.title }}</a>
+            <ul class="themes">
+              @for (theme of activity.themes; track theme.id) {
+                <li class="theme">{{ theme.name }}</li>
+              }
+            </ul>
+            <p class="meta">Created {{ activity.createdAt | date: 'mediumDate' }}</p>
+          </li>
+        }
+      </ul>
+    }
+  }
+}
