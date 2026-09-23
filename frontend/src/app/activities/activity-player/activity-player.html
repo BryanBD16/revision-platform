@@ -19,7 +19,11 @@
       } @else if (finished()) {
         <section class="card completed">
           <h2>Activity completed</h2>
-          <p>You went through all {{ modules().length }} modules of “{{ activity.title }}”.</p>
+          @if (modules().length === 1) {
+            <p>You went through the module of “{{ activity.title }}”.</p>
+          } @else {
+            <p>You went through all {{ modules().length }} modules of “{{ activity.title }}”.</p>
+          }
 
           @if (total(); as total) {
             <p class="total-grade">
