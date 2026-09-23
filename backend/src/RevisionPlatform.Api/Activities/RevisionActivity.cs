@@ -1,3 +1,4 @@
+using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
 
 namespace RevisionPlatform.Api.Activities;
@@ -14,4 +15,7 @@ public class RevisionActivity
     public DateTime UpdatedAt { get; set; }
 
     public List<Theme> Themes { get; set; } = [];
+
+    /// <summary>The modules in the order they are completed (see <see cref="RevisionModule.Position"/>).</summary>
+    public List<RevisionModule> Modules { get; set; } = [];
 }

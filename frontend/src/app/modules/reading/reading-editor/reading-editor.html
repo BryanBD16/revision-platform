@@ -1,0 +1,21 @@
+<div [formGroup]="form()">
+  <div class="field">
+    <label [for]="id + '-title'">Title <span class="optional">(optional)</span></label>
+    <input [id]="id + '-title'" type="text" formControlName="title" />
+    @if (form().controls.title.hasError('maxlength')) {
+      <p class="error">The title must be at most {{ limits.titleMaxLength }} characters.</p>
+    }
+  </div>
+
+  <div class="field">
+    <label [for]="id + '-body'">Text to read</label>
+    <textarea [id]="id + '-body'" rows="8" formControlName="body"></textarea>
+    @let body = form().controls.body;
+    @if (body.touched && body.hasError('required')) {
+      <p class="error">The text to read is required.</p>
+    }
+    @if (body.hasError('maxlength')) {
+      <p class="error">The text to read must be at most {{ limits.bodyMaxLength }} characters.</p>
+    }
+  </div>
+</div>

@@ -153,3 +153,96 @@ a {
 .error {
   color: var(--color-error);
 }
+
+.button-secondary {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.button-secondary:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.modules {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+}
+
+.modules legend {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.module {
+  margin-bottom: 0.75rem;
+}
+
+.module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.module-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.module-actions {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.add-module {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.add-module select {
+  padding: 0.375rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.reading-body {
+  white-space: pre-line;
+}
+
+.progress {
+  margin: 1rem 0 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+progress {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.completed {
+  margin-top: 1rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+a.button-secondary {
+  text-decoration: none;
+}

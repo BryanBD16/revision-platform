@@ -1,0 +1,8 @@
+<article class="reading">
+  @if (content().title) {
+    <h3>{{ content().title }}</h3>
+  }
+  <p class="reading-body">{{ content().body }}</p>
+</article>
+
+<button type="button" class="button" (click)="completed.emit()">Continue</button>

@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Activity } from './activity';
+import { Activity, ActivitySummary } from './activity';
 import { ActivityApi } from './activity-api';
 
 describe('ActivityApi', () => {
@@ -13,6 +13,17 @@ describe('ActivityApi', () => {
     title: 'Cell biology',
     description: null,
     themes: [{ id: 1, name: 'Biology' }],
+    modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
+    createdAt: '2026-09-23T03:06:18Z',
+    updatedAt: '2026-09-23T03:06:18Z',
+  };
+
+  const summary: ActivitySummary = {
+    id: 1,
+    title: 'Cell biology',
+    description: null,
+    themes: [{ id: 1, name: 'Biology' }],
+    moduleCount: 1,
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
   };
@@ -28,12 +39,12 @@ describe('ActivityApi', () => {
   afterEach(() => http.verify());
 
   it('gets all activities', () => {
-    let result: Activity[] | undefined;
+    let result: ActivitySummary[] | undefined;
     api.getAll().subscribe((activities) => (result = activities));
 
-    http.expectOne({ method: 'GET', url: '/api/activities' }).flush([activity]);
+    http.expectOne({ method: 'GET', url: '/api/activities' }).flush([summary]);
 
-    expect(result).toEqual([activity]);
+    expect(result).toEqual([summary]);
   });
 
   it('gets one activity by id', () => {
@@ -46,7 +57,12 @@ describe('ActivityApi', () => {
   });
 
   it('creates an activity', () => {
-    const request = { title: 'Cell biology', description: null, themes: ['Biology'] };
+    const request = {
+      title: 'Cell biology',
+      description: null,
+      themes: ['Biology'],
+      modules: [{ type: 'reading', content: { title: null, body: 'Text' } }],
+    };
     let result: Activity | undefined;
     api.create(request).subscribe((a) => (result = a));
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
+using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
 
 namespace RevisionPlatform.Api.Data;
@@ -8,6 +9,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<RevisionActivity> RevisionActivities => Set<RevisionActivity>();
     public DbSet<Theme> Themes => Set<Theme>();
+    public DbSet<RevisionModule> RevisionModules => Set<RevisionModule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +26,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                     r => r.HasOne(typeof(Theme)).WithMany().HasForeignKey("theme_id"),
                     l => l.HasOne(typeof(RevisionActivity)).WithMany().HasForeignKey("activity_id"),
                     j => j.HasKey("activity_id", "theme_id"));
+        });
+
+        modelBuilder.Entity<RevisionModule>(module =>
+        {
+            module.Property(m => m.Type).HasMaxLength(RevisionModule.TypeMaxLength);
+            module.Property(m => m.Content).HasColumnType("json");
+
+            module
+                .HasOne<RevisionActivity>()
+                .WithMany(a => a.Modules)
+                .HasForeignKey(m => m.ActivityId)
+                .OnDelete(DeleteBehavior.Cascade);
+            module.HasIndex(m => new { m.ActivityId, m.Position }).IsUnique();
         });
 
         modelBuilder.Entity<Theme>(theme =>

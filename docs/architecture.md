@@ -20,13 +20,45 @@ A revision activity is an ordered list of modules. Each module has a
 `type` (for example `reading`, `multiple-choice`, `matching`) and a
 `content` object whose structure depends on that type.
 
-- **Backend:** each module type has its own folder and implements a
-  shared contract that validates its content. A registry resolves the
-  implementation from the type key. Adding a type means adding a folder
-  and registering it; unrelated code does not change.
-- **Frontend:** each module type has its own folder with an editor
-  component and a player component. A registry maps the type key to
-  those components, and a generic host renders them.
+- **Backend:** each module type has its own folder under
+  `backend/src/RevisionPlatform.Api/Modules/` and implements
+  `IModuleType`, which validates the type's JSON content and returns it
+  normalized for storage. Most types derive from `ModuleType<TContent>`,
+  which maps the JSON to a C# record so the type only implements
+  `Validate` and `Normalize`. `ModuleTypeRegistry` resolves the
+  implementation from the type key. The activity code never looks inside
+  module content.
+- **Frontend:** each module type has its own folder under
+  `frontend/src/app/modules/` and provides a `ModuleTypeDefinition`: a
+  label, a form factory with its validators, a function converting the
+  form to the API content, an editor component (input `form`) and a
+  player component (input `content`, output `completed`). `MODULE_TYPES`
+  lists the definitions; `ModuleEditorHost` and `ModulePlayerHost` render
+  the editor or player of any type. The activity pages only use these
+  hosts and never depend on a specific module type.
+- **Playing an activity:** the activity player shows one module at a
+  time. When a module's player emits `completed` (for a reading module,
+  when the learner clicks Continue), it moves to the next module, then
+  shows a completion screen. Nothing is saved.
+
+### Adding a module type (backend)
+
+1. Create `Modules/<TypeName>/` with a content record and a class
+   deriving from `ModuleType<TContent>` (see `Modules/Reading/`).
+2. Register it in `ModuleServiceCollectionExtensions.AddModuleTypes`.
+3. Add unit tests for its validation, and document its content in
+   `docs/api.md`.
+
+No database migration is needed: the content is stored as JSON.
+
+### Adding a module type (frontend)
+
+1. Create `modules/<type-name>/` with the content interface, an editor
+   component implementing `ModuleEditor`, a player component
+   implementing `ModulePlayer`, and the `ModuleTypeDefinition` (see
+   `modules/reading/`).
+2. Add the definition to `MODULE_TYPES` in `modules/module-types.ts`.
+3. Add tests for the definition, the editor and the player.
 
 ## Database
 
