@@ -6,6 +6,8 @@ import { ActivityEdit } from './activities/activity-edit/activity-edit';
 import { ActivityList } from './activities/activity-list/activity-list';
 import { ActivityPlayer } from './activities/activity-player/activity-player';
 import { Account } from './auth/account/account';
+import { AttemptDetail } from './attempts/attempt-detail/attempt-detail';
+import { MyResults } from './attempts/my-results/my-results';
 import { permissionGuard, signedInGuard } from './auth/auth.guards';
 import { PERMISSIONS } from './auth/auth.service';
 import { Register } from './auth/register/register';
@@ -28,6 +30,13 @@ export const routes: Routes = [
     canActivate: [signedInGuard],
   },
   { path: 'activities/:id/play', component: ActivityPlayer, title: 'Revision activity' },
+  { path: 'results', component: MyResults, title: 'My results', canActivate: [signedInGuard] },
+  {
+    path: 'results/:id',
+    component: AttemptDetail,
+    title: 'Result',
+    canActivate: [signedInGuard],
+  },
   { path: 'sign-in', component: SignIn, title: 'Sign in' },
   { path: 'register', component: Register, title: 'Create an account' },
   { path: 'account', component: Account, title: 'Account', canActivate: [signedInGuard] },

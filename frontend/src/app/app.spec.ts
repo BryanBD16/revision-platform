@@ -56,7 +56,8 @@ describe('App', () => {
     });
     const element = await create();
 
-    expect(element.querySelector('.user-nav a')?.getAttribute('href')).toBe('/admin');
+    const links = [...element.querySelectorAll('.user-nav a')].map((a) => a.getAttribute('href'));
+    expect(links).toContain('/admin');
   });
 
   it('shows the signed-in user and signs out', async () => {
@@ -64,7 +65,11 @@ describe('App', () => {
     signIn();
     const element = await create();
 
-    expect(element.querySelector('.user-nav a')?.textContent).toContain('Ada');
+    expect(element.querySelector('.user-nav a[href="/account"]')?.textContent).toContain('Ada');
+    expect(element.querySelector('.user-nav a[href="/results"]')?.textContent).toContain(
+      'My results',
+    );
+    expect(element.querySelector('.user-nav a[href="/admin"]')).toBeNull();
     element.querySelector<HTMLButtonElement>('.user-nav button')!.click();
     http
       .expectOne({ method: 'POST', url: '/api/auth/sign-out' })

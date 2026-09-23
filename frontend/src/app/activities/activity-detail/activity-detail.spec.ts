@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 import { Activity } from '../activity';
 import { ActivityDetail } from './activity-detail';
 
@@ -132,6 +133,75 @@ describe('ActivityDetail', () => {
       'Only admins can delete',
     );
     confirm.mockRestore();
+  });
+
+  describe('for a signed-in user', () => {
+    beforeEach(async () => {
+      // Recreate the page once the user is signed in.
+      TestBed.inject(AuthService).signIn({ email: 'ada@example.com', password: 'p' }).subscribe();
+      http
+        .expectOne('/api/auth/sign-in')
+        .flush({ id: 1, email: 'ada@example.com', displayName: 'Ada', roles: [], permissions: [] });
+      http.expectOne('/api/activities/3').flush(activity);
+      fixture = TestBed.createComponent(ActivityDetail);
+      fixture.componentRef.setInput('id', '3');
+      fixture.detectChanges();
+    });
+
+    function attempt(id: number) {
+      return {
+        id,
+        activityId: 3,
+        activityTitle: 'Cell biology',
+        score: 1,
+        maxScore: 2,
+        completedAt: '2026-09-23T03:06:18Z',
+      };
+    }
+
+    it('shows the latest results of the user for this activity', async () => {
+      await load(activity);
+      http
+        .expectOne('/api/attempts?activityId=3&pageSize=5')
+        .flush({ items: [attempt(8), attempt(7)], page: 1, pageSize: 5, totalCount: 2 });
+      await fixture.whenStable();
+
+      const section = (fixture.nativeElement as HTMLElement).querySelector('.your-results');
+      expect(section?.querySelectorAll('li').length).toBe(2);
+      expect(section?.textContent).toContain('1 / 2 (50%)');
+      expect(section?.querySelector('a')?.getAttribute('href')).toBe('/results/8');
+      expect(section?.textContent).not.toContain('See all');
+    });
+
+    it('links to all the results of the activity when there are more', async () => {
+      await load(activity);
+      http
+        .expectOne('/api/attempts?activityId=3&pageSize=5')
+        .flush({ items: [1, 2, 3, 4, 5].map(attempt), page: 1, pageSize: 5, totalCount: 12 });
+      await fixture.whenStable();
+
+      const all = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>(
+        '.your-results > a',
+      );
+      expect(all?.textContent).toContain('See all 12 results');
+      expect(all?.getAttribute('href')).toBe('/results?activityId=3');
+    });
+
+    it('shows no section for an activity the user has not completed yet', async () => {
+      await load(activity);
+      http
+        .expectOne('/api/attempts?activityId=3&pageSize=5')
+        .flush({ items: [], page: 1, pageSize: 5, totalCount: 0 });
+      await fixture.whenStable();
+
+      expect((fixture.nativeElement as HTMLElement).querySelector('.your-results')).toBeNull();
+    });
+  });
+
+  it('does not look for the results of a visitor', async () => {
+    await load(activity);
+
+    http.expectNone((request) => request.url.startsWith('/api/attempts'));
   });
 
   it('shows a not found message for an unknown activity', async () => {

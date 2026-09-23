@@ -1,0 +1,51 @@
+<h2>My results</h2>
+
+@if (activityId() !== undefined) {
+  <p class="meta">
+    Only the results of one activity are shown. <a routerLink="/results">Show all my results</a>
+  </p>
+}
+
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading your results…</p>
+  }
+  @case ('error') {
+    <p class="error">Your results could not be loaded. Please try again later.</p>
+  }
+  @case ('loaded') {
+    @if (result(); as result) {
+      @if (result.totalCount === 0) {
+        <p class="empty">
+          No results yet. Complete an activity while signed in to save your result.
+          <a routerLink="/activities">Browse the activities</a>
+        </p>
+      } @else {
+        <ul class="activity-list">
+          @for (attempt of result.items; track attempt.id) {
+            <li class="card">
+              <a class="activity-title" [routerLink]="['/results', attempt.id]">{{ attempt.activityTitle }}</a>
+              @if (attempt.activityId === null) {
+                <span class="badge-private">Activity deleted</span>
+              }
+              <p class="meta">
+                {{ attempt.completedAt | date: 'medium' }} ·
+                {{ scoreText(attempt.score, attempt.maxScore) ?? 'Not graded' }}
+              </p>
+            </li>
+          }
+        </ul>
+
+        <nav class="pagination" aria-label="Pages of results">
+          @if (result.page > 1) {
+            <button type="button" class="button-secondary" (click)="page.set(result.page - 1)">← Newer</button>
+          }
+          <span class="meta">{{ result.totalCount }} {{ result.totalCount === 1 ? 'result' : 'results' }}</span>
+          @if (hasNextPage(result)) {
+            <button type="button" class="button-secondary" (click)="page.set(result.page + 1)">Older →</button>
+          }
+        </nav>
+      }
+    }
+  }
+}
