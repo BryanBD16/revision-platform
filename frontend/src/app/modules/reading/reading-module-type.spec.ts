@@ -15,6 +15,13 @@ describe('readingModuleType', () => {
     expect(readingModuleType.toContent(form).title).toBeNull();
   });
 
+  it('fills the form with existing content', () => {
+    const form = readingModuleType.createForm({ title: null, body: 'Some text' });
+
+    expect(form.getRawValue()).toEqual({ title: '', body: 'Some text' });
+    expect(readingModuleType.toContent(form)).toEqual({ title: null, body: 'Some text' });
+  });
+
   it('requires a non-blank text to read', () => {
     const form = readingModuleType.createForm();
     form.setValue({ title: 'Title', body: '   ' });

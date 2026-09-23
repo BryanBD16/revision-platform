@@ -36,6 +36,7 @@ describe('MatchingEditor', () => {
     type('Definition 1', 'Two identical cells');
 
     expect(form.getRawValue().pairs[0]).toEqual({
+      id: null,
       concept: 'Mitosis',
       definition: 'Two identical cells',
     });
