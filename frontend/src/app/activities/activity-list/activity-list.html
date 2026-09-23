@@ -23,7 +23,10 @@
                 <li class="theme">{{ theme.name }}</li>
               }
             </ul>
-            <p class="meta">Created {{ activity.createdAt | date: 'mediumDate' }}</p>
+            <p class="meta">
+              {{ activity.moduleCount }} {{ activity.moduleCount === 1 ? 'module' : 'modules' }}
+              · Created {{ activity.createdAt | date: 'mediumDate' }}
+            </p>
           </li>
         }
       </ul>

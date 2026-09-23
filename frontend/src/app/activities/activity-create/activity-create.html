@@ -38,6 +38,42 @@
     }
   </div>
 
+  <fieldset class="modules">
+    <legend>Modules</legend>
+
+    @for (module of modules.controls; track module; let i = $index, first = $first, last = $last) {
+      <section class="card module">
+        <div class="module-header">
+          <h3>{{ i + 1 }}. {{ moduleLabel(module.controls.type.value) }}</h3>
+          <div class="module-actions">
+            <button type="button" class="button-secondary" (click)="moveModule(i, -1)" [disabled]="first" [attr.aria-label]="'Move module ' + (i + 1) + ' up'">↑</button>
+            <button type="button" class="button-secondary" (click)="moveModule(i, 1)" [disabled]="last" [attr.aria-label]="'Move module ' + (i + 1) + ' down'">↓</button>
+            <button type="button" class="button-secondary" (click)="removeModule(i)" [attr.aria-label]="'Remove module ' + (i + 1)">Remove</button>
+          </div>
+        </div>
+        <app-module-editor-host [type]="module.controls.type.value" [form]="module.controls.content" />
+      </section>
+    } @empty {
+      <p class="empty">No modules yet. Add the steps of the activity below.</p>
+    }
+
+    @if (modules.touched && modules.hasError('required')) {
+      <p class="error">At least one module is required.</p>
+    }
+
+    <div class="add-module">
+      <label for="new-module-type">Module type</label>
+      <select id="new-module-type" #newModuleType>
+        @for (moduleType of moduleTypes; track moduleType.type) {
+          <option [value]="moduleType.type">{{ moduleType.label }}</option>
+        }
+      </select>
+      <button type="button" class="button-secondary" (click)="addModule(newModuleType.value)">
+        Add module
+      </button>
+    </div>
+  </fieldset>
+
   @for (message of serverErrors(); track message) {
     <p class="error">{{ message }}</p>
   }

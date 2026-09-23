@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Activity } from '../activity';
+import { ActivitySummary } from '../activity';
 import { ActivityList } from './activity-list';
 
 describe('ActivityList', () => {
@@ -26,7 +26,7 @@ describe('ActivityList', () => {
   }
 
   it('shows each activity with its themes and a link to it', async () => {
-    const activities: Activity[] = [
+    const activities: ActivitySummary[] = [
       {
         id: 7,
         title: 'Cell biology',
@@ -35,6 +35,7 @@ describe('ActivityList', () => {
           { id: 1, name: 'Biology' },
           { id: 2, name: 'Cells' },
         ],
+        moduleCount: 2,
         createdAt: '2026-09-23T03:06:18Z',
         updatedAt: '2026-09-23T03:06:18Z',
       },
@@ -50,6 +51,7 @@ describe('ActivityList', () => {
     expect(link?.getAttribute('href')).toBe('/activities/7');
     expect(text()).toContain('Biology');
     expect(text()).toContain('Cells');
+    expect(text()).toContain('2 modules');
   });
 
   it('shows a message when there are no activities', async () => {

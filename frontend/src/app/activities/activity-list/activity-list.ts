@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Activity } from '../activity';
+import { ActivitySummary } from '../activity';
 import { ActivityApi } from '../activity-api';
 
 @Component({
@@ -12,7 +12,7 @@ import { ActivityApi } from '../activity-api';
 export class ActivityList implements OnInit {
   private readonly activityApi = inject(ActivityApi);
 
-  protected readonly activities = signal<Activity[]>([]);
+  protected readonly activities = signal<ActivitySummary[]>([]);
   protected readonly status = signal<'loading' | 'loaded' | 'error'>('loading');
 
   ngOnInit(): void {
