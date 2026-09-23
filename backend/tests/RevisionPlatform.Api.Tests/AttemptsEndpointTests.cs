@@ -141,6 +141,82 @@ public class AttemptsEndpointTests(ApiFactory factory) : IAsyncLifetime
         Assert.Equal([invalidField], details!.Errors.Keys);
     }
 
+    [Fact]
+    public async Task GetById_ReturnsTheAttemptToItsOwnerOnly()
+    {
+        var saved = await SaveAsync(_ada, ValidRequest());
+        var url = $"/api/attempts/{saved.Id}";
+
+        var attempt = await _ada.GetFromJsonAsync<AttemptResponse>(url);
+
+        Assert.Equal(saved.Id, attempt!.Id);
+        Assert.Equal(3, attempt.Modules.Count);
+        Assert.Equal(HttpStatusCode.NotFound, (await _bob.GetAsync(url)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await _visitor.GetAsync(url)).StatusCode);
+    }
+
+    [Fact]
+    public async Task GetPage_ListsTheUsersAttemptsNewestFirst()
+    {
+        var other = await CreateActivityAsync(_ada, "Other", [Reading()]);
+        var first = await SaveAsync(_ada, ValidRequest());
+        var second = await SaveAsync(_ada, new SaveAttemptRequest(other.Id, [Result(0, "X", activity: other)]));
+        var third = await SaveAsync(_ada, ValidRequest());
+
+        var all = await _ada.GetFromJsonAsync<AttemptPageResponse>("/api/attempts");
+        var forActivity = await _ada.GetFromJsonAsync<AttemptPageResponse>($"/api/attempts?activityId={_activity.Id}");
+        var paged = await _ada.GetFromJsonAsync<AttemptPageResponse>("/api/attempts?page=2&pageSize=2");
+
+        Assert.Equal([third.Id, second.Id, first.Id], all!.Items.Select(a => a.Id));
+        Assert.Equal([third.Id, first.Id], forActivity!.Items.Select(a => a.Id));
+        Assert.Equal([first.Id], paged!.Items.Select(a => a.Id));
+        Assert.Equal(3, paged.TotalCount);
+        Assert.Equal(("Cell biology", 1, 1), (all.Items[0].ActivityTitle, all.Items[0].Score, all.Items[0].MaxScore));
+    }
+
+    [Fact]
+    public async Task GetPage_ShowsNobodyElsesAttempts()
+    {
+        await SaveAsync(_ada, ValidRequest());
+
+        var page = await _bob.GetFromJsonAsync<AttemptPageResponse>("/api/attempts");
+
+        Assert.Empty(page!.Items);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await _visitor.GetAsync("/api/attempts")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Attempts_DoNotChangeWhenTheActivityIsEdited()
+    {
+        var saved = await SaveAsync(_ada, ValidRequest());
+        var edited = await _ada.PutAsJsonAsync($"/api/activities/{_activity.Id}", new SaveActivityRequest(
+            "Renamed", null, ["Biology"], [new SaveModuleRequest("reading", Reading().Content, _activity.Modules[0].Id)]));
+        edited.EnsureSuccessStatusCode();
+
+        var attempt = await _ada.GetFromJsonAsync<AttemptResponse>($"/api/attempts/{saved.Id}");
+
+        Assert.Equal("Cell biology", attempt!.ActivityTitle);
+        Assert.Equal((1, 1), (attempt.Score, attempt.MaxScore));
+        Assert.Equal(["reading", "multiple-choice", "reading"], attempt.Modules.Select(m => m.ModuleType));
+        // The links to the deleted modules are cleared; the kept module is still linked.
+        Assert.Equal([_activity.Modules[0].Id, null, null], attempt.Modules.Select(m => m.ModuleId));
+    }
+
+    [Fact]
+    public async Task Attempts_AreKeptWhenTheActivityIsDeleted()
+    {
+        var saved = await SaveAsync(_ada, ValidRequest());
+        (await _ada.DeleteAsync($"/api/activities/{_activity.Id}")).EnsureSuccessStatusCode();
+
+        var attempt = await _ada.GetFromJsonAsync<AttemptResponse>($"/api/attempts/{saved.Id}");
+        var page = await _ada.GetFromJsonAsync<AttemptPageResponse>("/api/attempts");
+
+        Assert.Null(attempt!.ActivityId);
+        Assert.Equal(("Cell biology", 1, 3), (attempt.ActivityTitle, attempt.Score, attempt.Modules.Count));
+        Assert.All(attempt.Modules, m => Assert.Null(m.ModuleId));
+        Assert.Null(Assert.Single(page!.Items).ActivityId);
+    }
+
     private SaveAttemptRequest WithSecondModule(List<SaveAttemptModuleRequest?> valid, int? score, int? maxScore) =>
         ValidRequest() with { Modules = [valid[0], valid[1]! with { Score = score, MaxScore = maxScore }, valid[2]] };
 

@@ -79,6 +79,46 @@ public class AttemptService(AppDbContext db)
         return new SaveAttemptResult(ToResponse(attempt), []);
     }
 
+    /// <summary>
+    /// Returns a page of the attempts of <paramref name="userId"/>, newest first, optionally only
+    /// those of one activity.
+    /// </summary>
+    public async Task<AttemptPageResponse> GetPageAsync(int userId, int? activityId, int page, int pageSize)
+    {
+        var attempts = db.ActivityAttempts.AsNoTracking().Where(a => a.UserId == userId);
+        if (activityId is not null)
+        {
+            attempts = attempts.Where(a => a.ActivityId == activityId);
+        }
+
+        var totalCount = await attempts.CountAsync();
+        var items = await attempts
+            .OrderByDescending(a => a.CompletedAt)
+            .ThenByDescending(a => a.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new AttemptPageResponse(
+            items
+                .Select(a => new AttemptSummaryResponse(
+                    a.Id, a.ActivityId, a.ActivityTitle, a.Score, a.MaxScore, AsUtc(a.CompletedAt)))
+                .ToList(),
+            page,
+            pageSize,
+            totalCount);
+    }
+
+    /// <summary>Returns an attempt of <paramref name="userId"/>, or null if it does not exist or is someone else's.</summary>
+    public async Task<AttemptResponse?> GetByIdAsync(int id, int userId)
+    {
+        var attempt = await db.ActivityAttempts
+            .AsNoTracking()
+            .Include(a => a.Modules)
+            .SingleOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+        return attempt is null ? null : ToResponse(attempt);
+    }
+
     private static void ValidateModule(SaveAttemptModuleRequest module, string field, Dictionary<string, string[]> errors)
     {
         if (module.Label?.Trim().Length > AttemptModule.LabelMaxLength)

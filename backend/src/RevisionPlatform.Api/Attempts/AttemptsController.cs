@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RevisionPlatform.Api.Auth;
+using RevisionPlatform.Api.Shared;
 
 namespace RevisionPlatform.Api.Attempts;
 
@@ -25,5 +26,27 @@ public class AttemptsController(AttemptService attemptService) : ControllerBase
         }
 
         return Created($"/api/attempts/{result.Attempt.Id}", result.Attempt);
+    }
+
+    /// <summary>The attempts of the signed-in user, newest first, optionally for one activity.</summary>
+    [HttpGet]
+    public async Task<ActionResult<AttemptPageResponse>> GetPage(int? page, int? pageSize, int? activityId)
+    {
+        var errors = new Dictionary<string, string[]>();
+        var (validPage, validPageSize) = Paging.Validate(page, pageSize, errors);
+        if (errors.Count > 0)
+        {
+            return ValidationProblem(new ValidationProblemDetails(errors));
+        }
+
+        return Ok(await attemptService.GetPageAsync(User.GetUserId()!.Value, activityId, validPage, validPageSize));
+    }
+
+    /// <summary>One attempt of the signed-in user; someone else's attempt returns 404.</summary>
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<AttemptResponse>> GetById(int id)
+    {
+        var attempt = await attemptService.GetByIdAsync(id, User.GetUserId()!.Value);
+        return attempt is null ? NotFound() : Ok(attempt);
     }
 }
