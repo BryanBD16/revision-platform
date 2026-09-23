@@ -10,6 +10,20 @@ endpoints and can call them.
 
 `GET /api/health` returns `200` with the text `Healthy`.
 
+## Themes and courses
+
+Themes (what an activity is about) and courses (where it is used) are
+created with activities (see `POST /api/activities`). They are stored in
+the same table but have separate ids and lists.
+
+### `GET /api/themes`
+
+Returns all themes, sorted by name: `[ { "id": 1, "name": "Biology" } ]`.
+
+### `GET /api/courses`
+
+Returns all courses, sorted by name, in the same format.
+
 ## Revision activities
 
 ### Activity summary (list)
