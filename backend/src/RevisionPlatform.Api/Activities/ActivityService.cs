@@ -8,10 +8,10 @@ namespace RevisionPlatform.Api.Activities;
 
 public class ActivityService(AppDbContext db)
 {
-    /// <summary>Returns one page of activities, newest first.</summary>
+    /// <summary>Returns one page of the activities matching the query filters, newest first.</summary>
     public async Task<ActivityPageResponse> GetPageAsync(ActivityListQuery query)
     {
-        var matching = db.RevisionActivities.AsNoTracking();
+        var matching = Filter(db.RevisionActivities.AsNoTracking(), query);
 
         var totalCount = await matching.CountAsync();
 
@@ -45,6 +45,28 @@ public class ActivityService(AppDbContext db)
             .ToList();
 
         return new ActivityPageResponse(items, query.Page, query.PageSize, totalCount);
+    }
+
+    private static IQueryable<RevisionActivity> Filter(IQueryable<RevisionActivity> activities, ActivityListQuery query)
+    {
+        if (query.Title is not null)
+        {
+            // The title column collation ignores case (and accents).
+            activities = activities.Where(a => a.Title.Contains(query.Title));
+        }
+
+        if (query.CourseId is { } courseId)
+        {
+            activities = activities.Where(a => a.Themes.Any(t => t.Id == courseId && t.Kind == ThemeKind.Course));
+        }
+
+        // Each selected theme narrows the result: the activity must have all of them.
+        foreach (var themeId in query.ThemeIds)
+        {
+            activities = activities.Where(a => a.Themes.Any(t => t.Id == themeId && t.Kind == ThemeKind.Topic));
+        }
+
+        return activities;
     }
 
     public async Task<ActivityResponse?> GetByIdAsync(int id)

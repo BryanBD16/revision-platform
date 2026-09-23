@@ -50,12 +50,29 @@ the module `type` (see [Module types](#module-types)).
 
 ### `GET /api/activities`
 
-Returns one page of activity summaries, newest first.
+Returns one page of the activity summaries that match the filters,
+newest first.
 
 | Parameter  | Default | Rules              |
 |------------|---------|--------------------|
 | `page`     | `1`     | at least 1         |
 | `pageSize` | `20`    | between 1 and 100  |
+| `title`    | none    | at most 200 characters |
+| `courseId` | none    | a course id        |
+| `themeIds` | none    | theme ids, repeated: `themeIds=1&themeIds=4` (at most 20) |
+
+Each filter that is set narrows the result; an activity is listed only if
+it matches all of them:
+
+- `title`: the title contains this text, ignoring case and accents.
+  Surrounding spaces are removed and a blank value is ignored.
+- `courseId`: the activity is part of this course.
+- `themeIds`: the activity has **all** these themes.
+
+A course id is not a theme id and the reverse: an unknown id, or the id
+of a theme passed as `courseId`, matches no activity.
+
+Example: `GET /api/activities?title=cell&courseId=3&themeIds=1&page=2`
 
 ```json
 {

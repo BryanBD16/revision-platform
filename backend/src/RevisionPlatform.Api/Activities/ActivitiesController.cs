@@ -7,10 +7,13 @@ namespace RevisionPlatform.Api.Activities;
 public class ActivitiesController(ActivityService activityService, ActivityValidator activityValidator)
     : ControllerBase
 {
+    // The parameters are bound one by one so that binding errors are keyed by parameter name.
     [HttpGet]
-    public async Task<ActionResult<ActivityPageResponse>> GetPage([FromQuery] ActivityListRequest request)
+    public async Task<ActionResult<ActivityPageResponse>> GetPage(
+        int? page, int? pageSize, string? title, int? courseId, [FromQuery] List<int>? themeIds)
     {
-        var validation = ActivityListValidator.Validate(request);
+        var validation = ActivityListValidator.Validate(
+            new ActivityListRequest(page, pageSize, title, courseId, themeIds));
         if (validation.Query is null)
         {
             return ValidationProblem(new ValidationProblemDetails(validation.Errors));
