@@ -2,7 +2,7 @@
   "title": "How the database works",
   "description": "MySQL, the tables of the platform, how the data is represented and how the tables are related.",
   "themes": [
-    "Databases",
+    "Database",
     "MySQL",
     "Entity Framework Core",
     "Data modeling"

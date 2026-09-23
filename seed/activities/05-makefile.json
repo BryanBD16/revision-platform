@@ -2,7 +2,7 @@
   "title": "The Makefile commands",
   "description": "How make works, what each command of the Makefile does, and the usual workflows.",
   "themes": [
-    "Make",
+    "Makefile",
     "Development environment"
   ],
   "courses": [
