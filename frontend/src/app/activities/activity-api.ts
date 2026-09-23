@@ -32,4 +32,12 @@ export class ActivityApi {
   create(request: SaveActivityRequest): Observable<Activity> {
     return this.http.post<Activity>(this.baseUrl, request);
   }
+
+  update(id: number, request: SaveActivityRequest): Observable<Activity> {
+    return this.http.put<Activity>(`${this.baseUrl}/${id}`, request);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
 }

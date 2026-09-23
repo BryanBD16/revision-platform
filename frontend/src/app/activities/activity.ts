@@ -48,6 +48,16 @@ export interface ActivityListQuery {
   visibility: Visibility | null;
 }
 
+/** The user who last edited an activity. */
+export interface ActivityEditor {
+  id: number;
+  displayName: string;
+}
+
+/**
+ * An activity with its modules. `canEdit` tells whether the signed-in user can edit and
+ * delete it; `lastEditedBy` is only given to them, for public activities.
+ */
 export interface Activity {
   id: number;
   title: string;
@@ -58,6 +68,8 @@ export interface Activity {
   modules: RevisionModule[];
   createdAt: string;
   updatedAt: string;
+  canEdit: boolean;
+  lastEditedBy: ActivityEditor | null;
 }
 
 /**

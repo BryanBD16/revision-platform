@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AdminPage } from './admin/admin-page/admin-page';
 import { ActivityCreate } from './activities/activity-create/activity-create';
 import { ActivityDetail } from './activities/activity-detail/activity-detail';
+import { ActivityEdit } from './activities/activity-edit/activity-edit';
 import { ActivityList } from './activities/activity-list/activity-list';
 import { ActivityPlayer } from './activities/activity-player/activity-player';
 import { Account } from './auth/account/account';
@@ -20,6 +21,12 @@ export const routes: Routes = [
     canActivate: [signedInGuard],
   },
   { path: 'activities/:id', component: ActivityDetail, title: 'Revision activity' },
+  {
+    path: 'activities/:id/edit',
+    component: ActivityEdit,
+    title: 'Edit the activity',
+    canActivate: [signedInGuard],
+  },
   { path: 'activities/:id/play', component: ActivityPlayer, title: 'Revision activity' },
   { path: 'sign-in', component: SignIn, title: 'Sign in' },
   { path: 'register', component: Register, title: 'Create an account' },
