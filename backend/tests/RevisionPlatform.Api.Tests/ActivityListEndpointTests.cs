@@ -92,6 +92,20 @@ public class ActivityListEndpointTests(ApiFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetPage_FiltersByASingleLetterAnywhereInTheTitle()
+    {
+        await CreateAsync("How cells divide", ["Biology"]);
+        await CreateAsync("Photosynthesis", ["Biology"]);
+        await CreateAsync("The genome", ["Biology"]);
+        await CreateAsync("Enzymes", ["Biology"]);
+        await CreateAsync("Mitosis", ["Biology"]);
+
+        Assert.Equal(["The genome", "Photosynthesis", "How cells divide"], await GetTitlesAsync("?title=h"));
+        Assert.Equal(["Enzymes"], await GetTitlesAsync("?title=z"));
+        Assert.Empty(await GetTitlesAsync("?title=q"));
+    }
+
+    [Fact]
     public async Task GetPage_TreatsWildcardCharactersInTitleAsText()
     {
         await CreateAsync("100% cells", ["Biology"]);
