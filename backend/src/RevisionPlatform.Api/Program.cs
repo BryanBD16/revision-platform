@@ -1,4 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using RevisionPlatform.Api.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("Default")
+    ?? throw new InvalidOperationException(
+        "Connection string 'Default' is not configured. Set the ConnectionStrings__Default environment variable (the Makefile does this from .env).");
+
+builder.Services.AddDbContext<AppDbContext>(options => options
+    .UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4)))
+    .UseSnakeCaseNamingConvention());
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();

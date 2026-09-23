@@ -53,15 +53,32 @@ to them.
 ## Backend
 
 The ASP.NET Core API is in `backend/` (`src/RevisionPlatform.Api`,
-tests in `tests/RevisionPlatform.Api.Tests`).
+tests in `tests/RevisionPlatform.Api.Tests`). It needs the database to
+be running, with the migrations applied:
 
 ```sh
+make db-up
+make db-migrate    # after pulling changes that add migrations
 make backend-run
 ```
 
 The API listens on `http://localhost:5044`. Health check:
 `GET /api/health`. In development, Swagger UI is available at
 `/swagger`.
+
+The Makefile builds the connection string from `.env`
+(`ConnectionStrings__Default`), so run the backend through `make`.
+The backend tests use the `revision_platform_test` database, which they
+recreate on every run; `make backend-test` needs the database container
+to be running.
+
+To change the database schema, edit the entities or `AppDbContext`, then
+create and apply a migration:
+
+```sh
+make db-migration NAME=DescribeTheChange
+make db-migrate
+```
 
 ## Frontend
 
@@ -81,19 +98,21 @@ so the backend must be running too. Tests use Vitest.
 
 Run `make` to list all commands.
 
-| Command                 | Description                                      |
-|-------------------------|--------------------------------------------------|
-| `make build`            | Build all components                             |
-| `make test`             | Run all tests                                    |
-| `make backend-build`    | Build the backend                                |
-| `make backend-test`     | Run the backend tests                            |
-| `make backend-run`      | Run the API with hot reload                      |
-| `make frontend-install` | Install frontend dependencies                    |
-| `make frontend-build`   | Build the frontend                               |
-| `make frontend-test`    | Run the frontend tests once                      |
-| `make frontend-run`     | Run the frontend dev server                      |
-| `make db-up`            | Start the MySQL container and wait until healthy |
-| `make db-down`          | Stop the MySQL container (data is kept)          |
-| `make db-logs`          | Follow the MySQL container logs                  |
-| `make db-shell`         | Open a MySQL prompt as the application user      |
-| `make db-reset`         | Stop the container and **delete all its data**   |
+| Command                      | Description                                      |
+|------------------------------|--------------------------------------------------|
+| `make build`                 | Build all components                             |
+| `make test`                  | Run all tests                                    |
+| `make backend-build`         | Build the backend                                |
+| `make backend-test`          | Run the backend tests                            |
+| `make backend-run`           | Run the API with hot reload                      |
+| `make frontend-install`      | Install frontend dependencies                    |
+| `make frontend-build`        | Build the frontend                               |
+| `make frontend-test`         | Run the frontend tests once                      |
+| `make frontend-run`          | Run the frontend dev server                      |
+| `make db-migrate`            | Apply migrations to the development database     |
+| `make db-migration NAME=...` | Create a migration                               |
+| `make db-up`                 | Start the MySQL container and wait until healthy |
+| `make db-down`               | Stop the MySQL container (data is kept)          |
+| `make db-logs`               | Follow the MySQL container logs                  |
+| `make db-shell`              | Open a MySQL prompt as the application user      |
+| `make db-reset`              | Stop the container and **delete all its data**   |
