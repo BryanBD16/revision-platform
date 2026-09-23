@@ -60,7 +60,15 @@ activity_themes
   Themes are typed freely when creating an activity: an existing theme
   with the same name (ignoring case) is reused, otherwise it is created.
   There is no separate theme management.
-- The schema changes only through EF Core migrations.
+- The schema changes only through EF Core migrations
+  (`backend/src/RevisionPlatform.Api/Data/Migrations`). Tables and
+  columns use `snake_case` (EFCore.NamingConventions); C# code uses the
+  usual PascalCase.
+- Theme names use the `utf8mb4_0900_as_ci` collation: case-insensitive
+  but accent-sensitive, so "Biology" and "biology" are the same theme,
+  while "Resume" and "Résumé" are different.
+- The backend reads its connection string from `ConnectionStrings:Default`.
+  In development the Makefile builds it from `.env`.
 
 ### Completing an activity
 

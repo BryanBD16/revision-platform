@@ -1,7 +1,12 @@
 .DEFAULT_GOAL := help
 
+# Database settings (MYSQL_*) shared with docker compose.
+-include .env
+
+db_connection = Server=127.0.0.1;Port=$(MYSQL_PORT);Database=$(1);User=$(MYSQL_USER);Password=$(MYSQL_PASSWORD)
+
 .PHONY: help build test db-up db-down db-logs db-shell db-reset \
-        backend-build backend-test backend-run \
+        backend-build backend-test backend-run db-migrate db-migration \
         frontend-install frontend-build frontend-test frontend-run
 
 help: ## List available commands
@@ -19,11 +24,22 @@ BACKEND_API := $(BACKEND_DIR)/src/RevisionPlatform.Api
 backend-build: ## Build the backend
 	dotnet build $(BACKEND_DIR)
 
-backend-test: ## Run the backend tests
+backend-test: export TEST_DATABASE_CONNECTION := $(call db_connection,$(MYSQL_DATABASE)_test)
+backend-test: ## Run the backend tests (uses the test database)
 	dotnet test $(BACKEND_DIR)
 
+backend-run: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
 backend-run: ## Run the backend API with hot reload (http://localhost:5044)
 	dotnet watch --project $(BACKEND_API) run
+
+db-migrate: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
+db-migrate: ## Apply EF Core migrations to the development database
+	cd $(BACKEND_DIR) && dotnet tool restore && dotnet ef database update --project src/RevisionPlatform.Api
+
+db-migration: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
+db-migration: ## Create an EF Core migration: make db-migration NAME=AddSomething
+	@test -n "$(NAME)" || (echo "Usage: make db-migration NAME=AddSomething" && exit 1)
+	cd $(BACKEND_DIR) && dotnet tool restore && dotnet ef migrations add $(NAME) --project src/RevisionPlatform.Api --output-dir Data/Migrations
 
 # --- Frontend ----------------------------------------------------------------
 

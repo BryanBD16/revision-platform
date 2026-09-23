@@ -1,16 +1,12 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
+using RevisionPlatform.Api.Tests.Infrastructure;
 
 namespace RevisionPlatform.Api.Tests;
 
-public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+[Collection(ApiCollection.Name)]
+public class HealthEndpointTests(ApiFactory factory)
 {
-    private readonly HttpClient _client;
-
-    public HealthEndpointTests(WebApplicationFactory<Program> factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Health_ReturnsHealthy()
