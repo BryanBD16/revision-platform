@@ -9,7 +9,8 @@ public record CreateActivityRequest(
     string? Description,
     List<string?>? Themes,
     List<CreateModuleRequest?>? Modules,
-    List<string?>? Courses = null);
+    List<string?>? Courses = null,
+    string? Visibility = null);
 
 /// <summary>
 /// The query parameters of the activity list. Missing values use the defaults and
@@ -32,6 +33,7 @@ public record ActivitySummaryResponse(
     string? Description,
     IReadOnlyList<ThemeResponse> Themes,
     IReadOnlyList<ThemeResponse> Courses,
+    string Visibility,
     int ModuleCount,
     DateTime CreatedAt,
     DateTime UpdatedAt);
@@ -50,6 +52,7 @@ public record ActivityResponse(
     string? Description,
     IReadOnlyList<ThemeResponse> Themes,
     IReadOnlyList<ThemeResponse> Courses,
+    string Visibility,
     IReadOnlyList<ModuleResponse> Modules,
     DateTime CreatedAt,
     DateTime UpdatedAt);

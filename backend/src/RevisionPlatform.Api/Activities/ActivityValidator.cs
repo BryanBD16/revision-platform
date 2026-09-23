@@ -10,7 +10,8 @@ public record ValidatedActivity(
     string? Description,
     IReadOnlyList<string> Themes,
     IReadOnlyList<string> Courses,
-    IReadOnlyList<ValidatedModule> Modules);
+    IReadOnlyList<ValidatedModule> Modules,
+    string Visibility);
 
 public record ValidatedModule(string Type, JsonElement Content);
 
@@ -50,6 +51,13 @@ public class ActivityValidator(ModuleTypeRegistry moduleTypes)
         var courses = ValidateNames(request.Courses ?? [], "courses", "Course", errors);
         var modules = ValidateModules(request.Modules ?? [], errors);
 
+        // Private unless asked otherwise. Whether the user may publish is checked by the controller.
+        var visibility = request.Visibility ?? ActivityVisibility.Private;
+        if (!ActivityVisibility.All.Contains(visibility))
+        {
+            errors["visibility"] = ["The visibility must be 'private' or 'public'."];
+        }
+
         if (errors.Count > 0)
         {
             return new ActivityValidationResult(null, errors);
@@ -60,7 +68,8 @@ public class ActivityValidator(ModuleTypeRegistry moduleTypes)
             string.IsNullOrEmpty(description) ? null : description,
             themes,
             courses,
-            modules);
+            modules,
+            visibility);
         return new ActivityValidationResult(activity, errors);
     }
 

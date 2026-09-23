@@ -8,10 +8,13 @@ namespace RevisionPlatform.Api.Activities;
 
 public class ActivityService(AppDbContext db)
 {
-    /// <summary>Returns one page of the activities matching the query filters, newest first.</summary>
-    public async Task<ActivityPageResponse> GetPageAsync(ActivityListQuery query)
+    /// <summary>
+    /// Returns one page of the activities that the user <paramref name="viewerId"/> (null for a
+    /// visitor) can see and that match the query filters, newest first.
+    /// </summary>
+    public async Task<ActivityPageResponse> GetPageAsync(ActivityListQuery query, int? viewerId)
     {
-        var matching = Filter(db.RevisionActivities.AsNoTracking(), query);
+        var matching = Filter(db.RevisionActivities.AsNoTracking().VisibleTo(viewerId), query);
 
         var totalCount = await matching.CountAsync();
 
@@ -26,6 +29,7 @@ public class ActivityService(AppDbContext db)
                 a.Title,
                 a.Description,
                 a.Themes,
+                a.Visibility,
                 ModuleCount = a.Modules.Count,
                 a.CreatedAt,
                 a.UpdatedAt,
@@ -39,6 +43,7 @@ public class ActivityService(AppDbContext db)
                 a.Description,
                 ToResponse(a.Themes, ThemeKind.Topic),
                 ToResponse(a.Themes, ThemeKind.Course),
+                a.Visibility,
                 a.ModuleCount,
                 AsUtc(a.CreatedAt),
                 AsUtc(a.UpdatedAt)))
@@ -69,10 +74,12 @@ public class ActivityService(AppDbContext db)
         return activities;
     }
 
-    public async Task<ActivityResponse?> GetByIdAsync(int id)
+    /// <summary>Returns the activity, or null if it does not exist or the viewer cannot see it.</summary>
+    public async Task<ActivityResponse?> GetByIdAsync(int id, int? viewerId)
     {
         var activity = await db.RevisionActivities
             .AsNoTracking()
+            .VisibleTo(viewerId)
             .Include(a => a.Themes)
             .Include(a => a.Modules)
             .SingleOrDefaultAsync(a => a.Id == id);
@@ -80,14 +87,26 @@ public class ActivityService(AppDbContext db)
         return activity is null ? null : ToResponse(activity);
     }
 
-    public async Task<ActivityResponse> CreateAsync(ValidatedActivity request)
+    /// <summary>
+    /// Creates an activity. A private activity belongs to <paramref name="ownerId"/>; a public
+    /// activity has no owner.
+    /// </summary>
+    public async Task<ActivityResponse> CreateAsync(ValidatedActivity request, int? ownerId)
     {
+        var isPublic = request.Visibility == ActivityVisibility.Public;
+        if (!isPublic && ownerId is null)
+        {
+            throw new ArgumentException("A private activity needs an owner.", nameof(ownerId));
+        }
+
         var now = DateTime.UtcNow;
 
         var activity = new RevisionActivity
         {
             Title = request.Title,
             Description = request.Description,
+            Visibility = request.Visibility,
+            OwnerId = isPublic ? null : ownerId,
             CreatedAt = now,
             UpdatedAt = now,
             Themes =
@@ -139,6 +158,7 @@ public class ActivityService(AppDbContext db)
         activity.Description,
         ToResponse(activity.Themes, ThemeKind.Topic),
         ToResponse(activity.Themes, ThemeKind.Course),
+        activity.Visibility,
         activity.Modules
             .OrderBy(m => m.Position)
             .Select(m => new ModuleResponse(m.Id, m.Position, m.Type, JsonSerializer.Deserialize<JsonElement>(m.Content)))

@@ -12,7 +12,12 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
 {
     private readonly HttpClient _client = factory.CreateApiClient();
 
-    public Task InitializeAsync() => factory.ResetDatabaseAsync();
+    public async Task InitializeAsync()
+    {
+        await factory.ResetDatabaseAsync();
+        // Creating an activity requires a signed-in user (see ActivityVisibilityTests).
+        await _client.RegisterAsync();
+    }
 
     public Task DisposeAsync() => Task.CompletedTask;
 
