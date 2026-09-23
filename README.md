@@ -60,6 +60,9 @@ to them.
   `Angular` or `Testing`.
 - `Introduction to C#` (`csharp-…`): five short activities on the
   language, its syntax, encapsulation, inheritance and ASP.NET Core.
+- `Introduction to C++` (`cpp-…`): five short activities on the
+  language and its build, its syntax, encapsulation, inheritance, and
+  memory with RAII.
 
 Each file has the format of a `POST /api/activities` request body. The
 backend does not need to be running:
@@ -67,7 +70,7 @@ backend does not need to be running:
 ```sh
 make db-clear                        # optional: delete all activities, modules and themes
 make db-seed                         # create all the seed activities, as public activities
-make db-seed FILES='csharp-*.json'   # create only some of them
+make db-seed FILES='cpp-*.json'      # create only some of them
 ```
 
 `db-seed` first validates the files with the same rules as the API; if

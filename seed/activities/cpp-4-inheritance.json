@@ -1,0 +1,267 @@
+{
+  "title": "Inheritance and polymorphism",
+  "description": "Public inheritance, virtual functions and override, object slicing, abstract classes and multiple inheritance.",
+  "themes": [
+    "C++",
+    "OOP",
+    "Inheritance"
+  ],
+  "courses": [
+    "Introduction to C++"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Inheritance and virtual functions",
+        "body": "class Cat : public Animal { }; makes Cat inherit from Animal. With public inheritance, a Cat is an Animal: a Cat can be used through an Animal& or an Animal*.\n\nPolymorphism only works for virtual functions. If Animal declares virtual std::string speak() const, a call through a reference or a pointer runs the version of the object's real type. Without virtual, the type of the reference or pointer decides.\n\nIn the derived class, write override after the function (C++11): the compiler then checks that it really overrides a virtual function of the base class."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Animal {\npublic:\n    virtual std::string speak() const { return \"...\"; }\n};\nclass Cat : public Animal {\npublic:\n    std::string speak() const override { return \"Meow\"; }\n};\n\nCat cat;\nAnimal& pet = cat;\nstd::cout << pet.speak();\n\nWhat is printed?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Meow"
+          },
+          {
+            "id": "b",
+            "text": "..."
+          },
+          {
+            "id": "c",
+            "text": "It does not compile"
+          },
+          {
+            "id": "d",
+            "text": "Meow..."
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "pet is an Animal&, but it refers to a Cat, and speak is virtual: the Cat version runs. That is polymorphism."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Same code, but virtual is removed from Animal::speak (and override from Cat::speak).\n\nCat cat;\nAnimal& pet = cat;\nstd::cout << pet.speak();\n\nWhat is printed now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "..."
+          },
+          {
+            "id": "b",
+            "text": "Meow"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile"
+          },
+          {
+            "id": "d",
+            "text": "Meow..."
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Without virtual, the call is decided at compile time from the type of pet, which is Animal&. Unlike in Java, member functions are not virtual by default in C++."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "With speak virtual again:\n\nCat cat;\nAnimal copy = cat;\nstd::cout << copy.speak();\n\nWhat is printed?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "..."
+          },
+          {
+            "id": "b",
+            "text": "Meow"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile"
+          },
+          {
+            "id": "d",
+            "text": "Nothing"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "This is object slicing: copy is a real Animal object, built from the Animal part of cat; the Cat part is sliced off. Polymorphism needs a reference or a pointer, like Animal& pet = cat."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why write override on Cat::speak?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The compiler reports an error if it does not really override a virtual function"
+          },
+          {
+            "id": "b",
+            "text": "Without it, the function cannot be called"
+          },
+          {
+            "id": "c",
+            "text": "It makes the function faster"
+          },
+          {
+            "id": "d",
+            "text": "It is required by every C++ compiler"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "A small difference, such as forgetting const or misspelling the name, silently creates a new function instead of an override. override turns that bug into a compile error."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Abstract classes and multiple inheritance",
+        "body": "A pure virtual function has no body in the base class: virtual double area() const = 0;\nA class with at least one pure virtual function is abstract: it cannot be instantiated, and derived classes must implement those functions. C++ has no interface keyword: an interface is simply an abstract class with only pure virtual functions.\n\nUnlike C# or Java, a C++ class can inherit from several classes.\n\nA base class used polymorphically needs a virtual destructor, so that deleting an object through a pointer to the base runs the destructor of the real type. final forbids further inheritance."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Shape {\npublic:\n    virtual double area() const = 0;\n};\n\nShape s;\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It does not compile: Shape is abstract because of the pure virtual function"
+          },
+          {
+            "id": "b",
+            "text": "s is a shape whose area is 0"
+          },
+          {
+            "id": "c",
+            "text": "It compiles, but calling s.area() crashes"
+          },
+          {
+            "id": "d",
+            "text": "s becomes an object of the first derived class"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "= 0 makes area pure virtual, so Shape is abstract. You create derived classes such as Circle and use them through Shape& or Shape*."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How many base classes can a C++ class have?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Several: C++ allows multiple inheritance"
+          },
+          {
+            "id": "b",
+            "text": "Exactly one"
+          },
+          {
+            "id": "c",
+            "text": "One class plus any number of interfaces, like C#"
+          },
+          {
+            "id": "d",
+            "text": "None"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "class FlyingCar : public Car, public Plane { }; is allowed. It is powerful but can create ambiguities, so it is mostly used to combine interface-like abstract classes."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Animal has no virtual destructor.\n\nAnimal* pet = new Cat();\ndelete pet;\n\nWhat is the problem?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Deleting a Cat through an Animal* without a virtual destructor is undefined behaviour; Cat's destructor may never run"
+          },
+          {
+            "id": "b",
+            "text": "Nothing, the Cat is destroyed correctly"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile: new Cat() cannot go into an Animal*"
+          },
+          {
+            "id": "d",
+            "text": "The Cat is deleted twice"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Adding virtual ~Animal() = default; to the base class fixes it: delete then calls ~Cat() first, then ~Animal(). Any class meant to be a polymorphic base should have one."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each concept with its meaning.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "virtual",
+            "definition": "Lets derived classes override a member function, chosen at run time"
+          },
+          {
+            "id": "p2",
+            "concept": "override",
+            "definition": "Asks the compiler to check that a function overrides a virtual one"
+          },
+          {
+            "id": "p3",
+            "concept": "= 0",
+            "definition": "Makes a virtual function pure, without a body"
+          },
+          {
+            "id": "p4",
+            "concept": "Abstract class",
+            "definition": "Has a pure virtual function and cannot be instantiated"
+          },
+          {
+            "id": "p5",
+            "concept": "Multiple inheritance",
+            "definition": "A class inheriting from several base classes"
+          },
+          {
+            "id": "p6",
+            "concept": "Object slicing",
+            "definition": "Copying a derived object into a base object loses the derived part"
+          },
+          {
+            "id": "p7",
+            "concept": "final",
+            "definition": "Forbids inheriting from a class or overriding a function"
+          }
+        ]
+      }
+    }
+  ]
+}
