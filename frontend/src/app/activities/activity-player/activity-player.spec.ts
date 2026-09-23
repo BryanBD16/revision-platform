@@ -113,6 +113,14 @@ describe('ActivityPlayer', () => {
     expect(element.textContent).toContain('all 2 modules');
   });
 
+  it('uses the singular for an activity with one module', async () => {
+    await load(activity([reading(0, 'Text')]));
+    await clickButton('Continue');
+
+    expect(element.textContent).toContain('You went through the module of “Cell biology”.');
+    expect(element.textContent).not.toContain('1 modules');
+  });
+
   it('shows that reading modules are not graded', async () => {
     await load(activity([reading(0, 'First text'), reading(1, 'Second text')]));
     await clickButton('Continue');
