@@ -10,6 +10,10 @@ export type ReadingForm = FormGroup<{
   body: FormControl<string>;
 }>;
 
+function truncate(text: string, maxLength: number): string {
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1).trimEnd()}…` : text;
+}
+
 export const readingModuleType: ModuleTypeDefinition<ReadingContent, ReadingForm> = {
   type: 'reading',
   label: 'Reading',
@@ -28,6 +32,7 @@ export const readingModuleType: ModuleTypeDefinition<ReadingContent, ReadingForm
     const { title, body } = form.getRawValue();
     return { title: title.trim() || null, body: body.trim() };
   },
+  summarize: (content) => content.title ?? truncate(content.body, 100),
   editor: ReadingEditor,
   player: ReadingPlayer,
 };

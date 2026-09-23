@@ -83,6 +83,7 @@ export const matchingModuleType: ModuleTypeDefinition<MatchingContent, MatchingF
       }),
     };
   },
+  summarize: (content) => content.instructions ?? `Match ${content.pairs.length} concepts`,
   editor: MatchingEditor,
   player: MatchingPlayer,
 };

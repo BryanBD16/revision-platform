@@ -18,6 +18,11 @@ export interface ModuleTypeDefinition<TContent = unknown, TForm extends FormGrou
   createForm(content?: TContent): TForm;
   /** Converts the (valid) form into the content sent to the API. */
   toContent(form: TForm): TContent;
+  /**
+   * A short text saying what the module is about, such as its title or question. It is
+   * saved with the results, so they stay readable after the module changes.
+   */
+  summarize(content: TContent): string;
   /** Component that edits the content; receives the form from `createForm`. */
   readonly editor: Type<ModuleEditor<TForm>>;
   /** Component that lets the learner complete the module. */

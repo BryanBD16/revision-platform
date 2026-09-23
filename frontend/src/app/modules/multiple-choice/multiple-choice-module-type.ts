@@ -81,6 +81,7 @@ export const multipleChoiceModuleType: ModuleTypeDefinition<
       explanation: explanation.trim() || null,
     };
   },
+  summarize: (content) => content.question,
   editor: MultipleChoiceEditor,
   player: MultipleChoicePlayer,
 };
