@@ -58,6 +58,38 @@ public class ActivitiesController(
         return CreatedAtAction(nameof(GetById), new { id }, activity);
     }
 
+    /// <summary>Replaces an activity: its owner can edit it, and admins can edit public activities.</summary>
+    [Authorize]
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<ActivityResponse>> Update(int id, SaveActivityRequest request)
+    {
+        var validation = activityValidator.Validate(request, isUpdate: true);
+        if (validation.Activity is null)
+        {
+            return ValidationProblem(new ValidationProblemDetails(validation.Errors));
+        }
+
+        var permissions = await PermissionsAsync();
+        var result = await activityService.UpdateAsync(id, validation.Activity, User.GetUserId()!.Value, permissions);
+        if (result.Status != ActivityChangeStatus.Done)
+        {
+            return ToErrorResult(result);
+        }
+
+        return Ok(await activityService.GetByIdAsync(id, User.GetUserId(), permissions.CanManagePublic));
+    }
+
+    private ActionResult ToErrorResult(ActivityChangeResult result) => result.Status switch
+    {
+        ActivityChangeStatus.NotFound => NotFound(),
+        ActivityChangeStatus.Forbidden => Problem(statusCode: StatusCodes.Status403Forbidden, title: result.Message),
+        _ => ValidationProblem(new ValidationProblemDetails(result.Errors!)),
+    };
+
+    private async Task<ActivityPermissions> PermissionsAsync() => new(
+        (await authorizationService.AuthorizeAsync(User, Policies.PublishActivities)).Succeeded,
+        await CanManagePublicAsync());
+
     private async Task<bool> CanManagePublicAsync() =>
         (await authorizationService.AuthorizeAsync(User, Policies.ManagePublicActivities)).Succeeded;
 }

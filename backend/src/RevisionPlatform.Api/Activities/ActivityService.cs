@@ -109,7 +109,8 @@ public class ActivityService(AppDbContext db)
     /// </summary>
     public async Task<int> CreateAsync(ValidatedActivity request, int? creatorId)
     {
-        var isPublic = request.Visibility == ActivityVisibility.Public;
+        var visibility = request.Visibility ?? ActivityVisibility.Private;
+        var isPublic = visibility == ActivityVisibility.Public;
         if (!isPublic && creatorId is null)
         {
             throw new ArgumentException("A private activity needs an owner.", nameof(creatorId));
@@ -121,7 +122,7 @@ public class ActivityService(AppDbContext db)
         {
             Title = request.Title,
             Description = request.Description,
-            Visibility = request.Visibility,
+            Visibility = visibility,
             OwnerId = isPublic ? null : creatorId,
             LastEditedByUserId = creatorId,
             CreatedAt = now,
@@ -147,6 +148,119 @@ public class ActivityService(AppDbContext db)
         await db.SaveChangesAsync();
 
         return activity.Id;
+    }
+
+    /// <summary>
+    /// Replaces the content of an activity. Modules with an id are updated in place and keep
+    /// their id (so that saved results can refer to them), modules without id are added, and
+    /// the modules missing from the request are deleted. Changing the visibility needs the
+    /// publish permission: a public activity loses its owner, and an activity made private
+    /// belongs to <paramref name="editorId"/>.
+    /// </summary>
+    public async Task<ActivityChangeResult> UpdateAsync(
+        int id, ValidatedActivity request, int editorId, ActivityPermissions permissions)
+    {
+        var activity = await db.RevisionActivities
+            .VisibleTo(editorId)
+            .Include(a => a.Themes)
+            .Include(a => a.Modules)
+            .SingleOrDefaultAsync(a => a.Id == id);
+        if (activity is null)
+        {
+            return ActivityChangeResult.NotFound;
+        }
+        if (!CanEdit(activity, permissions.CanManagePublic))
+        {
+            return ActivityChangeResult.Forbidden("Only admins can edit public activities.");
+        }
+
+        var visibility = request.Visibility ?? activity.Visibility;
+        if (visibility != activity.Visibility && !permissions.CanPublish)
+        {
+            return ActivityChangeResult.Forbidden("Only admins can change the visibility of an activity.");
+        }
+
+        var existing = activity.Modules.ToDictionary(m => m.Id);
+        var errors = new Dictionary<string, string[]>();
+        for (var index = 0; index < request.Modules.Count; index++)
+        {
+            var module = request.Modules[index];
+            if (module.Id is not { } moduleId)
+            {
+                continue;
+            }
+            if (!existing.TryGetValue(moduleId, out var current))
+            {
+                errors[$"modules[{index}].id"] = ["This module is not part of the activity."];
+            }
+            else if (current.Type != module.Type)
+            {
+                errors[$"modules[{index}].type"] =
+                    ["The type of an existing module cannot change. Remove the module and add a new one."];
+            }
+        }
+        if (errors.Count > 0)
+        {
+            return ActivityChangeResult.Invalid(errors);
+        }
+
+        var now = DateTime.UtcNow;
+        await using var transaction = await db.Database.BeginTransactionAsync();
+
+        // Positions are unique within an activity: remove the deleted modules and move the kept
+        // ones to temporary negative positions first, so that reordering never collides.
+        var keptIds = request.Modules.Where(m => m.Id is not null).Select(m => m.Id!.Value).ToHashSet();
+        foreach (var removed in activity.Modules.Where(m => !keptIds.Contains(m.Id)).ToList())
+        {
+            activity.Modules.Remove(removed);
+            db.RevisionModules.Remove(removed);
+        }
+        foreach (var kept in activity.Modules)
+        {
+            kept.Position = -1 - kept.Position;
+        }
+        await db.SaveChangesAsync();
+
+        for (var index = 0; index < request.Modules.Count; index++)
+        {
+            var module = request.Modules[index];
+            var content = module.Content.GetRawText();
+            if (module.Id is { } moduleId)
+            {
+                var current = existing[moduleId];
+                current.Content = content;
+                current.Position = index;
+                current.UpdatedAt = now;
+            }
+            else
+            {
+                activity.Modules.Add(new RevisionModule
+                {
+                    Position = index,
+                    Type = module.Type,
+                    Content = content,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                });
+            }
+        }
+
+        activity.Title = request.Title;
+        activity.Description = request.Description;
+        activity.Themes.Clear();
+        activity.Themes.AddRange(await FindOrCreateThemesAsync(request.Themes, ThemeKind.Topic, now));
+        activity.Themes.AddRange(await FindOrCreateThemesAsync(request.Courses, ThemeKind.Course, now));
+        if (visibility != activity.Visibility)
+        {
+            activity.Visibility = visibility;
+            activity.OwnerId = visibility == ActivityVisibility.Public ? null : editorId;
+        }
+        activity.UpdatedAt = now;
+        activity.LastEditedByUserId = editorId;
+
+        await db.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return ActivityChangeResult.Done;
     }
 
     /// <summary>

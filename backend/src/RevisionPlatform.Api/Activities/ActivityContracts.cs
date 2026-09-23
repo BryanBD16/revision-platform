@@ -26,8 +26,12 @@ public record ActivityListRequest(
     List<int>? ThemeIds,
     string? Visibility = null);
 
-/// <summary>A module to create; its position is its index in the request.</summary>
-public record SaveModuleRequest(string? Type, JsonElement? Content);
+/// <summary>
+/// A module of the activity; its position is its index in the request. When updating an
+/// activity, <c>Id</c> identifies an existing module to keep (and update); a module without
+/// id is new.
+/// </summary>
+public record SaveModuleRequest(string? Type, JsonElement? Content, int? Id = null);
 
 /// <summary>A topic or a course.</summary>
 public record ThemeResponse(int Id, string Name);
