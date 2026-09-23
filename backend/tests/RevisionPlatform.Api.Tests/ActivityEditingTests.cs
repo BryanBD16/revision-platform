@@ -2,7 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using RevisionPlatform.Api.Activities;
+using RevisionPlatform.Api.Data;
 using RevisionPlatform.Api.Themes;
 using RevisionPlatform.Api.Tests.Infrastructure;
 
@@ -261,6 +264,48 @@ public class ActivityEditingTests(ApiFactory factory) : IAsyncLifetime
 
         var themes = await _ada.GetFromJsonAsync<List<ThemeResponse>>("/api/themes");
         Assert.Equal(["New theme"], themes!.Select(t => t.Name));
+    }
+
+    [Fact]
+    public async Task Delete_RemovesTheActivityWithItsModulesAndThemes()
+    {
+        var activity = await CreateAsync(_ada, Request("Title", modules: [Reading("One"), Reading("Two")], themes: ["Cells"]));
+
+        var response = await _ada.DeleteAsync($"/api/activities/{activity.Id}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _ada.GetAsync($"/api/activities/{activity.Id}")).StatusCode);
+        Assert.Empty((await _ada.GetFromJsonAsync<List<ThemeResponse>>("/api/themes"))!);
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.False(await db.RevisionModules.AnyAsync(m => m.ActivityId == activity.Id));
+    }
+
+    [Fact]
+    public async Task Delete_HidesTheActivitiesOfOthersAndRequiresSigningIn()
+    {
+        var activity = await CreateAsync(_ada, Request("Ada's"));
+        var url = $"/api/activities/{activity.Id}";
+
+        Assert.Equal(HttpStatusCode.NotFound, (await _bob.DeleteAsync(url)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _grace.DeleteAsync(url)).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await _visitor.DeleteAsync(url)).StatusCode);
+        Assert.Equal("Ada's", (await GetAsync(_ada, activity.Id)).Title);
+    }
+
+    [Fact]
+    public async Task Delete_LetsOnlyAdminsDeleteAPublicActivity()
+    {
+        var activity = await CreateAsync(_grace, Request("Cells", ActivityVisibility.Public));
+        var url = $"/api/activities/{activity.Id}";
+
+        var byUser = await _ada.DeleteAsync(url);
+        var byAdmin = await _alan.DeleteAsync(url);
+
+        Assert.Equal(HttpStatusCode.Forbidden, byUser.StatusCode);
+        Assert.Equal("Only admins can delete public activities.", await TitleAsync(byUser));
+        Assert.Equal(HttpStatusCode.NoContent, byAdmin.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await _visitor.GetAsync(url)).StatusCode);
     }
 
     private static SaveActivityRequest Request(

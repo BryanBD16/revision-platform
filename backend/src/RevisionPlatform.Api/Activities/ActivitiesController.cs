@@ -79,6 +79,15 @@ public class ActivitiesController(
         return Ok(await activityService.GetByIdAsync(id, User.GetUserId(), permissions.CanManagePublic));
     }
 
+    /// <summary>Deletes an activity for good: its owner can delete it, and admins can delete public activities.</summary>
+    [Authorize]
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await activityService.DeleteAsync(id, User.GetUserId()!.Value, await PermissionsAsync());
+        return result.Status == ActivityChangeStatus.Done ? NoContent() : ToErrorResult(result);
+    }
+
     private ActionResult ToErrorResult(ActivityChangeResult result) => result.Status switch
     {
         ActivityChangeStatus.NotFound => NotFound(),

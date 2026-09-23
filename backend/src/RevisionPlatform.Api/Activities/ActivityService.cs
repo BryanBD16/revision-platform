@@ -264,6 +264,28 @@ public class ActivityService(AppDbContext db)
     }
 
     /// <summary>
+    /// Deletes an activity for good, with its modules and its links to themes and courses.
+    /// The same people as for <see cref="UpdateAsync"/> can delete it.
+    /// </summary>
+    public async Task<ActivityChangeResult> DeleteAsync(int id, int viewerId, ActivityPermissions permissions)
+    {
+        var activity = await db.RevisionActivities.VisibleTo(viewerId).SingleOrDefaultAsync(a => a.Id == id);
+        if (activity is null)
+        {
+            return ActivityChangeResult.NotFound;
+        }
+        if (!CanEdit(activity, permissions.CanManagePublic))
+        {
+            return ActivityChangeResult.Forbidden("Only admins can delete public activities.");
+        }
+
+        // The modules and the links to themes are deleted by the database (cascade).
+        db.RevisionActivities.Remove(activity);
+        await db.SaveChangesAsync();
+        return ActivityChangeResult.Done;
+    }
+
+    /// <summary>
     /// Reuses existing themes of the same kind with the same name (ignoring case) and creates the missing ones.
     /// </summary>
     private async Task<List<Theme>> FindOrCreateThemesAsync(IReadOnlyList<string> names, string kind, DateTime now)
