@@ -1,3 +1,4 @@
+using RevisionPlatform.Api.Modules.MultipleChoice;
 using RevisionPlatform.Api.Modules.Reading;
 
 namespace RevisionPlatform.Api.Modules;
@@ -8,6 +9,7 @@ public static class ModuleServiceCollectionExtensions
     public static IServiceCollection AddModuleTypes(this IServiceCollection services)
     {
         services.AddSingleton<IModuleType, ReadingModuleType>();
+        services.AddSingleton<IModuleType, MultipleChoiceModuleType>();
 
         services.AddSingleton<ModuleTypeRegistry>();
         return services;
