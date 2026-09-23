@@ -41,7 +41,9 @@ describe('ActivityDetail', () => {
     expect(text()).toContain('Cell biology');
     expect(text()).toContain('Chapter 3');
     expect(text()).toContain('Biology');
-    expect(text()).toContain('BIO 101');
+    const themes = (fixture.nativeElement as HTMLElement).querySelector('app-activity-themes');
+    expect(themes?.textContent).toContain('Course');
+    expect(themes?.textContent).toContain('BIO 101');
     expect(text()).toContain('1 module');
     const start = (fixture.nativeElement as HTMLElement).querySelector('a.button');
     expect(start?.textContent).toContain('Start activity');

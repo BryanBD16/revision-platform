@@ -80,9 +80,12 @@ describe('ActivityList', () => {
     const link = element().querySelector<HTMLAnchorElement>('.activity-title');
     expect(link?.textContent).toContain('Cell biology');
     expect(link?.getAttribute('href')).toBe('/activities/7');
-    expect(text()).toContain('Biology');
-    expect(text()).toContain('Cells');
-    expect(element().querySelector('.course')?.textContent).toContain('BIO 101');
+    const themes = element().querySelector('.card app-activity-themes')?.textContent;
+    expect(themes).toContain('Course');
+    expect(themes).toContain('BIO 101');
+    expect(themes).toContain('Themes');
+    expect(themes).toContain('Biology');
+    expect(themes).toContain('Cells');
     expect(text()).toContain('2 modules');
   });
 

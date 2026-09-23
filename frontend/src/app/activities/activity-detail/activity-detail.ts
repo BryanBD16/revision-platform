@@ -4,10 +4,11 @@ import { Component, OnInit, inject, input, numberAttribute, signal } from '@angu
 import { RouterLink } from '@angular/router';
 import { Activity } from '../activity';
 import { ActivityApi } from '../activity-api';
+import { ActivityThemes } from '../activity-themes/activity-themes';
 
 @Component({
   selector: 'app-activity-detail',
-  imports: [DatePipe, RouterLink],
+  imports: [ActivityThemes, DatePipe, RouterLink],
   templateUrl: './activity-detail.html',
 })
 export class ActivityDetail implements OnInit {

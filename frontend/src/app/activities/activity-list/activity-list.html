@@ -26,14 +26,7 @@
       @for (activity of result.items; track activity.id) {
         <li class="card">
           <a class="activity-title" [routerLink]="['/activities', activity.id]">{{ activity.title }}</a>
-          <ul class="themes">
-            @for (course of activity.courses; track course.id) {
-              <li class="theme course" title="Course">{{ course.name }}</li>
-            }
-            @for (theme of activity.themes; track theme.id) {
-              <li class="theme">{{ theme.name }}</li>
-            }
-          </ul>
+          <app-activity-themes [courses]="activity.courses" [themes]="activity.themes" />
           <p class="meta">
             {{ activity.moduleCount }} {{ activity.moduleCount === 1 ? 'module' : 'modules' }}
             · Created {{ activity.createdAt | date: 'mediumDate' }}

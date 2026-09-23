@@ -7,11 +7,12 @@ import { ThemeApi } from '../../themes/theme-api';
 import { ActivityListQuery, ActivityPage } from '../activity';
 import { ActivityApi } from '../activity-api';
 import { ActivityFilters } from '../activity-filters/activity-filters';
+import { ActivityThemes } from '../activity-themes/activity-themes';
 import { EMPTY_QUERY, hasFilters, paramsFromQuery, queryFromParams } from './activity-list-query';
 
 @Component({
   selector: 'app-activity-list',
-  imports: [ActivityFilters, DatePipe, RouterLink],
+  imports: [ActivityFilters, ActivityThemes, DatePipe, RouterLink],
   templateUrl: './activity-list.html',
 })
 export class ActivityList {
