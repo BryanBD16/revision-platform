@@ -139,7 +139,8 @@ a {
   font-weight: 600;
 }
 
-.field input,
+/* Text fields only: checkboxes and radio buttons keep their natural size. */
+.field input:not([type='checkbox'], [type='radio']),
 .field textarea {
   width: 100%;
   padding: 0.5rem;
