@@ -131,6 +131,11 @@ be implemented unless explicitly requested.
 
 - The application should eventually save the results of completed
   revision activities.
+- A saved result does not change when the activity changes afterwards:
+  for each attempt, the user always sees the score of each module and
+  the global score as they were, computed from the modules that existed
+  when the activity was completed. Editing or deleting the activity, or
+  some of its modules, later does not modify or delete past results.
 - The application should eventually track learning progress over time.
 
 ### Additional Module Types

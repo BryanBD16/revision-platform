@@ -270,10 +270,14 @@ to add:
   of existing choices and pairs, and give new ones a random id
   (`shared/item-ids.ts`) instead of numbering them, so an id is never
   reused for another choice after an edit.
-- **Deleting an activity is permanent** for now. Once results are saved,
-  deleting an activity (or a module) will have to decide what happens to
-  them, for example keeping them with a copy of the titles, or replacing
-  the deletion with an archive.
+- **Results will not depend on the current activity.** An attempt will
+  store what is needed to show it later: the activity title, and for each
+  module its title or type, its score and its maximum score, with the
+  global score computed from these modules. The links to the activity and
+  its modules will be optional references (set to null when they are
+  deleted), used to group attempts, not to recompute them. Deleting an
+  activity or a module, which is permanent, therefore never changes or
+  deletes past results.
 - **API routes are not public-specific** (`/api/activities`), so they can
   later be scoped to the signed-in user without changing shape.
 
@@ -282,7 +286,7 @@ Expected future additions:
 | Concept | Addition |
 |---|---|
 | Google sign-in (optional) | Identity's `user_logins` table and `AddGoogle()` |
-| Saved results | `activity_attempts`, `module_responses` (response JSON per module type) |
+| Saved results | `activity_attempts`, `module_responses` (response JSON per module type), each with a copy of the titles and scores at the time of the attempt |
 | Learning progress | derived from attempts; a summary table only if needed |
 | Server-side answer checking | per-type `Evaluate(content, response)`; learner view without answers |
 
