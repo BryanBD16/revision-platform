@@ -32,9 +32,15 @@ export interface ActivityPage {
   totalCount: number;
 }
 
-/** What the activity list shows. The server uses its default page size. */
+/**
+ * What the activity list shows. Each filter that is set narrows the result
+ * (see docs/api.md). The server uses its default page size.
+ */
 export interface ActivityListQuery {
   page: number;
+  title: string | null;
+  courseId: number | null;
+  themeIds: number[];
 }
 
 export interface Activity {

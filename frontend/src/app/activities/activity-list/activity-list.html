@@ -3,10 +3,19 @@
   <a class="button" routerLink="/activities/new">New activity</a>
 </div>
 
+<app-activity-filters
+  [query]="query()"
+  [themes]="themes()"
+  [courses]="courses()"
+  (queryChange)="applyQuery($event)"
+/>
+
 @if (status() === 'error') {
   <p class="error">The activities could not be loaded. Please try again later.</p>
 } @else if (result(); as result) {
-  @if (result.totalCount === 0) {
+  @if (result.totalCount === 0 && hasFilters()) {
+    <p class="empty">No activities match these filters.</p>
+  } @else if (result.totalCount === 0) {
     <p class="empty">No activities yet. Create the first one.</p>
   } @else if (result.items.length === 0) {
     <p class="empty">

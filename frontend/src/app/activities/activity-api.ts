@@ -9,7 +9,16 @@ export class ActivityApi {
   private readonly baseUrl = '/api/activities';
 
   getPage(query: ActivityListQuery): Observable<ActivityPage> {
-    const params = new HttpParams().set('page', query.page);
+    let params = new HttpParams().set('page', query.page);
+    if (query.title) {
+      params = params.set('title', query.title);
+    }
+    if (query.courseId !== null) {
+      params = params.set('courseId', query.courseId);
+    }
+    for (const themeId of query.themeIds) {
+      params = params.append('themeIds', themeId);
+    }
     return this.http.get<ActivityPage>(this.baseUrl, { params });
   }
 

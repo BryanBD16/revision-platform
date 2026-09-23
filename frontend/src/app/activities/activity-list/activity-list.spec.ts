@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ActivityPage, ActivitySummary } from '../activity';
 import { ActivityList } from './activity-list';
@@ -49,9 +49,16 @@ describe('ActivityList', () => {
     return { items, page, pageSize: 20, totalCount };
   }
 
+  /** Answers the requests for the filter suggestions, sent once when the list is created. */
+  function flushSuggestions(): void {
+    http.match('/api/themes').forEach((request) => request.flush([{ id: 1, name: 'Biology' }]));
+    http.match('/api/courses').forEach((request) => request.flush([{ id: 3, name: 'BIO 101' }]));
+  }
+
   async function open(url: string, response: ActivityPage, expectedRequest: string): Promise<void> {
     const navigation = harness.navigateByUrl(url);
     await harness.fixture.whenStable();
+    flushSuggestions();
     http.expectOne(expectedRequest).flush(response);
     await navigation;
     await harness.fixture.whenStable();
@@ -97,6 +104,35 @@ describe('ActivityList', () => {
     expect(element().querySelectorAll('.pagination a').length).toBe(0);
   });
 
+  it('sends the filters of the URL to the server', async () => {
+    await open(
+      '/activities?title=cell&courseId=3&themeIds=1&themeIds=2&page=2',
+      page([summary(1, 'Cell division')], 2, 21),
+      '/api/activities?page=2&title=cell&courseId=3&themeIds=1&themeIds=2',
+    );
+
+    expect(element().querySelector<HTMLInputElement>('#filter-title')!.value).toBe('cell');
+    expect(element().querySelector<HTMLInputElement>('#filter-course')!.value).toBe('BIO 101');
+    const previous = element().querySelector<HTMLAnchorElement>('.pagination a');
+    expect(previous?.getAttribute('href')).toBe(
+      '/activities?title=cell&courseId=3&themeIds=1&themeIds=2',
+    );
+  });
+
+  it('puts a chosen filter in the URL and goes back to the first page', async () => {
+    await open('/activities?page=2', page([summary(1, 'First')], 2, 21), '/api/activities?page=2');
+
+    const course = element().querySelector<HTMLInputElement>('#filter-course')!;
+    course.value = 'bio 101';
+    course.dispatchEvent(new Event('change'));
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/activities?courseId=3');
+    http.expectOne('/api/activities?page=1&courseId=3').flush(page([], 1, 0));
+    await harness.fixture.whenStable();
+    expect(text()).toContain('No activities match these filters.');
+  });
+
   it('shows a message when there are no activities', async () => {
     await open('/activities', page([], 1, 0), '/api/activities?page=1');
 
@@ -113,6 +149,7 @@ describe('ActivityList', () => {
   it('shows an error when loading fails', async () => {
     const navigation = harness.navigateByUrl('/activities');
     await harness.fixture.whenStable();
+    flushSuggestions();
     http
       .expectOne('/api/activities?page=1')
       .flush(null, { status: 500, statusText: 'Server Error' });

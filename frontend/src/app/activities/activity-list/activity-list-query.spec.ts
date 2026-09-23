@@ -1,20 +1,58 @@
 import { convertToParamMap } from '@angular/router';
-import { paramsFromQuery, queryFromParams } from './activity-list-query';
+import { EMPTY_QUERY, hasFilters, paramsFromQuery, queryFromParams } from './activity-list-query';
 
 describe('activity list query', () => {
   it('reads the page from the URL', () => {
-    expect(queryFromParams(convertToParamMap({ page: '3' }))).toEqual({ page: 3 });
+    expect(queryFromParams(convertToParamMap({ page: '3' }))).toEqual({ ...EMPTY_QUERY, page: 3 });
   });
 
   it.each(['', '0', '-2', '1.5', 'abc'])(
     'uses the first page for the invalid page "%s"',
     (page) => {
-      expect(queryFromParams(convertToParamMap({ page }))).toEqual({ page: 1 });
+      expect(queryFromParams(convertToParamMap({ page }))).toEqual(EMPTY_QUERY);
     },
   );
 
-  it('leaves the first page out of the URL', () => {
-    expect(paramsFromQuery({ page: 1 })).toEqual({ page: null });
-    expect(paramsFromQuery({ page: 4 })).toEqual({ page: 4 });
+  it('reads the filters from the URL, ignoring invalid ids', () => {
+    const params = convertToParamMap({
+      title: '  cell ',
+      courseId: '3',
+      themeIds: ['1', 'x', '2', '1', '-4'],
+    });
+
+    expect(queryFromParams(params)).toEqual({
+      page: 1,
+      title: 'cell',
+      courseId: 3,
+      themeIds: [1, 2],
+    });
+  });
+
+  it('ignores a blank title and an invalid course', () => {
+    const params = convertToParamMap({ title: '  ', courseId: 'abc' });
+
+    expect(queryFromParams(params)).toEqual(EMPTY_QUERY);
+  });
+
+  it('leaves the default values out of the URL', () => {
+    expect(paramsFromQuery(EMPTY_QUERY)).toEqual({
+      page: null,
+      title: null,
+      courseId: null,
+      themeIds: null,
+    });
+    expect(paramsFromQuery({ page: 4, title: 'cell', courseId: 3, themeIds: [1, 2] })).toEqual({
+      page: 4,
+      title: 'cell',
+      courseId: 3,
+      themeIds: [1, 2],
+    });
+  });
+
+  it('tells whether a filter is set', () => {
+    expect(hasFilters({ ...EMPTY_QUERY, page: 2 })).toBe(false);
+    expect(hasFilters({ ...EMPTY_QUERY, title: 'cell' })).toBe(true);
+    expect(hasFilters({ ...EMPTY_QUERY, courseId: 3 })).toBe(true);
+    expect(hasFilters({ ...EMPTY_QUERY, themeIds: [1] })).toBe(true);
   });
 });

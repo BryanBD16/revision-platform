@@ -1,22 +1,35 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Params, RouterLink } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { catchError, map, of, switchMap } from 'rxjs';
+import { ThemeApi } from '../../themes/theme-api';
 import { ActivityListQuery, ActivityPage } from '../activity';
 import { ActivityApi } from '../activity-api';
-import { paramsFromQuery, queryFromParams } from './activity-list-query';
+import { ActivityFilters } from '../activity-filters/activity-filters';
+import { EMPTY_QUERY, hasFilters, paramsFromQuery, queryFromParams } from './activity-list-query';
 
 @Component({
   selector: 'app-activity-list',
-  imports: [DatePipe, RouterLink],
+  imports: [ActivityFilters, DatePipe, RouterLink],
   templateUrl: './activity-list.html',
 })
 export class ActivityList {
   private readonly activityApi = inject(ActivityApi);
+  private readonly themeApi = inject(ThemeApi);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  protected readonly query = signal<ActivityListQuery>({ page: 1 });
+  // Without the suggestions, the filters still show the list but cannot be applied.
+  protected readonly themes = toSignal(this.themeApi.getThemes().pipe(catchError(() => of([]))), {
+    initialValue: [],
+  });
+  protected readonly courses = toSignal(this.themeApi.getCourses().pipe(catchError(() => of([]))), {
+    initialValue: [],
+  });
+
+  protected readonly query = signal<ActivityListQuery>(EMPTY_QUERY);
+  protected readonly hasFilters = computed(() => hasFilters(this.query()));
   protected readonly result = signal<ActivityPage | null>(null);
   protected readonly status = signal<'loading' | 'loaded' | 'error'>('loading');
 
@@ -41,6 +54,10 @@ export class ActivityList {
         this.result.set(result);
         this.status.set(result ? 'loaded' : 'error');
       });
+  }
+
+  protected applyQuery(query: ActivityListQuery): void {
+    this.router.navigate([], { relativeTo: this.route, queryParams: paramsFromQuery(query) });
   }
 
   /** The URL query parameters of another page with the same filters. */
