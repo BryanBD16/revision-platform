@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
+using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Mvc.Testing.Handlers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RevisionPlatform.Api.Data;
@@ -22,6 +24,20 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Default", _connectionString);
+        // The tests send many requests from the same address; RateLimitingTests uses a low limit.
+        builder.UseSetting("RateLimiting:PasswordRequestsPerMinute", "100000");
+    }
+
+    /// <summary>
+    /// Creates a client that behaves like the frontend in a browser: it keeps the cookies
+    /// (the session) and sends the anti-forgery token. Each client is a separate visitor.
+    /// </summary>
+    public HttpClient CreateApiClient() => CreateApiClient(this);
+
+    public static HttpClient CreateApiClient<T>(WebApplicationFactory<T> factory) where T : class
+    {
+        var cookies = new CookieContainer();
+        return factory.CreateDefaultClient(new XsrfHandler(cookies), new CookieContainerHandler(cookies));
     }
 
     public async Task InitializeAsync()

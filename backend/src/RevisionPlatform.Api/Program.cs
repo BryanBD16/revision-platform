@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
+using RevisionPlatform.Api.Auth;
 using RevisionPlatform.Api.Data;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
@@ -14,12 +15,14 @@ builder.Services.AddDbContext<AppDbContext>(options => options
     .UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4)))
     .UseSnakeCaseNamingConvention());
 
+builder.Services.AddAppAuthentication(builder.Configuration, builder.Environment);
 builder.Services.AddModuleTypes();
 builder.Services.AddScoped<ActivityValidator>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<ThemeService>();
 
-builder.Services.AddControllers();
+// Every POST, PUT and DELETE request needs the anti-forgery token (see XsrfCookie).
+builder.Services.AddControllers(options => options.Filters.Add<ValidateAntiforgeryFilter>());
 builder.Services.AddHealthChecks();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -33,6 +36,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
+app.UseRateLimiter();
+app.UseXsrfCookie();
 app.UseAuthorization();
 
 app.MapControllers();
