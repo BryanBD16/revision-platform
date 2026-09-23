@@ -146,6 +146,50 @@ public class AuthEndpointTests(ApiFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ChangePassword_ReplacesThePasswordAndKeepsThisSessionOnly()
+    {
+        await _client.RegisterAsync("ada@example.com");
+        var otherSession = factory.CreateApiClient();
+        await SignInAsync(otherSession, "ada@example.com", AuthExtensions.Password);
+
+        var response = await _client.PostAsJsonAsync("/api/auth/change-password",
+            new ChangePasswordRequest(AuthExtensions.Password, "a brand new password"));
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.NotNull(await MeAsync(_client));
+        Assert.Null(await MeAsync(otherSession));
+        var client = factory.CreateApiClient();
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await SignInAsync(client, "ada@example.com", AuthExtensions.Password)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK,
+            (await SignInAsync(client, "ada@example.com", "a brand new password")).StatusCode);
+    }
+
+    [Theory]
+    [InlineData("wrong password!", "a brand new password", "currentPassword")]
+    [InlineData("", "a brand new password", "currentPassword")]
+    [InlineData(AuthExtensions.Password, "too short", "newPassword")]
+    [InlineData(AuthExtensions.Password, "", "newPassword")]
+    public async Task ChangePassword_RejectsInvalidRequest(string current, string newPassword, string invalidField)
+    {
+        await _client.RegisterAsync();
+
+        var response = await _client.PostAsJsonAsync("/api/auth/change-password",
+            new ChangePasswordRequest(current, newPassword));
+
+        await AssertValidationProblemAsync(response, invalidField);
+    }
+
+    [Fact]
+    public async Task ChangePassword_RequiresASignedInUser()
+    {
+        var response = await _client.PostAsJsonAsync("/api/auth/change-password",
+            new ChangePasswordRequest(AuthExtensions.Password, "a brand new password"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Requests_WithoutTheAntiforgeryTokenAreRejected()
     {
         // A client without the XsrfHandler, like a form posted from another site.

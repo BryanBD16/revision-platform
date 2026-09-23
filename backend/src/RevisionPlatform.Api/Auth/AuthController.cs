@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -80,6 +81,51 @@ public class AuthController(
         await signInManager.SignOutAsync();
         HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
         XsrfCookie.Issue(HttpContext, antiforgery);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Changes the password of the signed-in user. The other sessions of the user are
+    /// signed out; this one stays signed in.
+    /// </summary>
+    [Authorize]
+    [HttpPost("change-password")]
+    [EnableRateLimiting(AuthServiceCollectionExtensions.PasswordRateLimitPolicy)]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
+    {
+        var errors = new Dictionary<string, string[]>();
+        if (string.IsNullOrEmpty(request.CurrentPassword))
+        {
+            errors["currentPassword"] = ["The current password is required."];
+        }
+        if (string.IsNullOrEmpty(request.NewPassword))
+        {
+            errors["newPassword"] = ["The new password is required."];
+        }
+        else if (request.NewPassword.Length > AuthServiceCollectionExtensions.PasswordMaxLength)
+        {
+            errors["newPassword"] =
+                [$"The password must be at most {AuthServiceCollectionExtensions.PasswordMaxLength} characters."];
+        }
+        if (errors.Count > 0)
+        {
+            return ValidationProblem(new ValidationProblemDetails(errors));
+        }
+
+        var user = (await userManager.GetUserAsync(User))!;
+        var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword!, request.NewPassword!);
+        if (!result.Succeeded)
+        {
+            var fieldErrors = result.Errors
+                .GroupBy(e => e.Code == "PasswordMismatch" ? "currentPassword" : "newPassword",
+                    e => e.Code == "PasswordMismatch" ? "The current password is incorrect." : e.Description)
+                .ToDictionary(group => group.Key, group => group.ToArray());
+            return ValidationProblem(new ValidationProblemDetails(fieldErrors));
+        }
+
+        // Changing the password changes the security stamp, which ends every session:
+        // sign this one in again.
+        await SignInAsync(user);
         return NoContent();
     }
 

@@ -6,5 +6,7 @@ public record RegisterRequest(string? Email, string? Password, string? DisplayNa
 
 public record SignInRequest(string? Email, string? Password);
 
+public record ChangePasswordRequest(string? CurrentPassword, string? NewPassword);
+
 /// <summary>The signed-in user.</summary>
 public record CurrentUserResponse(int Id, string Email, string DisplayName, IReadOnlyList<string> Roles);
