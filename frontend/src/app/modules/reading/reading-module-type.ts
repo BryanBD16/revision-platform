@@ -13,13 +13,13 @@ export type ReadingForm = FormGroup<{
 export const readingModuleType: ModuleTypeDefinition<ReadingContent, ReadingForm> = {
   type: 'reading',
   label: 'Reading',
-  createForm: () =>
+  createForm: (content) =>
     new FormGroup({
-      title: new FormControl('', {
+      title: new FormControl(content?.title ?? '', {
         nonNullable: true,
         validators: [Validators.maxLength(READING_LIMITS.titleMaxLength)],
       }),
-      body: new FormControl('', {
+      body: new FormControl(content?.body ?? '', {
         nonNullable: true,
         validators: [notBlank, Validators.maxLength(READING_LIMITS.bodyMaxLength)],
       }),

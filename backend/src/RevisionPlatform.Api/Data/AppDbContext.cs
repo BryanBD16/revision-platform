@@ -36,6 +36,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             // Deleting a user deletes their private activities.
             activity.HasOne<AppUser>().WithMany().HasForeignKey(a => a.OwnerId).OnDelete(DeleteBehavior.Cascade);
             activity.HasIndex(a => a.Visibility);
+            // Deleting a user keeps the activities they edited.
+            activity.HasOne(a => a.LastEditedBy).WithMany().HasForeignKey(a => a.LastEditedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
             // A private activity always has an owner, a public one never has.
             activity.ToTable(table => table.HasCheckConstraint(
                 "ck_revision_activities_visibility_owner",

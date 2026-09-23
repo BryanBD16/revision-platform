@@ -25,7 +25,21 @@
       <p class="meta">
         {{ activity.modules.length }} {{ activity.modules.length === 1 ? 'module' : 'modules' }}
         · Created {{ activity.createdAt | date: 'medium' }}
+        @if (activity.lastEditedBy; as editor) {
+          · Last edited by {{ editor.displayName }} on {{ activity.updatedAt | date: 'medium' }}
+        }
       </p>
+      @if (activity.canEdit) {
+        <div class="owner-actions">
+          <a class="button-secondary" [routerLink]="['/activities', activity.id, 'edit']">Edit</a>
+          <button type="button" class="button-danger" [disabled]="deleting()" (click)="delete(activity)">
+            {{ deleting() ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+        @if (deleteError(); as message) {
+          <p class="error" role="alert">{{ message }}</p>
+        }
+      }
       @if (activity.modules.length > 0) {
         <p>
           <a class="button" [routerLink]="['/activities', activity.id, 'play']">Start activity</a>

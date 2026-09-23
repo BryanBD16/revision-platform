@@ -4,11 +4,13 @@ namespace RevisionPlatform.Api.Activities;
 
 // Request properties are nullable so that missing values reach ActivityValidator
 // instead of being rejected by the framework with a different error format.
-public record CreateActivityRequest(
+
+/// <summary>The body of POST /api/activities (create) and PUT /api/activities/{id} (update).</summary>
+public record SaveActivityRequest(
     string? Title,
     string? Description,
     List<string?>? Themes,
-    List<CreateModuleRequest?>? Modules,
+    List<SaveModuleRequest?>? Modules,
     List<string?>? Courses = null,
     string? Visibility = null);
 
@@ -24,8 +26,12 @@ public record ActivityListRequest(
     List<int>? ThemeIds,
     string? Visibility = null);
 
-/// <summary>A module to create; its position is its index in the request.</summary>
-public record CreateModuleRequest(string? Type, JsonElement? Content);
+/// <summary>
+/// A module of the activity; its position is its index in the request. When updating an
+/// activity, <c>Id</c> identifies an existing module to keep (and update); a module without
+/// id is new.
+/// </summary>
+public record SaveModuleRequest(string? Type, JsonElement? Content, int? Id = null);
 
 /// <summary>A topic or a course.</summary>
 public record ThemeResponse(int Id, string Name);
@@ -51,7 +57,13 @@ public record ActivityPageResponse(
     int PageSize,
     int TotalCount);
 
-/// <summary>An activity with its modules, in order.</summary>
+/// <summary>The user who last edited an activity.</summary>
+public record ActivityEditorResponse(int Id, string DisplayName);
+
+/// <summary>
+/// An activity with its modules, in order. <c>CanEdit</c> tells whether the caller can edit and
+/// delete it; <c>LastEditedBy</c> is only given to them, for public activities.
+/// </summary>
 public record ActivityResponse(
     int Id,
     string Title,
@@ -61,4 +73,6 @@ public record ActivityResponse(
     string Visibility,
     IReadOnlyList<ModuleResponse> Modules,
     DateTime CreatedAt,
-    DateTime UpdatedAt);
+    DateTime UpdatedAt,
+    bool CanEdit,
+    ActivityEditorResponse? LastEditedBy);

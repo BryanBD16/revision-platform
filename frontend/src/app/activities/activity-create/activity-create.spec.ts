@@ -118,7 +118,7 @@ describe('ActivityCreate', () => {
 
   it('tells a user who cannot publish that the activity will be private', () => {
     expect(element.querySelector('input[type="radio"]')).toBeNull();
-    expect(element.textContent).toContain('This activity will be private');
+    expect(element.textContent).toContain('This activity is private');
   });
 
   it('sends modules in the order shown, after moving and removing them', async () => {

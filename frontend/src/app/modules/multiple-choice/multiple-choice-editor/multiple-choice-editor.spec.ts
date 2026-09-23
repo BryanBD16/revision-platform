@@ -33,8 +33,8 @@ describe('MultipleChoiceEditor', () => {
     expect(form.getRawValue()).toEqual({
       question: 'What is a cell?',
       choices: [
-        { text: 'The basic unit of life', correct: true },
-        { text: '', correct: false },
+        { id: null, text: 'The basic unit of life', correct: true },
+        { id: null, text: '', correct: false },
       ],
       explanation: '',
     });

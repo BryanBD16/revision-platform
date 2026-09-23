@@ -10,8 +10,12 @@ export interface ModuleTypeDefinition<TContent = unknown, TForm extends FormGrou
   readonly type: string;
   /** Name shown to users, e.g. "Reading". */
   readonly label: string;
-  /** Creates the form that edits this module's content, with its validators. */
-  createForm(): TForm;
+  /**
+   * Creates the form that edits this module's content, with its validators: empty for a
+   * new module, or filled with `content` to edit an existing module. The ids of the items
+   * of the content (choices, pairs...) must be kept, since saved answers refer to them.
+   */
+  createForm(content?: TContent): TForm;
   /** Converts the (valid) form into the content sent to the API. */
   toContent(form: TForm): TContent;
   /** Component that edits the content; receives the form from `createForm`. */

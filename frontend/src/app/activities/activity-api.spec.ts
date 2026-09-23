@@ -18,6 +18,8 @@ describe('ActivityApi', () => {
     modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
+    canEdit: true,
+    lastEditedBy: null,
   };
 
   const summary: ActivitySummary = {
@@ -92,5 +94,27 @@ describe('ActivityApi', () => {
     req.flush(activity);
 
     expect(result).toEqual(activity);
+  });
+
+  it('updates an activity', () => {
+    const request = {
+      title: 'Cell biology',
+      description: null,
+      themes: ['Biology'],
+      courses: [],
+      visibility: 'private' as const,
+      modules: [{ id: 1, type: 'reading', content: { title: null, body: 'Text' } }],
+    };
+    api.update(1, request).subscribe();
+
+    const req = http.expectOne({ method: 'PUT', url: '/api/activities/1' });
+    expect(req.request.body).toEqual(request);
+    req.flush(activity);
+  });
+
+  it('deletes an activity', () => {
+    api.delete(1).subscribe();
+
+    http.expectOne({ method: 'DELETE', url: '/api/activities/1' }).flush(null);
   });
 });
