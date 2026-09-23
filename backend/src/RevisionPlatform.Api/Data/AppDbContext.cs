@@ -1,11 +1,19 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
+using RevisionPlatform.Api.Users;
 
 namespace RevisionPlatform.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+/// <summary>
+/// The application data and the ASP.NET Core Identity tables (users, roles and the
+/// links between them), with integer ids.
+/// </summary>
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<AppUser, IdentityRole<int>, int>(options)
 {
     public DbSet<RevisionActivity> RevisionActivities => Set<RevisionActivity>();
     public DbSet<Theme> Themes => Set<Theme>();
@@ -13,6 +21,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+        ConfigureIdentity(modelBuilder);
+
         modelBuilder.Entity<RevisionActivity>(activity =>
         {
             activity.Property(a => a.Title).HasMaxLength(RevisionActivity.TitleMaxLength);
@@ -53,5 +64,32 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             // A topic and a course can have the same name.
             theme.HasIndex(t => new { t.Kind, t.Name }).IsUnique();
         });
+    }
+
+    private static void ConfigureIdentity(ModelBuilder modelBuilder)
+    {
+        // Shorter table names than Identity's AspNetUsers, AspNetRoles...
+        modelBuilder.Entity<AppUser>(user =>
+        {
+            user.ToTable("users");
+            user.Property(u => u.DisplayName).HasMaxLength(AppUser.DisplayNameMaxLength);
+        });
+        modelBuilder.Entity<IdentityRole<int>>(role =>
+        {
+            role.ToTable("roles");
+            // The roles are data that the code relies on, so they are created by migrations.
+            role.HasData(new IdentityRole<int>
+            {
+                Id = 1,
+                Name = RoleNames.Admin,
+                NormalizedName = RoleNames.Admin.ToUpperInvariant(),
+                ConcurrencyStamp = "5d0c3e0e-7a4f-4a53-9d1a-1f0e2c3b4a01",
+            });
+        });
+        modelBuilder.Entity<IdentityUserRole<int>>().ToTable("user_roles");
+        modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("user_claims");
+        modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("user_logins");
+        modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_tokens");
+        modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("role_claims");
     }
 }

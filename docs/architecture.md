@@ -90,7 +90,21 @@ activity_themes
   activity_id -> revision_activities (cascade delete),
   theme_id -> themes,
   primary key (activity_id, theme_id)
+
+users                (ASP.NET Core Identity)
+  id, email, user_name (= email, unique), display_name, password_hash,
+  security_stamp, lockout fields, created_at, ...
+
+roles                (ASP.NET Core Identity)
+  id, name (unique)
+
+user_roles
+  user_id -> users (cascade delete), role_id -> roles (cascade delete),
+  primary key (user_id, role_id)
 ```
+
+Identity also creates `user_claims`, `user_logins`, `user_tokens` and
+`role_claims`, which are not used yet.
 
 - Ids are auto-increment integers.
 - Module content is stored as JSON and validated by the module type's
@@ -141,11 +155,44 @@ In the first iteration, completing an activity happens entirely in the
 browser: the player walks through the modules and checks answers
 client-side. Nothing about a completion is stored.
 
-### Designed to evolve toward users and progress
+## Authentication
 
-Long term, the application will have Google sign-in, user-specific
-activities, saved results and learning progress. None of this is
-implemented yet, but the design keeps it easy to add:
+- **ASP.NET Core Identity** stores the users and hashes the passwords
+  (PBKDF2). `AppDbContext` is an `IdentityDbContext` with integer ids,
+  and the tables have short names (`users`, `roles`, `user_roles`...).
+  `Auth/AuthServiceCollectionExtensions.cs` holds all the settings.
+- **Session cookie**, not tokens stored by JavaScript: the cookie is
+  HttpOnly, so a script injected in the page cannot steal the session.
+- **The user is checked against the database on every request**
+  (`SecurityStampValidatorOptions.ValidationInterval` is zero). Changing
+  the password or the roles changes the user's security stamp, which
+  ends or refreshes the existing sessions immediately.
+- **Cross-site request forgery:** the session cookie is SameSite=Strict,
+  and every `POST`, `PUT` and `DELETE` request also needs an anti-forgery
+  token (`XsrfCookie`, `ValidateAntiforgeryFilter`). Angular's
+  `HttpClient` reads the `XSRF-TOKEN` cookie and sends the
+  `X-XSRF-TOKEN` header by itself.
+- **Passwords:** at least 12 characters without character-class rules
+  (NIST SP 800-63B), lockout after 5 failures, and rate limiting of the
+  endpoints that take a password.
+- **Known limit:** signing in with an unknown email answers slightly
+  faster than with a wrong password (no password hash is computed), which
+  could reveal which emails have accounts. The rate limit makes this
+  slow to exploit.
+- **Frontend:** `AuthService` holds the signed-in user in a signal,
+  loaded by an app initializer before the first page is shown.
+  `signedInGuard` sends visitors to `/sign-in?returnUrl=...`, and
+  `safeReturnUrl` only accepts paths of the application after signing in
+  (no open redirect).
+- **Tests** use the real flow: `ApiFactory.CreateApiClient()` keeps the
+  cookies and sends the anti-forgery header like the browser, and
+  `RegisterAsync()` creates and signs in a user.
+
+## Designed to evolve toward progress
+
+Long term, the application will have saved results and learning
+progress. None of this is implemented yet, but the design keeps it easy
+to add:
 
 - **Content and learner data stay separate.** Activity and module tables
   hold only authored content; no completion, score or user fields.
@@ -159,11 +206,9 @@ Expected future additions:
 
 | Concept | Addition |
 |---|---|
-| Google sign-in | `users`, `user_external_logins` (provider + Google `sub`, unique) |
-| User-specific activities | nullable `owner_user_id` on `revision_activities` (and possibly on `themes`) |
+| Google sign-in (optional) | Identity's `user_logins` table and `AddGoogle()` |
 | Saved results | `activity_attempts`, `module_responses` (response JSON per module type) |
 | Learning progress | derived from attempts; a summary table only if needed |
 | Server-side answer checking | per-type `Evaluate(content, response)`; learner view without answers |
 
-Deferred until they are needed: soft deletion, activity versioning, and
-choosing between ASP.NET Core Identity and a custom `users` table.
+Deferred until they are needed: soft deletion and activity versioning.

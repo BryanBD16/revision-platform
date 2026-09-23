@@ -44,6 +44,18 @@ The first version should allow a user to:
   themes.
 - Filtering and pagination are done by the server.
 
+### User Accounts
+
+- A visitor can create an account with an email address, a password and
+  a display name, then sign in and sign out.
+- The email address is unique (ignoring case) and is used to sign in.
+  The display name is shown in the application.
+- Passwords have at least 12 characters. After 5 failed sign-ins, the
+  account is locked for 15 minutes.
+- A signed-in user can change their password; their other sessions are
+  signed out.
+- Visitors who are not signed in can still browse and complete activities.
+
 ### Initial Module Types
 
 The MVP supports the following module types:
@@ -59,12 +71,16 @@ Future module types are intentionally out of scope for the MVP.
 The following concepts are planned for future iterations but should not
 be implemented unless explicitly requested.
 
-### User Accounts
+### Password Reset by Email
 
-- Users should eventually have accounts.
-- Authentication should eventually support Google.
-- Revision activities, results, and progress should eventually be
-  associated with users.
+- Users should eventually be able to reset a forgotten password
+  themselves, with a link sent by email. This needs an email sending
+  service and email address confirmation.
+
+### Google Sign-In
+
+- Signing in with a Google account may be added later, next to email
+  and password.
 
 ### Results and Progress
 

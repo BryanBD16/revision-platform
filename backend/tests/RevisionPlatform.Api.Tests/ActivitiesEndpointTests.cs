@@ -10,7 +10,7 @@ namespace RevisionPlatform.Api.Tests;
 [Collection(ApiCollection.Name)]
 public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateApiClient();
 
     public Task InitializeAsync() => factory.ResetDatabaseAsync();
 

@@ -4,7 +4,83 @@ All endpoints are under `/api`. Requests and responses use JSON with
 camelCase property names. Timestamps are in UTC (ISO 8601).
 
 In development, Swagger UI at `http://localhost:5044/swagger` lists the
-endpoints and can call them.
+endpoints. Swagger UI does not send the anti-forgery header, so it can
+only call the `GET` endpoints.
+
+## Security
+
+- **Session:** signing in sets the `revision_session` cookie (HttpOnly,
+  SameSite=Strict, HTTPS-only outside development, 14 days, renewed
+  while used). The browser sends it with every request.
+- **Anti-forgery token:** every `GET /api/...` response sets the
+  `XSRF-TOKEN` cookie. Every `POST`, `PUT` and `DELETE` request must
+  copy its value into the `X-XSRF-TOKEN` header, otherwise it gets `400`.
+  The token belongs to the signed-in user (or to "nobody"), so signing
+  in, registering and signing out send a new one. Angular's `HttpClient`
+  does this automatically.
+- **Refused requests** get `401` (not signed in) or `403` (not allowed),
+  never a redirect.
+- **Rate limiting:** `register`, `sign-in` and `change-password` accept 10
+  requests per minute per IP address (setting
+  `RateLimiting:PasswordRequestsPerMinute`), then answer `429`.
+
+## Authentication
+
+### Current user
+
+```json
+{ "id": 1, "email": "ada@example.com", "displayName": "Ada", "roles": ["admin"] }
+```
+
+`roles` is sorted by name and empty for a regular user.
+
+### `GET /api/auth/me`
+
+Returns the signed-in user, or `204` when nobody is signed in.
+
+### `POST /api/auth/register`
+
+```json
+{ "email": "ada@example.com", "password": "correct horse battery", "displayName": "Ada" }
+```
+
+Creates an account, signs the new user in and returns `201` with the
+current user.
+
+- `email`: required, a plain email address, at most 256 characters.
+  Surrounding spaces are removed. It must not be used by another account
+  (ignoring case).
+- `password`: required, from 12 to 128 characters. No character classes
+  are required; spaces count.
+- `displayName`: required, at most 100 characters. Surrounding spaces
+  are removed.
+
+Invalid values return `400` with errors keyed by field.
+
+### `POST /api/auth/sign-in`
+
+```json
+{ "email": "ada@example.com", "password": "correct horse battery" }
+```
+
+Returns `200` with the current user. The email ignores case. A wrong
+password and an unknown email both return `401` with the same title.
+After 5 failed attempts, the account is locked for 15 minutes: signing
+in returns `401` with a title saying so, even with the right password.
+
+### `POST /api/auth/sign-out`
+
+Ends the session. Returns `204`.
+
+### `POST /api/auth/change-password`
+
+```json
+{ "currentPassword": "correct horse battery", "newPassword": "a brand new password" }
+```
+
+Requires a signed-in user. Returns `204`. The new password follows the
+registration rules. A wrong current password returns `400` with an error
+on `currentPassword`. The other sessions of the user are signed out.
 
 ## Health
 
