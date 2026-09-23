@@ -1,4 +1,5 @@
 import { Component, computed, input, output, signal } from '@angular/core';
+import { shuffle } from '../../../shared/shuffle';
 import { ModulePlayer, ModuleResult } from '../../module-type';
 import { isCorrectAnswer } from '../grading';
 import { MultipleChoiceContent } from '../multiple-choice-content';
@@ -16,6 +17,9 @@ export class MultipleChoicePlayer implements ModulePlayer<MultipleChoiceContent>
 
   /** Name shared by the radio buttons of this question. */
   protected readonly name = `multiple-choice-answer-${nextId++}`;
+
+  /** The choices in a random order, so the correct answer is not always in the same place. */
+  protected readonly choices = computed(() => shuffle(this.content().choices));
 
   protected readonly selected = signal<ReadonlySet<string>>(new Set());
   protected readonly answered = signal(false);
