@@ -8,6 +8,7 @@ for the architectural decisions.
 ## Prerequisites
 
 - Docker Engine with the Compose plugin
+- .NET 8 SDK
 - make
 
 Your user must be allowed to use Docker without `sudo`:
@@ -48,14 +49,32 @@ restarts. The scripts in `docker/mysql/init/` run only when that volume
 is first created; run `make db-reset` then `make db-up` to apply changes
 to them.
 
+## Backend
+
+The ASP.NET Core API is in `backend/` (`src/RevisionPlatform.Api`,
+tests in `tests/RevisionPlatform.Api.Tests`).
+
+```sh
+make backend-run
+```
+
+The API listens on `http://localhost:5044`. Health check:
+`GET /api/health`. In development, Swagger UI is available at
+`/swagger`.
+
 ## Commands
 
 Run `make` to list all commands.
 
-| Command         | Description                                      |
-|-----------------|--------------------------------------------------|
-| `make db-up`    | Start the MySQL container and wait until healthy |
-| `make db-down`  | Stop the MySQL container (data is kept)          |
-| `make db-logs`  | Follow the MySQL container logs                  |
-| `make db-shell` | Open a MySQL prompt as the application user      |
-| `make db-reset` | Stop the container and **delete all its data**   |
+| Command              | Description                                      |
+|----------------------|--------------------------------------------------|
+| `make build`         | Build all components                             |
+| `make test`          | Run all tests                                    |
+| `make backend-build` | Build the backend                                |
+| `make backend-test`  | Run the backend tests                            |
+| `make backend-run`   | Run the API with hot reload                      |
+| `make db-up`         | Start the MySQL container and wait until healthy |
+| `make db-down`       | Stop the MySQL container (data is kept)          |
+| `make db-logs`       | Follow the MySQL container logs                  |
+| `make db-shell`      | Open a MySQL prompt as the application user      |
+| `make db-reset`      | Stop the container and **delete all its data**   |

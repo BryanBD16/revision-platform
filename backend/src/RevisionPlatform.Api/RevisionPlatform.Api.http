@@ -1,0 +1,5 @@
+@RevisionPlatform.Api_HostAddress = http://localhost:5044
+
+GET {{RevisionPlatform.Api_HostAddress}}/api/health
+
+###
