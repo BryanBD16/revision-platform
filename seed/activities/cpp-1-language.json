@@ -1,0 +1,234 @@
+{
+  "title": "C++ in a nutshell",
+  "description": "What kind of language C++ is, how a program is compiled and linked, and why there is no garbage collector.",
+  "themes": [
+    "C++",
+    "Compilation"
+  ],
+  "courses": [
+    "Introduction to C++"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "A language close to the machine",
+        "body": "C++ was created by Bjarne Stroustrup, starting in 1979 as \"C with Classes\" and renamed C++ in 1983. It adds classes, templates, exceptions and much more to the C language.\n\nA C++ program is compiled directly into native machine code for one processor and one operating system. There is no virtual machine and no garbage collector: the program runs straight on the hardware, and memory is released by the code itself.\n\nIts motto is \"you don't pay for what you don't use\": a feature you do not use costs nothing at run time. That is why C++ powers games, browsers, databases and embedded systems.\n\nThe language is standardized by ISO: C++11 started \"modern C++\", followed by C++14, 17, 20 and 23."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "You compile main.cpp with g++. What do you get?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Native machine code: an executable for your processor and operating system"
+          },
+          {
+            "id": "b",
+            "text": "Bytecode for a virtual machine"
+          },
+          {
+            "id": "c",
+            "text": "Intermediate Language for .NET"
+          },
+          {
+            "id": "d",
+            "text": "JavaScript that runs in the browser"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "C++ compiles ahead of time to machine code. Nothing needs to be installed to run the executable, unlike Java (JVM) or C# (.NET runtime)."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "You built a C++ program on Linux. Can you run the same executable on Windows?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "No: machine code targets one system; you compile the source code again for Windows"
+          },
+          {
+            "id": "b",
+            "text": "Yes: C++ executables run everywhere"
+          },
+          {
+            "id": "c",
+            "text": "Yes, as long as Java is installed"
+          },
+          {
+            "id": "d",
+            "text": "Only if the program has no classes"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The source code can be portable, but the executable is not: it contains machine code and system calls for one platform. Portability comes from recompiling."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Who releases the memory of the objects a C++ program creates?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The program itself: local objects when they go out of scope, heap objects when they are deleted"
+          },
+          {
+            "id": "b",
+            "text": "A garbage collector that runs in the background"
+          },
+          {
+            "id": "c",
+            "text": "The operating system, every few seconds"
+          },
+          {
+            "id": "d",
+            "text": "Nobody: memory is only released when the computer restarts"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "C++ has no garbage collector. Memory is released at precise moments, when objects are destroyed. The last activity of this course shows how modern C++ makes that automatic."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Compiling and linking",
+        "body": "Building a C++ program has several steps:\n1. The preprocessor handles the lines starting with #, such as #include <iostream>, which pastes the content of a header file into the code.\n2. The compiler turns each .cpp file separately into an object file (.o or .obj).\n3. The linker combines the object files and the libraries into one executable.\n\nHeaders (.h or .hpp) usually declare functions and classes; .cpp files define them. The program starts in the main() function."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "#include <iostream>\n\nWhat does this line do?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Before compiling, the preprocessor pastes in the iostream header, which declares std::cout"
+          },
+          {
+            "id": "b",
+            "text": "It downloads the iostream library from the Internet"
+          },
+          {
+            "id": "c",
+            "text": "It loads a module while the program runs"
+          },
+          {
+            "id": "d",
+            "text": "It makes iostream the name of the program"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "#include is simple text inclusion, done by the preprocessor before the compiler sees the code. C++20 adds modules (import) as a modern alternative."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "A header declares int add(int a, int b);\nmain() calls add(1, 2), but nobody ever wrote the body of add.\n\nWhen does the build fail?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "At link time: \"undefined reference to add\""
+          },
+          {
+            "id": "b",
+            "text": "When compiling main.cpp"
+          },
+          {
+            "id": "c",
+            "text": "When the program runs and calls add"
+          },
+          {
+            "id": "d",
+            "text": "Never: add returns 0 by default"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The declaration is enough to compile main.cpp. It is the linker that looks for the definition of add in all the object files, and fails because there is none."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which statements are true?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Much C code is also valid C++"
+          },
+          {
+            "id": "b",
+            "text": "C++ adds classes, templates and exceptions to C"
+          },
+          {
+            "id": "c",
+            "text": "C++ is an interpreted language"
+          },
+          {
+            "id": "d",
+            "text": "C++ programs need a garbage collector to run"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b"
+        ],
+        "explanation": "C++ grew out of C and stays largely compatible with it, but it is compiled, not interpreted, and it has no garbage collector."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each part of the build with its role.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Preprocessor",
+            "definition": "Handles #include and the other # lines before compiling"
+          },
+          {
+            "id": "p2",
+            "concept": "Compiler",
+            "definition": "Turns one .cpp file into an object file"
+          },
+          {
+            "id": "p3",
+            "concept": "Linker",
+            "definition": "Combines the object files and libraries into an executable"
+          },
+          {
+            "id": "p4",
+            "concept": "Header file",
+            "definition": "Declares functions and classes to share between .cpp files"
+          },
+          {
+            "id": "p5",
+            "concept": "Object file",
+            "definition": "The compiled machine code of one .cpp file, not yet runnable"
+          },
+          {
+            "id": "p6",
+            "concept": "main()",
+            "definition": "The function where the program starts"
+          }
+        ]
+      }
+    }
+  ]
+}

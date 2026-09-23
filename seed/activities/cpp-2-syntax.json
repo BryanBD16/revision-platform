@@ -1,0 +1,266 @@
+{
+  "title": "Syntax that says a lot",
+  "description": "References, pointers, const, auto, range-based for loops, lambdas and namespaces.",
+  "themes": [
+    "C++",
+    "Syntax"
+  ],
+  "courses": [
+    "Introduction to C++"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "References and pointers",
+        "body": "Two symbols change everything in C++:\n- int& r = x; declares a reference: r is another name for x. Changing r changes x.\n- int* p = &x; declares a pointer: p holds the address of x. *p is the value at that address, and changing *p changes x. A pointer can also point to nothing: nullptr.\n\nCareful: & and * mean different things in a declaration (int& r, int* p) and in an expression (&x is \"the address of x\", *p is \"the value pointed to by p\").\n\nBy default, function parameters are copies. A parameter declared with & works on the caller's variable instead."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int x = 5;\nint& r = x;\nr = 10;\n\nWhat is x now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "10"
+          },
+          {
+            "id": "b",
+            "text": "5"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile"
+          },
+          {
+            "id": "d",
+            "text": "The address of r"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "r is a reference: another name for x. Assigning to r assigns to x."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int x = 5;\nint* p = &x;\n*p = 7;\n\nWhat is x now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "7"
+          },
+          {
+            "id": "b",
+            "text": "5"
+          },
+          {
+            "id": "c",
+            "text": "The address of x"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "p holds the address of x, and *p is the variable at that address: x itself. So *p = 7 changes x."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "void addOne(int n) { n = n + 1; }\n\nint a = 1;\naddOne(a);\n\nWhat is a now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1"
+          },
+          {
+            "id": "b",
+            "text": "2"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile"
+          },
+          {
+            "id": "d",
+            "text": "It depends on the compiler"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "n is a copy of a, so a does not change. With void addOne(int& n), the function would change a, and a would be 2."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why do C++ functions often take parameters like const std::string& name?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "To avoid copying the string, while promising not to change it"
+          },
+          {
+            "id": "b",
+            "text": "Because strings cannot be passed any other way"
+          },
+          {
+            "id": "c",
+            "text": "To make the string modifiable by the function"
+          },
+          {
+            "id": "d",
+            "text": "To make the parameter optional"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "& avoids a copy, which can be costly for a long string, and const guarantees the caller's string is not modified. It is the usual way to pass big objects that are only read."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Modern C++",
+        "body": "Since C++11, the language has many features that make code shorter and safer:\n- auto: the compiler deduces the type, as in auto count = 3;\n- Range-based for: for (auto item : items) goes through a container.\n- Lambdas: [capture](parameters) { body } is a small function written inline; the capture list says which variables it takes from around it.\n- nullptr: the null pointer, safer than the old NULL or 0.\n\nThe standard library lives in the std namespace: std::string, std::vector, std::cout..."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "std::vector<int> v = {1, 2, 3};\nfor (auto n : v) { n = n * 2; }\n\nWhat does v contain now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1, 2, 3"
+          },
+          {
+            "id": "b",
+            "text": "2, 4, 6"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile"
+          },
+          {
+            "id": "d",
+            "text": "0, 0, 0"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "auto n makes n a copy of each element, so the vector is unchanged. for (auto& n : v) would give a reference to each element, and v would become 2, 4, 6."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int factor = 3;\nauto triple = [factor](int x) { return x * factor; };\nfactor = 10;\n\nstd::cout << triple(2);\n\nWhat is printed?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "6"
+          },
+          {
+            "id": "b",
+            "text": "20"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile"
+          },
+          {
+            "id": "d",
+            "text": "0"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "[factor] captures a copy of factor when the lambda is created, when it is still 3. With [&factor], the lambda would see the new value and print 20."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What do std and :: mean in std::cout?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "cout is in the std namespace (the standard library); :: reaches a name inside a scope"
+          },
+          {
+            "id": "b",
+            "text": "std is a class and cout one of its methods"
+          },
+          {
+            "id": "c",
+            "text": "std means \"standard output\", and :: calls it"
+          },
+          {
+            "id": "d",
+            "text": "It is a pointer to cout"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": ":: is the scope resolution operator. Namespaces avoid name clashes: your own cout would not conflict with std::cout."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each piece of syntax with its meaning.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "int& r = x;",
+            "definition": "r is another name for x"
+          },
+          {
+            "id": "p2",
+            "concept": "int* p = &x;",
+            "definition": "p holds the address of x"
+          },
+          {
+            "id": "p3",
+            "concept": "*p",
+            "definition": "The value that p points to"
+          },
+          {
+            "id": "p4",
+            "concept": "const",
+            "definition": "The value cannot be changed through this name"
+          },
+          {
+            "id": "p5",
+            "concept": "auto",
+            "definition": "The compiler deduces the type"
+          },
+          {
+            "id": "p6",
+            "concept": "nullptr",
+            "definition": "A pointer that points to nothing"
+          },
+          {
+            "id": "p7",
+            "concept": "::",
+            "definition": "Reaches a name inside a namespace or a class"
+          }
+        ]
+      }
+    }
+  ]
+}

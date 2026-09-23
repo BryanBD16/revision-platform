@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Activity, ActivitySummary } from './activity';
+import { Activity, ActivityPage, ActivitySummary } from './activity';
 import { ActivityApi } from './activity-api';
 
 describe('ActivityApi', () => {
@@ -13,9 +13,13 @@ describe('ActivityApi', () => {
     title: 'Cell biology',
     description: null,
     themes: [{ id: 1, name: 'Biology' }],
+    courses: [],
+    visibility: 'public',
     modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
+    canEdit: true,
+    lastEditedBy: null,
   };
 
   const summary: ActivitySummary = {
@@ -23,6 +27,8 @@ describe('ActivityApi', () => {
     title: 'Cell biology',
     description: null,
     themes: [{ id: 1, name: 'Biology' }],
+    courses: [],
+    visibility: 'public',
     moduleCount: 1,
     createdAt: '2026-09-23T03:06:18Z',
     updatedAt: '2026-09-23T03:06:18Z',
@@ -38,13 +44,28 @@ describe('ActivityApi', () => {
 
   afterEach(() => http.verify());
 
-  it('gets all activities', () => {
-    let result: ActivitySummary[] | undefined;
-    api.getAll().subscribe((activities) => (result = activities));
+  it('gets a page of activities', () => {
+    const page: ActivityPage = { items: [summary], page: 2, pageSize: 20, totalCount: 21 };
+    let result: ActivityPage | undefined;
+    api
+      .getPage({ page: 2, title: null, courseId: null, themeIds: [], visibility: null })
+      .subscribe((p) => (result = p));
 
-    http.expectOne({ method: 'GET', url: '/api/activities' }).flush([summary]);
+    http.expectOne({ method: 'GET', url: '/api/activities?page=2' }).flush(page);
 
-    expect(result).toEqual([summary]);
+    expect(result).toEqual(page);
+  });
+
+  it('sends the filters that are set', () => {
+    api
+      .getPage({ page: 1, title: 'cell', courseId: 3, themeIds: [1, 2], visibility: 'private' })
+      .subscribe();
+
+    http
+      .expectOne(
+        '/api/activities?page=1&title=cell&courseId=3&themeIds=1&themeIds=2&visibility=private',
+      )
+      .flush({ items: [], page: 1, pageSize: 20, totalCount: 0 });
   });
 
   it('gets one activity by id', () => {
@@ -61,6 +82,8 @@ describe('ActivityApi', () => {
       title: 'Cell biology',
       description: null,
       themes: ['Biology'],
+      courses: ['BIO 101'],
+      visibility: 'private' as const,
       modules: [{ type: 'reading', content: { title: null, body: 'Text' } }],
     };
     let result: Activity | undefined;
@@ -71,5 +94,27 @@ describe('ActivityApi', () => {
     req.flush(activity);
 
     expect(result).toEqual(activity);
+  });
+
+  it('updates an activity', () => {
+    const request = {
+      title: 'Cell biology',
+      description: null,
+      themes: ['Biology'],
+      courses: [],
+      visibility: 'private' as const,
+      modules: [{ id: 1, type: 'reading', content: { title: null, body: 'Text' } }],
+    };
+    api.update(1, request).subscribe();
+
+    const req = http.expectOne({ method: 'PUT', url: '/api/activities/1' });
+    expect(req.request.body).toEqual(request);
+    req.flush(activity);
+  });
+
+  it('deletes an activity', () => {
+    api.delete(1).subscribe();
+
+    http.expectOne({ method: 'DELETE', url: '/api/activities/1' }).flush(null);
   });
 });

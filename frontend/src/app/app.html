@@ -1,5 +1,18 @@
 <header class="app-header">
   <h1><a routerLink="/">Course Revision Platform</a></h1>
+  <nav class="user-nav" aria-label="Account">
+    @if (user(); as user) {
+      <a routerLink="/results">My results</a>
+      @if (canManageRoles()) {
+        <a routerLink="/admin">Administration</a>
+      }
+      <a routerLink="/account">{{ user.displayName }}</a>
+      <button type="button" class="button-secondary" (click)="signOut()">Sign out</button>
+    } @else {
+      <a routerLink="/sign-in">Sign in</a>
+      <a class="button" routerLink="/register">Create an account</a>
+    }
+  </nav>
 </header>
 
 <main class="app-main">

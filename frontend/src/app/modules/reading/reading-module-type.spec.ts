@@ -15,6 +15,21 @@ describe('readingModuleType', () => {
     expect(readingModuleType.toContent(form).title).toBeNull();
   });
 
+  it('fills the form with existing content', () => {
+    const form = readingModuleType.createForm({ title: null, body: 'Some text' });
+
+    expect(form.getRawValue()).toEqual({ title: '', body: 'Some text' });
+    expect(readingModuleType.toContent(form)).toEqual({ title: null, body: 'Some text' });
+  });
+
+  it('is summarized by its title, or else by the start of its text', () => {
+    expect(readingModuleType.summarize({ title: 'Introduction', body: 'Text' })).toBe('Introduction');
+    expect(readingModuleType.summarize({ title: null, body: 'Short text' })).toBe('Short text');
+    const summary = readingModuleType.summarize({ title: null, body: 'word '.repeat(50) });
+    expect(summary.length).toBe(100);
+    expect(summary.endsWith('…')).toBe(true);
+  });
+
   it('requires a non-blank text to read', () => {
     const form = readingModuleType.createForm();
     form.setValue({ title: 'Title', body: '   ' });

@@ -8,30 +8,71 @@ describe('multipleChoiceModuleType', () => {
     expect(form.valid).toBe(false);
   });
 
-  it('converts the form to content with choice ids', () => {
+  it('converts the form to content, giving new choices unique ids', () => {
     const form = multipleChoiceModuleType.createForm();
     form.controls.choices.push(createChoiceForm());
     form.setValue({
       question: '  What is a cell? ',
       choices: [
-        { text: ' The basic unit of life ', correct: true },
-        { text: 'A planet', correct: false },
-        { text: 'A living unit', correct: true },
+        { id: null, text: ' The basic unit of life ', correct: true },
+        { id: null, text: 'A planet', correct: false },
+        { id: null, text: 'A living unit', correct: true },
       ],
       explanation: '   ',
     });
 
     expect(form.valid).toBe(true);
-    expect(multipleChoiceModuleType.toContent(form)).toEqual({
+    const content = multipleChoiceModuleType.toContent(form);
+    const ids = content.choices.map((choice) => choice.id);
+    expect(new Set(ids).size).toBe(3);
+    expect(content).toEqual({
       question: 'What is a cell?',
       choices: [
-        { id: 'c1', text: 'The basic unit of life' },
-        { id: 'c2', text: 'A planet' },
-        { id: 'c3', text: 'A living unit' },
+        { id: ids[0], text: 'The basic unit of life' },
+        { id: ids[1], text: 'A planet' },
+        { id: ids[2], text: 'A living unit' },
       ],
-      correctChoiceIds: ['c1', 'c3'],
+      correctChoiceIds: [ids[0], ids[2]],
       explanation: null,
     });
+  });
+
+  it('fills the form with existing content and keeps the choice ids', () => {
+    const content = {
+      question: 'What is a cell?',
+      choices: [
+        { id: 'c1', text: 'A planet' },
+        { id: 'c2', text: 'The basic unit of life' },
+        { id: 'c3', text: 'A star' },
+      ],
+      correctChoiceIds: ['c2'],
+      explanation: null,
+    };
+    const form = multipleChoiceModuleType.createForm(content);
+
+    expect(form.valid).toBe(true);
+    expect(multipleChoiceModuleType.toContent(form)).toEqual(content);
+  });
+
+  it('never gives a new choice the id of a removed one', () => {
+    const form = multipleChoiceModuleType.createForm({
+      question: 'Question?',
+      choices: [
+        { id: 'c1', text: 'A' },
+        { id: 'c2', text: 'B' },
+        { id: 'c3', text: 'C' },
+      ],
+      correctChoiceIds: ['c1'],
+      explanation: null,
+    });
+
+    form.controls.choices.removeAt(2);
+    form.controls.choices.push(createChoiceForm());
+    form.controls.choices.at(2).controls.text.setValue('New');
+
+    const ids = multipleChoiceModuleType.toContent(form).choices.map((choice) => choice.id);
+    expect(ids.slice(0, 2)).toEqual(['c1', 'c2']);
+    expect(['c1', 'c2', 'c3']).not.toContain(ids[2]);
   });
 
   it('requires at least one correct choice', () => {
@@ -39,13 +80,19 @@ describe('multipleChoiceModuleType', () => {
     form.setValue({
       question: 'Question?',
       choices: [
-        { text: 'A', correct: false },
-        { text: 'B', correct: false },
+        { id: null, text: 'A', correct: false },
+        { id: null, text: 'B', correct: false },
       ],
       explanation: '',
     });
 
     expect(form.controls.choices.hasError('noCorrectChoice')).toBe(true);
+  });
+
+  it('is summarized by its question', () => {
+    const content = { question: 'What is a cell?', choices: [], correctChoiceIds: [], explanation: null };
+
+    expect(multipleChoiceModuleType.summarize(content)).toBe('What is a cell?');
   });
 
   it('requires at least two choices', () => {

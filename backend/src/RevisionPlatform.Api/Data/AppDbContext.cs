@@ -1,22 +1,51 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
+using RevisionPlatform.Api.Attempts;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
+using RevisionPlatform.Api.Users;
 
 namespace RevisionPlatform.Api.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+/// <summary>
+/// The application data and the ASP.NET Core Identity tables (users, roles and the
+/// links between them), with integer ids.
+/// </summary>
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : IdentityDbContext<AppUser, IdentityRole<int>, int>(options)
 {
     public DbSet<RevisionActivity> RevisionActivities => Set<RevisionActivity>();
     public DbSet<Theme> Themes => Set<Theme>();
     public DbSet<RevisionModule> RevisionModules => Set<RevisionModule>();
+    public DbSet<RoleChange> RoleChanges => Set<RoleChange>();
+    public DbSet<ActivityAttempt> ActivityAttempts => Set<ActivityAttempt>();
+    public DbSet<AttemptModule> AttemptModules => Set<AttemptModule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+        ConfigureIdentity(modelBuilder);
+
         modelBuilder.Entity<RevisionActivity>(activity =>
         {
             activity.Property(a => a.Title).HasMaxLength(RevisionActivity.TitleMaxLength);
             activity.Property(a => a.Description).HasColumnType("text");
+            // The list is sorted by creation date.
+            activity.HasIndex(a => a.CreatedAt);
+
+            activity.Property(a => a.Visibility).HasMaxLength(RevisionActivity.VisibilityMaxLength);
+            // Deleting a user deletes their private activities.
+            activity.HasOne<AppUser>().WithMany().HasForeignKey(a => a.OwnerId).OnDelete(DeleteBehavior.Cascade);
+            activity.HasIndex(a => a.Visibility);
+            // Deleting a user keeps the activities they edited.
+            activity.HasOne(a => a.LastEditedBy).WithMany().HasForeignKey(a => a.LastEditedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            // A private activity always has an owner, a public one never has.
+            activity.ToTable(table => table.HasCheckConstraint(
+                "ck_revision_activities_visibility_owner",
+                "(visibility = 'public' AND owner_id IS NULL) OR (visibility = 'private' AND owner_id IS NOT NULL)"));
 
             activity
                 .HasMany(a => a.Themes)
@@ -41,13 +70,75 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             module.HasIndex(m => new { m.ActivityId, m.Position }).IsUnique();
         });
 
+        modelBuilder.Entity<ActivityAttempt>(attempt =>
+        {
+            attempt.Property(a => a.ActivityTitle).HasMaxLength(ActivityAttempt.ActivityTitleMaxLength);
+            // A user's results are deleted with their account.
+            attempt.HasOne<AppUser>().WithMany().HasForeignKey(a => a.UserId).OnDelete(DeleteBehavior.Cascade);
+            // Deleting the activity keeps the attempt, which has its own copy of what it needs.
+            attempt.HasOne<RevisionActivity>().WithMany().HasForeignKey(a => a.ActivityId)
+                .OnDelete(DeleteBehavior.SetNull);
+            attempt.HasMany(a => a.Modules).WithOne().HasForeignKey(m => m.AttemptId).OnDelete(DeleteBehavior.Cascade);
+            // "My results" lists a user's attempts, newest first, optionally for one activity.
+            attempt.HasIndex(a => new { a.UserId, a.CompletedAt });
+        });
+
+        modelBuilder.Entity<AttemptModule>(module =>
+        {
+            module.Property(m => m.ModuleType).HasMaxLength(RevisionModule.TypeMaxLength);
+            module.Property(m => m.Label).HasMaxLength(AttemptModule.LabelMaxLength);
+            module.HasOne<RevisionModule>().WithMany().HasForeignKey(m => m.ModuleId).OnDelete(DeleteBehavior.SetNull);
+            module.HasIndex(m => new { m.AttemptId, m.Position }).IsUnique();
+        });
+
         modelBuilder.Entity<Theme>(theme =>
         {
             // Case-insensitive but accent-sensitive, so "Biology" and "biology" are the same theme.
             theme.Property(t => t.Name)
                 .HasMaxLength(Theme.NameMaxLength)
                 .UseCollation("utf8mb4_0900_as_ci");
-            theme.HasIndex(t => t.Name).IsUnique();
+            theme.Property(t => t.Kind).HasMaxLength(Theme.KindMaxLength);
+            // A topic and a course can have the same name.
+            theme.HasIndex(t => new { t.Kind, t.Name }).IsUnique();
         });
+    }
+
+    private static void ConfigureIdentity(ModelBuilder modelBuilder)
+    {
+        // Shorter table names than Identity's AspNetUsers, AspNetRoles...
+        modelBuilder.Entity<AppUser>(user =>
+        {
+            user.ToTable("users");
+            user.Property(u => u.DisplayName).HasMaxLength(AppUser.DisplayNameMaxLength);
+        });
+        modelBuilder.Entity<IdentityRole<int>>(role =>
+        {
+            role.ToTable("roles");
+            // The roles are data that the code relies on, so they are created by migrations.
+            role.HasData(new IdentityRole<int>
+            {
+                Id = 1,
+                Name = RoleNames.Admin,
+                NormalizedName = RoleNames.Admin.ToUpperInvariant(),
+                ConcurrencyStamp = "5d0c3e0e-7a4f-4a53-9d1a-1f0e2c3b4a01",
+            });
+        });
+        modelBuilder.Entity<IdentityUserRole<int>>().ToTable("user_roles");
+        modelBuilder.Entity<RoleChange>(change =>
+        {
+            change.Property(c => c.RoleName).HasMaxLength(256);
+            change.Property(c => c.Action).HasMaxLength(RoleChange.ActionMaxLength);
+            change.Property(c => c.Origin).HasMaxLength(RoleChange.OriginMaxLength);
+            // The audit trail must stay complete: a user with role changes cannot be deleted
+            // without deciding what happens to them.
+            change.HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Restrict);
+            change.HasOne(c => c.ChangedBy).WithMany().HasForeignKey(c => c.ChangedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            change.HasIndex(c => c.ChangedAt);
+        });
+        modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("user_claims");
+        modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("user_logins");
+        modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_tokens");
+        modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("role_claims");
     }
 }

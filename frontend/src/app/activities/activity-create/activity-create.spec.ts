@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 import { ActivityCreate } from './activity-create';
 
 describe('ActivityCreate', () => {
@@ -63,6 +64,25 @@ describe('ActivityCreate', () => {
     http.expectNone('/api/activities');
   });
 
+  it('does not require a course', async () => {
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fillActivity();
+    await addReadingModule('Text');
+
+    await submit();
+
+    const request = http.expectOne('/api/activities');
+    expect(request.request.body.courses).toEqual([]);
+    request.flush({ id: 1 });
+  });
+
+  it('rejects a course name that is too long', async () => {
+    type('#courses', 'a'.repeat(101));
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain('Course names must be at most 100 characters.');
+  });
+
   it('validates the content of each module', async () => {
     fillActivity();
     await addReadingModule('   ');
@@ -78,6 +98,7 @@ describe('ActivityCreate', () => {
     type('#title', '  Cell biology ');
     type('#description', '  ');
     type('#themes', 'Biology, cells, , biology');
+    type('#courses', ' BIO 101, bio 101 ');
     await addReadingModule('  Some text ');
 
     await submit();
@@ -87,10 +108,17 @@ describe('ActivityCreate', () => {
       title: 'Cell biology',
       description: null,
       themes: ['Biology', 'cells'],
+      courses: ['BIO 101'],
+      visibility: 'private',
       modules: [{ type: 'reading', content: { title: null, body: 'Some text' } }],
     });
     request.flush({ id: 5 });
     expect(navigate).toHaveBeenCalledWith(['/activities', 5]);
+  });
+
+  it('tells a user who cannot publish that the activity will be private', () => {
+    expect(element.querySelector('input[type="radio"]')).toBeNull();
+    expect(element.textContent).toContain('This activity is private');
   });
 
   it('sends modules in the order shown, after moving and removing them', async () => {
@@ -131,5 +159,75 @@ describe('ActivityCreate', () => {
     expect(element.textContent).toContain('The title must be at most 200 characters.');
     expect(element.textContent).toContain('Module 1: The text to read is required.');
     expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(false);
+  });
+});
+
+describe('ActivityCreate for a user who can publish', () => {
+  let fixture: ComponentFixture<ActivityCreate>;
+  let http: HttpTestingController;
+  let element: HTMLElement;
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      imports: [ActivityCreate],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
+    });
+    http = TestBed.inject(HttpTestingController);
+    TestBed.inject(AuthService).signIn({ email: 'grace@example.com', password: 'p' }).subscribe();
+    http.expectOne('/api/auth/sign-in').flush({
+      id: 1,
+      email: 'grace@example.com',
+      displayName: 'Grace',
+      roles: ['admin'],
+      permissions: ['publish-activities'],
+    });
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fixture = TestBed.createComponent(ActivityCreate);
+    element = fixture.nativeElement;
+    await fixture.whenStable();
+  });
+
+  afterEach(() => http.verify());
+
+  function radio(value: string): HTMLInputElement {
+    return element.querySelector<HTMLInputElement>(`input[type="radio"][value="${value}"]`)!;
+  }
+
+  async function createActivity(): Promise<unknown> {
+    for (const [selector, value] of [
+      ['#title', 'Cell biology'],
+      ['#themes', 'Biology'],
+    ]) {
+      const input = element.querySelector<HTMLInputElement>(selector)!;
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
+    element.querySelector<HTMLSelectElement>('#new-module-type')!.value = 'reading';
+    [...element.querySelectorAll('button')]
+      .find((b) => b.textContent?.includes('Add module'))!
+      .click();
+    await fixture.whenStable();
+    const body = element.querySelector<HTMLTextAreaElement>('textarea[id$="-body"]')!;
+    body.value = 'Text';
+    body.dispatchEvent(new Event('input'));
+    element.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+
+    const request = http.expectOne('/api/activities');
+    request.flush({ id: 1 });
+    return request.request.body.visibility;
+  }
+
+  it('creates a private activity by default', async () => {
+    expect(radio('private').checked).toBe(true);
+
+    expect(await createActivity()).toBe('private');
+  });
+
+  it('creates a public activity when chosen', async () => {
+    radio('public').click();
+    await fixture.whenStable();
+
+    expect(await createActivity()).toBe('public');
   });
 });

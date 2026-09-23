@@ -2,7 +2,11 @@
   "title": "The Makefile commands",
   "description": "How make works, what each command of the Makefile does, and the usual workflows.",
   "themes": [
-    "revision-plateforme"
+    "Makefile",
+    "Development environment"
+  ],
+  "courses": [
+    "Revision Platform"
   ],
   "modules": [
     {
@@ -100,7 +104,7 @@
       "type": "reading",
       "content": {
         "title": "The commands",
-        "body": "Run make to list them. They are grouped by part of the project.\n\nGeneral:\n- make help: lists the commands (also what make alone does).\n- make build: builds the backend and the frontend.\n- make test: runs the backend tests, then the frontend tests.\n\nBackend:\n- make backend-build: dotnet build of the solution.\n- make backend-test: runs the backend tests against revision_platform_test. The database container must be running.\n- make backend-run: starts the API with dotnet watch on http://localhost:5044, restarting it when the code changes. The connection string comes from .env.\n\nFrontend:\n- make frontend-install: npm ci, which installs exactly the versions recorded in package-lock.json.\n- make frontend-build: ng build, the optimized production build.\n- make frontend-test: runs the Vitest tests once (--watch=false).\n- make frontend-run: ng serve on http://localhost:4200, with /api forwarded to the backend.\n\nDatabase schema:\n- make db-migrate: applies the EF Core migrations that are not applied yet to the development database.\n- make db-migration NAME=AddSomething: creates a new migration from the changes made to the entities and to AppDbContext. Without NAME, it stops with a usage message.\n\nDocker and data:\n- make db-up: starts the MySQL container and waits until it is healthy.\n- make db-down: stops and removes the container; the data is kept in the volume.\n- make db-logs: follows the MySQL logs.\n- make db-shell: opens a MySQL prompt as the application user, in the development database.\n- make db-reset: stops the container and deletes the volume, so ALL the data is lost. The next db-up initializes an empty server, then make db-migrate recreates the tables.\n- make db-clear: deletes all activities, modules and themes, but keeps the tables.\n- make db-seed: creates the activities described in seed/activities/*.json by sending each file to POST /api/activities. The backend must be running; it stops at the first error and shows the API's answer."
+        "body": "Run make to list them. They are grouped by part of the project.\n\nGeneral:\n- make help: lists the commands (also what make alone does).\n- make build: builds the backend and the frontend.\n- make test: runs the backend tests, then the frontend tests.\n\nBackend:\n- make backend-build: dotnet build of the solution.\n- make backend-test: runs the backend tests against revision_platform_test. The database container must be running.\n- make backend-run: starts the API with dotnet watch on http://localhost:5044, restarting it when the code changes. The connection string comes from .env.\n\nFrontend:\n- make frontend-install: npm ci, which installs exactly the versions recorded in package-lock.json.\n- make frontend-build: ng build, the optimized production build.\n- make frontend-test: runs the Vitest tests once (--watch=false).\n- make frontend-run: ng serve on http://localhost:4200, with /api forwarded to the backend.\n\nDatabase schema:\n- make db-migrate: applies the EF Core migrations that are not applied yet to the development database.\n- make db-migration NAME=AddSomething: creates a new migration from the changes made to the entities and to AppDbContext. Without NAME, it stops with a usage message.\n\nDocker and data:\n- make db-up: starts the MySQL container and waits until it is healthy.\n- make db-down: stops and removes the container; the data is kept in the volume.\n- make db-logs: follows the MySQL logs.\n- make db-shell: opens a MySQL prompt as the application user, in the development database.\n- make db-reset: stops the container and deletes the volume, so ALL the data is lost. The next db-up initializes an empty server, then make db-migrate recreates the tables.\n- make db-clear: deletes all activities, modules and themes, but keeps the tables.\n- make db-seed: creates the activities described in seed/activities/*.json as public activities. It runs a backend command (dotnet run -- seed), so the backend does not need to be running. It first validates every file with the same rules as the API; if one is invalid, it shows the errors and creates nothing. make db-seed FILES='csharp-*.json' creates only the files matching the pattern, to add new seed files without duplicating the others.\n\nUsers (backend commands for people with access to the server):\n- make user-list: lists the users and their roles.\n- make user-grant-role EMAIL=... ROLE=admin and make user-revoke-role EMAIL=... ROLE=admin: show the account, ask to type yes, then change the role. Used to create the first admin; after that, admins manage the roles on the Administration page. Every change is recorded.\n- make user-reset-password EMAIL=...: gives the user a random temporary password, unlocks the account and signs out all its sessions."
       }
     },
     {
@@ -197,7 +201,7 @@
       "type": "reading",
       "content": {
         "title": "Usual workflows",
-        "body": "First setup, after cloning the repository:\n1. cp .env.example .env, then choose the passwords (without quotes, \";\" or \"$\").\n2. make db-up\n3. make db-migrate\n4. make frontend-install\n5. make backend-run in one terminal and make frontend-run in another, then open http://localhost:4200.\n6. Optionally, make db-seed in a third terminal to load the revision activities.\n\nEvery day: make db-up if the container is not running, then make backend-run and make frontend-run.\n\nAfter pulling changes: make db-migrate if new migrations were added, and make frontend-install if package-lock.json changed.\n\nChanging the schema: edit the entities or AppDbContext, run make db-migration NAME=DescribeTheChange, review the generated migration, then make db-migrate.\n\nBefore committing: make build and make test must succeed.\n\nStarting over with the data: make db-clear, then make db-seed, keeps the tables and reloads the seed activities. make db-reset, then make db-up and make db-migrate, rebuilds everything from an empty server."
+        "body": "First setup, after cloning the repository:\n1. cp .env.example .env, then choose the passwords (without quotes, \";\" or \"$\").\n2. make db-up\n3. make db-migrate\n4. make frontend-install\n5. make backend-run in one terminal and make frontend-run in another, then open http://localhost:4200.\n6. Optionally, make db-seed to load the revision activities.\n7. Create an account in the application, then make user-grant-role EMAIL=<your email> ROLE=admin to become admin.\n\nEvery day: make db-up if the container is not running, then make backend-run and make frontend-run.\n\nAfter pulling changes: make db-migrate if new migrations were added, and make frontend-install if package-lock.json changed.\n\nChanging the schema: edit the entities or AppDbContext, run make db-migration NAME=DescribeTheChange, review the generated migration, then make db-migrate.\n\nBefore committing: make build and make test must succeed.\n\nStarting over with the data: make db-clear, then make db-seed, keeps the tables and reloads the seed activities. make db-reset, then make db-up and make db-migrate, rebuilds everything from an empty server."
       }
     },
     {
@@ -235,7 +239,7 @@
         "choices": [
           {
             "id": "c1",
-            "text": "The backend running on port 5044; it sends each file of seed/activities to POST /api/activities and stops at the first error."
+            "text": "Only the database: a backend command validates every file of seed/activities with the API's rules, then creates them as public activities, or nothing if a file is invalid."
           },
           {
             "id": "c2",
@@ -247,13 +251,13 @@
           },
           {
             "id": "c4",
-            "text": "The frontend running; it fills the creation form automatically."
+            "text": "The backend running on port 5044; it sends each file to POST /api/activities without signing in."
           }
         ],
         "correctChoiceIds": [
           "c1"
         ],
-        "explanation": "Going through the API means the seed activities are validated exactly like the ones created in the application, and the seed files have the same format as the API's create requests."
+        "explanation": "The seed command runs inside the backend (dotnet run -- seed), so it uses the same ActivityValidator as the API without signing in. Creating an activity through the API now requires a signed-in user, and a public activity requires an admin. Validating every file first means a mistake never leaves the database half seeded."
       }
     },
     {

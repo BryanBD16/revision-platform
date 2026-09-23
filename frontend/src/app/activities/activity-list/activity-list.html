@@ -3,33 +3,61 @@
   <a class="button" routerLink="/activities/new">New activity</a>
 </div>
 
-@switch (status()) {
-  @case ('loading') {
-    <p>Loading activities…</p>
+<app-activity-filters
+  [query]="query()"
+  [themes]="themes()"
+  [courses]="courses()"
+  [showVisibility]="signedIn()"
+  (queryChange)="applyQuery($event)"
+/>
+
+@if (status() === 'error') {
+  <p class="error">The activities could not be loaded. Please try again later.</p>
+} @else if (result(); as result) {
+  @if (result.totalCount === 0 && hasFilters()) {
+    <p class="empty">No activities match these filters.</p>
+  } @else if (result.totalCount === 0) {
+    <p class="empty">No activities yet. Create the first one.</p>
+  } @else if (result.items.length === 0) {
+    <p class="empty">
+      This page does not exist. <a routerLink="." [queryParams]="pageParams(1)">Go to the first page</a>.
+    </p>
+  } @else {
+    <ul class="activity-list">
+      @for (activity of result.items; track activity.id) {
+        <li class="card">
+          <a class="activity-title" [routerLink]="['/activities', activity.id]">{{ activity.title }}</a>
+          @if (activity.visibility === 'private') {
+            <span class="badge-private">Private</span>
+          }
+          <app-activity-themes [courses]="activity.courses" [themes]="activity.themes" />
+          <p class="meta">
+            {{ activity.moduleCount }} {{ activity.moduleCount === 1 ? 'module' : 'modules' }}
+            · Created {{ activity.createdAt | date: 'mediumDate' }}
+          </p>
+        </li>
+      }
+    </ul>
   }
-  @case ('error') {
-    <p class="error">The activities could not be loaded. Please try again later.</p>
+
+  @if (result.totalCount > 0) {
+    <nav class="pagination" aria-label="Pages">
+      @if (query().page > 1) {
+        <a class="button-secondary" routerLink="." [queryParams]="pageParams(query().page - 1)">
+          ← Previous
+        </a>
+      }
+      <span class="meta">
+        Page {{ query().page }} of {{ totalPages() }} · {{ result.totalCount }}
+        {{ result.totalCount === 1 ? 'activity' : 'activities' }}
+      </span>
+      @if (query().page < totalPages()) {
+        <a class="button-secondary" routerLink="." [queryParams]="pageParams(query().page + 1)">
+          Next →
+        </a>
+      }
+    </nav>
   }
-  @case ('loaded') {
-    @if (activities().length === 0) {
-      <p class="empty">No activities yet. Create the first one.</p>
-    } @else {
-      <ul class="activity-list">
-        @for (activity of activities(); track activity.id) {
-          <li class="card">
-            <a class="activity-title" [routerLink]="['/activities', activity.id]">{{ activity.title }}</a>
-            <ul class="themes">
-              @for (theme of activity.themes; track theme.id) {
-                <li class="theme">{{ theme.name }}</li>
-              }
-            </ul>
-            <p class="meta">
-              {{ activity.moduleCount }} {{ activity.moduleCount === 1 ? 'module' : 'modules' }}
-              · Created {{ activity.createdAt | date: 'mediumDate' }}
-            </p>
-          </li>
-        }
-      </ul>
-    }
-  }
+} @else {
+  <p>Loading activities…</p>
 }

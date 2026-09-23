@@ -1,7 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
+import { Activity } from '../activity';
 import { ActivityDetail } from './activity-detail';
 
 describe('ActivityDetail', () => {
@@ -25,25 +27,181 @@ describe('ActivityDetail', () => {
     return (fixture.nativeElement as HTMLElement).textContent ?? '';
   }
 
+  const activity: Activity = {
+    id: 3,
+    title: 'Cell biology',
+    description: null,
+    themes: [{ id: 1, name: 'Biology' }],
+    courses: [],
+    visibility: 'public',
+    modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
+    createdAt: '2026-09-23T03:06:18Z',
+    updatedAt: '2026-09-24T10:00:00Z',
+    canEdit: false,
+    lastEditedBy: null,
+  };
+
+  async function load(value: Activity): Promise<HTMLElement> {
+    http.expectOne('/api/activities/3').flush(value);
+    await fixture.whenStable();
+    return fixture.nativeElement;
+  }
+
   it('shows the activity from the route id', async () => {
     http.expectOne('/api/activities/3').flush({
       id: 3,
       title: 'Cell biology',
       description: 'Chapter 3',
       themes: [{ id: 1, name: 'Biology' }],
+      courses: [{ id: 2, name: 'BIO 101' }],
+      visibility: 'private',
       modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
       createdAt: '2026-09-23T03:06:18Z',
       updatedAt: '2026-09-23T03:06:18Z',
+      canEdit: false,
+      lastEditedBy: null,
     });
     await fixture.whenStable();
 
     expect(text()).toContain('Cell biology');
     expect(text()).toContain('Chapter 3');
     expect(text()).toContain('Biology');
+    const themes = (fixture.nativeElement as HTMLElement).querySelector('app-activity-themes');
+    expect(themes?.textContent).toContain('Course');
+    expect(themes?.textContent).toContain('BIO 101');
     expect(text()).toContain('1 module');
     const start = (fixture.nativeElement as HTMLElement).querySelector('a.button');
     expect(start?.textContent).toContain('Start activity');
     expect(start?.getAttribute('href')).toBe('/activities/3/play');
+  });
+
+  it('offers to edit and delete only to the people who can change the activity', async () => {
+    const element = await load(activity);
+
+    expect(element.querySelector('.owner-actions')).toBeNull();
+  });
+
+  it('links to the edit page and says who last edited a public activity', async () => {
+    const element = await load({
+      ...activity,
+      canEdit: true,
+      lastEditedBy: { id: 7, displayName: 'Grace' },
+    });
+
+    const edit = element.querySelector<HTMLAnchorElement>('.owner-actions a');
+    expect(edit?.getAttribute('href')).toBe('/activities/3/edit');
+    expect(text()).toContain('Last edited by Grace');
+  });
+
+  it('deletes the activity after confirmation and goes back to the list', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const element = await load({ ...activity, canEdit: true });
+
+    element.querySelector<HTMLButtonElement>('.button-danger')!.click();
+
+    expect(confirm).toHaveBeenCalledWith('Delete "Cell biology" for good? This cannot be undone.');
+    http.expectOne({ method: 'DELETE', url: '/api/activities/3' }).flush(null);
+    expect(navigate).toHaveBeenCalledWith(['/activities']);
+    confirm.mockRestore();
+  });
+
+  it('deletes nothing when the confirmation is cancelled', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const element = await load({ ...activity, canEdit: true });
+
+    element.querySelector<HTMLButtonElement>('.button-danger')!.click();
+
+    http.expectNone('/api/activities/3');
+    confirm.mockRestore();
+  });
+
+  it('shows why the activity could not be deleted', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const element = await load({ ...activity, canEdit: true });
+
+    element.querySelector<HTMLButtonElement>('.button-danger')!.click();
+    http
+      .expectOne({ method: 'DELETE', url: '/api/activities/3' })
+      .flush(
+        { title: 'Only admins can delete public activities.' },
+        { status: 403, statusText: 'Forbidden' },
+      );
+    await fixture.whenStable();
+
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'Only admins can delete',
+    );
+    confirm.mockRestore();
+  });
+
+  describe('for a signed-in user', () => {
+    beforeEach(async () => {
+      // Recreate the page once the user is signed in.
+      TestBed.inject(AuthService).signIn({ email: 'ada@example.com', password: 'p' }).subscribe();
+      http
+        .expectOne('/api/auth/sign-in')
+        .flush({ id: 1, email: 'ada@example.com', displayName: 'Ada', roles: [], permissions: [] });
+      http.expectOne('/api/activities/3').flush(activity);
+      fixture = TestBed.createComponent(ActivityDetail);
+      fixture.componentRef.setInput('id', '3');
+      fixture.detectChanges();
+    });
+
+    function attempt(id: number) {
+      return {
+        id,
+        activityId: 3,
+        activityTitle: 'Cell biology',
+        score: 1,
+        maxScore: 2,
+        completedAt: '2026-09-23T03:06:18Z',
+      };
+    }
+
+    it('shows the latest results of the user for this activity', async () => {
+      await load(activity);
+      http
+        .expectOne('/api/attempts?activityId=3&pageSize=5')
+        .flush({ items: [attempt(8), attempt(7)], page: 1, pageSize: 5, totalCount: 2 });
+      await fixture.whenStable();
+
+      const section = (fixture.nativeElement as HTMLElement).querySelector('.your-results');
+      expect(section?.querySelectorAll('li').length).toBe(2);
+      expect(section?.textContent).toContain('1 / 2 (50%)');
+      expect(section?.querySelector('a')?.getAttribute('href')).toBe('/results/8');
+      expect(section?.textContent).not.toContain('See all');
+    });
+
+    it('links to all the results of the activity when there are more', async () => {
+      await load(activity);
+      http
+        .expectOne('/api/attempts?activityId=3&pageSize=5')
+        .flush({ items: [1, 2, 3, 4, 5].map(attempt), page: 1, pageSize: 5, totalCount: 12 });
+      await fixture.whenStable();
+
+      const all = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>(
+        '.your-results > a',
+      );
+      expect(all?.textContent).toContain('See all 12 results');
+      expect(all?.getAttribute('href')).toBe('/results?activityId=3');
+    });
+
+    it('shows no section for an activity the user has not completed yet', async () => {
+      await load(activity);
+      http
+        .expectOne('/api/attempts?activityId=3&pageSize=5')
+        .flush({ items: [], page: 1, pageSize: 5, totalCount: 0 });
+      await fixture.whenStable();
+
+      expect((fixture.nativeElement as HTMLElement).querySelector('.your-results')).toBeNull();
+    });
+  });
+
+  it('does not look for the results of a visitor', async () => {
+    await load(activity);
+
+    http.expectNone((request) => request.url.startsWith('/api/attempts'));
   });
 
   it('shows a not found message for an unknown activity', async () => {

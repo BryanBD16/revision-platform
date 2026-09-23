@@ -1,0 +1,27 @@
+<a [routerLink]="['/activities', id()]">← Back to the activity</a>
+
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading…</p>
+  }
+  @case ('not-found') {
+    <p class="error">This activity does not exist.</p>
+  }
+  @case ('forbidden') {
+    <p class="error">You cannot edit this activity.</p>
+  }
+  @case ('error') {
+    <p class="error">The activity could not be loaded. Please try again later.</p>
+  }
+  @case ('loaded') {
+    <h2>Edit the activity</h2>
+    <app-activity-form
+      [activity]="activity()"
+      submitLabel="Save the changes"
+      submittingLabel="Saving…"
+      [submitting]="submitting()"
+      [serverErrors]="serverErrors()"
+      (saved)="save($event)"
+    />
+  }
+}

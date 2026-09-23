@@ -12,23 +12,59 @@
   }
   @case ('loaded') {
     @if (activity(); as activity) {
-      <h2>{{ activity.title }}</h2>
-      <ul class="themes">
-        @for (theme of activity.themes; track theme.id) {
-          <li class="theme">{{ theme.name }}</li>
+      <h2>
+        {{ activity.title }}
+        @if (activity.visibility === 'private') {
+          <span class="badge-private">Private</span>
         }
-      </ul>
+      </h2>
+      <app-activity-themes [courses]="activity.courses" [themes]="activity.themes" />
       @if (activity.description) {
         <p class="description">{{ activity.description }}</p>
       }
       <p class="meta">
         {{ activity.modules.length }} {{ activity.modules.length === 1 ? 'module' : 'modules' }}
         · Created {{ activity.createdAt | date: 'medium' }}
+        @if (activity.lastEditedBy; as editor) {
+          · Last edited by {{ editor.displayName }} on {{ activity.updatedAt | date: 'medium' }}
+        }
       </p>
+      @if (activity.canEdit) {
+        <div class="owner-actions">
+          <a class="button-secondary" [routerLink]="['/activities', activity.id, 'edit']">Edit</a>
+          <button type="button" class="button-danger" [disabled]="deleting()" (click)="delete(activity)">
+            {{ deleting() ? 'Deleting…' : 'Delete' }}
+          </button>
+        </div>
+        @if (deleteError(); as message) {
+          <p class="error" role="alert">{{ message }}</p>
+        }
+      }
       @if (activity.modules.length > 0) {
         <p>
           <a class="button" [routerLink]="['/activities', activity.id, 'play']">Start activity</a>
         </p>
+      }
+
+      @if (attempts(); as attempts) {
+        @if (attempts.totalCount > 0) {
+          <section class="your-results" aria-labelledby="your-results-heading">
+            <h3 id="your-results-heading">Your results</h3>
+            <ul>
+              @for (attempt of attempts.items; track attempt.id) {
+                <li>
+                  <a [routerLink]="['/results', attempt.id]">{{ attempt.completedAt | date: 'medium' }}</a>
+                  · {{ scoreText(attempt.score, attempt.maxScore) ?? 'Not graded' }}
+                </li>
+              }
+            </ul>
+            @if (attempts.totalCount > recentAttemptCount) {
+              <a routerLink="/results" [queryParams]="{ activityId: activity.id }">
+                See all {{ attempts.totalCount }} results for this activity
+              </a>
+            }
+          </section>
+        }
       }
     }
   }

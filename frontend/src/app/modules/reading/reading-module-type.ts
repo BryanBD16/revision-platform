@@ -10,16 +10,20 @@ export type ReadingForm = FormGroup<{
   body: FormControl<string>;
 }>;
 
+function truncate(text: string, maxLength: number): string {
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1).trimEnd()}…` : text;
+}
+
 export const readingModuleType: ModuleTypeDefinition<ReadingContent, ReadingForm> = {
   type: 'reading',
   label: 'Reading',
-  createForm: () =>
+  createForm: (content) =>
     new FormGroup({
-      title: new FormControl('', {
+      title: new FormControl(content?.title ?? '', {
         nonNullable: true,
         validators: [Validators.maxLength(READING_LIMITS.titleMaxLength)],
       }),
-      body: new FormControl('', {
+      body: new FormControl(content?.body ?? '', {
         nonNullable: true,
         validators: [notBlank, Validators.maxLength(READING_LIMITS.bodyMaxLength)],
       }),
@@ -28,6 +32,7 @@ export const readingModuleType: ModuleTypeDefinition<ReadingContent, ReadingForm
     const { title, body } = form.getRawValue();
     return { title: title.trim() || null, body: body.trim() };
   },
+  summarize: (content) => content.title ?? truncate(content.body, 100),
   editor: ReadingEditor,
   player: ReadingPlayer,
 };

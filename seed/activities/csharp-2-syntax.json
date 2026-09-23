@@ -1,0 +1,261 @@
+{
+  "title": "Syntax that says a lot",
+  "description": "Small symbols with a big meaning: ?, ??, ?., =>, $\"\", records, pattern matching and switch expressions.",
+  "themes": [
+    "C#",
+    "Syntax"
+  ],
+  "courses": [
+    "Introduction to C#"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Small symbols, big meaning",
+        "body": "C# packs a lot of meaning into a few symbols:\n- string? name: name may be null.\n- a ?? b: a, or b if a is null.\n- user?.Name: user.Name, or null if user is null (instead of crashing).\n- x => x * 2: a lambda, a small function written inline.\n- $\"Hello {name}\": an interpolated string, with name inserted in the text.\n\nThey make code short, but you have to read them carefully."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "string? name = null;\nvar length = name?.Length ?? 0;\n\nWhat is length?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "0"
+          },
+          {
+            "id": "b",
+            "text": "null"
+          },
+          {
+            "id": "c",
+            "text": "It throws a NullReferenceException"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "name?.Length gives null because name is null, and ?? 0 replaces that null with 0. No exception: that is exactly what ?. and ?? are for."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "var name = \"Ada\";\nvar message = $\"Hello {name}, {1 + 1} messages\";\n\nWhat is message?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Hello Ada, 2 messages"
+          },
+          {
+            "id": "b",
+            "text": "Hello {name}, {1 + 1} messages"
+          },
+          {
+            "id": "c",
+            "text": "Hello Ada, 1 + 1 messages"
+          },
+          {
+            "id": "d",
+            "text": "$Hello Ada, 2 messages"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The $ prefix makes an interpolated string: each {expression} is evaluated and inserted in the text."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int Double(int x) => x * 2;\n\nWhat does => mean here?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The method's body is the expression x * 2: it returns x * 2"
+          },
+          {
+            "id": "b",
+            "text": "\"Greater than or equal to\""
+          },
+          {
+            "id": "c",
+            "text": "x is passed by reference"
+          },
+          {
+            "id": "d",
+            "text": "The result is assigned to x"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "This is an expression-bodied member: a shorter way to write { return x * 2; }. The same arrow is used in lambdas such as x => x * 2. \"Greater than or equal to\" is written >=."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int? score = null;\n\nWhat is int?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "An int that can also be null"
+          },
+          {
+            "id": "b",
+            "text": "An int whose value is not known yet at compile time"
+          },
+          {
+            "id": "c",
+            "text": "A pointer to an int"
+          },
+          {
+            "id": "d",
+            "text": "A syntax error: int can never be null"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "int? is short for Nullable<int>. A plain int always has a value; int? adds null, useful for \"no score yet\"."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Modern C#",
+        "body": "Recent versions of C# added features that make code shorter and clearer:\n- Records: record Point(int X, int Y); creates a small immutable type in one line, compared by value.\n- Pattern matching: if (shape is Circle c) tests the type and gives you a variable of that type.\n- Switch expressions: choose a value from patterns, with _ for \"anything else\".\n- using declarations: using var file = ...; disposes the file automatically at the end of the block."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "string Grade(int score) => score switch\n{\n    >= 90 => \"A\",\n    >= 70 => \"B\",\n    _ => \"C\",\n};\n\nWhat does Grade(75) return?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "\"B\""
+          },
+          {
+            "id": "b",
+            "text": "\"A\""
+          },
+          {
+            "id": "c",
+            "text": "\"C\""
+          },
+          {
+            "id": "d",
+            "text": "It does not compile: _ is not a valid pattern"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The patterns are tested in order: 75 is not >= 90, but it is >= 70, so the result is \"B\". _ is the discard pattern, which matches anything."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "record Point(int X, int Y);\n\nvar a = new Point(1, 2);\nvar b = new Point(1, 2);\n\nWhat is a == b?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "true: records are compared by their values"
+          },
+          {
+            "id": "b",
+            "text": "false: they are two different objects"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile: == cannot compare records"
+          },
+          {
+            "id": "d",
+            "text": "true, but only because the numbers are small"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Records have value equality: two records are equal when all their properties are equal. For a normal class, == would compare the references and give false."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "if (shape is Circle c)\n{\n    Console.WriteLine(c.Radius);\n}\n\nWhat does is Circle c do?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Checks that shape is a Circle and, if so, gives it to you as c, typed Circle"
+          },
+          {
+            "id": "b",
+            "text": "Converts any shape into a new Circle"
+          },
+          {
+            "id": "c",
+            "text": "Checks that shape and c are the same object"
+          },
+          {
+            "id": "d",
+            "text": "Declares a Circle named c, whatever shape is"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "This is a type pattern: the test and the cast in one step. Inside the if, c is a Circle, so c.Radius compiles."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each piece of syntax with its meaning.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "a ?? b",
+            "definition": "a, or b when a is null"
+          },
+          {
+            "id": "p2",
+            "concept": "user?.Name",
+            "definition": "user.Name, or null when user is null"
+          },
+          {
+            "id": "p3",
+            "concept": "x => x * 2",
+            "definition": "A lambda: a small inline function"
+          },
+          {
+            "id": "p4",
+            "concept": "$\"Hi {name}\"",
+            "definition": "An interpolated string"
+          },
+          {
+            "id": "p5",
+            "concept": "_ in a switch",
+            "definition": "The pattern that matches anything else"
+          },
+          {
+            "id": "p6",
+            "concept": "nameof(total)",
+            "definition": "The name of a variable or member, as a string: \"total\""
+          }
+        ]
+      }
+    }
+  ]
+}

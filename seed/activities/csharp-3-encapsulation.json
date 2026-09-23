@@ -1,0 +1,263 @@
+{
+  "title": "Classes, objects and encapsulation",
+  "description": "Classes and objects, access modifiers, properties, constructors and static members.",
+  "themes": [
+    "C#",
+    "OOP",
+    "Encapsulation"
+  ],
+  "courses": [
+    "Introduction to C#"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Classes and objects",
+        "body": "A class is a blueprint: it describes the data (fields and properties) and the behaviour (methods) of a kind of thing. An object is one concrete instance of a class, created with new.\n\npublic class Dog\n{\n    public string Name { get; }\n    public Dog(string name) => Name = name;\n    public string Bark() => $\"{Name} says woof\";\n}\n\nvar rex = new Dog(\"Rex\");\n\nDog is the class, new Dog(\"Rex\") creates an object, and the constructor Dog(string name) gives it a valid starting state."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "var rex = new Dog(\"Rex\");\nvar max = new Dog(\"Max\");\n\nHow many classes and how many objects are there?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1 class, 2 objects"
+          },
+          {
+            "id": "b",
+            "text": "2 classes, 2 objects"
+          },
+          {
+            "id": "c",
+            "text": "2 classes, 1 object"
+          },
+          {
+            "id": "d",
+            "text": "1 class, 1 object"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Dog is one class (the blueprint). Each new creates a separate object (an instance), so there are two dogs."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What is a constructor for?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Putting a new object in a valid state when it is created"
+          },
+          {
+            "id": "b",
+            "text": "Destroying the object when it is no longer used"
+          },
+          {
+            "id": "c",
+            "text": "Copying an object into another one"
+          },
+          {
+            "id": "d",
+            "text": "Declaring which methods a class must have"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "A constructor runs once, when new creates the object. Requiring the needed values there (like the dog's name) means no object can exist half-built."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Encapsulation",
+        "body": "Encapsulation means an object hides its internal state and only lets others use it through its methods and properties. The object stays in charge of its own rules.\n\nAccess modifiers decide who can use a member:\n- public: everyone.\n- private: only the class itself (the default for members).\n- protected: the class and the classes that inherit from it.\n- internal: any code in the same assembly (project).\n\nA property like public decimal Balance { get; private set; } can be read by everyone, but only changed by the class."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "public class BankAccount\n{\n    public decimal Balance { get; private set; }\n\n    public void Deposit(decimal amount)\n    {\n        if (amount <= 0)\n            throw new ArgumentException(\"Positive amounts only\");\n        Balance += amount;\n    }\n}\n\nWhy is the setter of Balance private?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "So that the balance can only change through Deposit, which checks the amount"
+          },
+          {
+            "id": "b",
+            "text": "To make reading the balance faster"
+          },
+          {
+            "id": "c",
+            "text": "Because properties of type decimal must have a private setter"
+          },
+          {
+            "id": "d",
+            "text": "So that the balance cannot be read outside the class"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "That is encapsulation: other code can read Balance, but cannot write Balance = -1000 and skip the rules. Reading is still public thanks to the public get."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "A method is declared without any access modifier: void Recalculate() { ... } inside a class. Who can call it?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Only the class itself: members are private by default"
+          },
+          {
+            "id": "b",
+            "text": "Everyone: members are public by default"
+          },
+          {
+            "id": "c",
+            "text": "The classes of the same project"
+          },
+          {
+            "id": "d",
+            "text": "The classes that inherit from it"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "In a class, members without a modifier are private. Being explicit is still a good habit, so readers do not have to remember the rule."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which modifier lets any code in the same project use a member, but no code in other projects?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "internal"
+          },
+          {
+            "id": "b",
+            "text": "protected"
+          },
+          {
+            "id": "c",
+            "text": "private"
+          },
+          {
+            "id": "d",
+            "text": "public"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "internal means \"visible inside this assembly\". It is handy for helpers that other projects should not depend on."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Counter\n{\n    public static int Total;\n    public int Mine;\n\n    public void Click() { Total++; Mine++; }\n}\n\nvar a = new Counter();\nvar b = new Counter();\na.Click();\nb.Click();\n\nWhat are Counter.Total and a.Mine?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Total is 2 and a.Mine is 1"
+          },
+          {
+            "id": "b",
+            "text": "Total is 1 and a.Mine is 1"
+          },
+          {
+            "id": "c",
+            "text": "Total is 2 and a.Mine is 2"
+          },
+          {
+            "id": "d",
+            "text": "Total is 1 and a.Mine is 2"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "A static field belongs to the class and is shared by all objects: both clicks add to the same Total. Mine is an instance field: each counter has its own."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which are good encapsulation habits?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Keep fields private and expose properties or methods"
+          },
+          {
+            "id": "b",
+            "text": "Check the rules in the methods that change the object, so it always stays valid"
+          },
+          {
+            "id": "c",
+            "text": "Make every field public, it is simpler"
+          },
+          {
+            "id": "d",
+            "text": "Return your internal List<T> directly so callers can add items to it"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b"
+        ],
+        "explanation": "Returning the internal list lets anyone change it without going through your rules. Return a read-only view (IReadOnlyList<T>) or a copy instead."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each keyword with what it means.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "public",
+            "definition": "Usable by any code"
+          },
+          {
+            "id": "p2",
+            "concept": "private",
+            "definition": "Usable only inside the class"
+          },
+          {
+            "id": "p3",
+            "concept": "protected",
+            "definition": "Usable by the class and the classes that inherit from it"
+          },
+          {
+            "id": "p4",
+            "concept": "internal",
+            "definition": "Usable by any code in the same assembly"
+          },
+          {
+            "id": "p5",
+            "concept": "static",
+            "definition": "Belongs to the class itself, shared by all its objects"
+          },
+          {
+            "id": "p6",
+            "concept": "readonly",
+            "definition": "A field that can only be set in its declaration or in a constructor"
+          }
+        ]
+      }
+    }
+  ]
+}

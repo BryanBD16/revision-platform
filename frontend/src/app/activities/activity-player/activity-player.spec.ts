@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 import { Activity, RevisionModule } from '../activity';
 import { ActivityPlayer } from './activity-player';
 
@@ -60,9 +61,13 @@ describe('ActivityPlayer', () => {
       title: 'Cell biology',
       description: null,
       themes: [],
+      courses: [],
+      visibility: 'public',
       modules,
       createdAt: '2026-09-23T03:06:18Z',
       updatedAt: '2026-09-23T03:06:18Z',
+      canEdit: false,
+      lastEditedBy: null,
     };
   }
 
@@ -183,6 +188,77 @@ describe('ActivityPlayer', () => {
     expect(element.textContent).toContain('Module 1 of 1');
     expect(element.querySelector('.grades')).toBeNull();
     expect(element.textContent).toContain('First text');
+  });
+
+  function signIn(): void {
+    TestBed.inject(AuthService).signIn({ email: 'ada@example.com', password: 'p' }).subscribe();
+    http
+      .expectOne('/api/auth/sign-in')
+      .flush({ id: 1, email: 'ada@example.com', displayName: 'Ada', roles: [], permissions: [] });
+  }
+
+  it('saves the result of a signed-in user when the activity is completed', async () => {
+    signIn();
+    await load(activity([reading(0, 'Text'), question(1, 'What is a cell?')]));
+    await clickButton('Continue');
+
+    await answer('Wrong answer');
+
+    const request = http.expectOne({ method: 'POST', url: '/api/attempts' });
+    expect(request.request.body).toEqual({
+      activityId: 3,
+      modules: [
+        { moduleId: 1, label: 'Text', score: null, maxScore: null },
+        { moduleId: 2, label: 'What is a cell?', score: 0, maxScore: 1 },
+      ],
+    });
+    expect(element.textContent).toContain('Saving your result…');
+    request.flush({ id: 9 });
+    await fixture.whenStable();
+    expect(element.querySelector('.save-status')?.textContent).toContain('Your result is saved.');
+  });
+
+  it('lets the user retry when the result could not be saved', async () => {
+    signIn();
+    await load(activity([reading(0, 'Text')]));
+    await clickButton('Continue');
+
+    http
+      .expectOne('/api/attempts')
+      .flush(
+        { errors: { modules: ['The modules do not match the activity, which may have changed.'] } },
+        { status: 400, statusText: 'Bad Request' },
+      );
+    await fixture.whenStable();
+    expect(element.textContent).toContain('The modules do not match the activity');
+
+    await clickButton('Try again');
+    http.expectOne('/api/attempts').flush({ id: 9 });
+    await fixture.whenStable();
+    expect(element.textContent).toContain('Your result is saved.');
+  });
+
+  it('saves each completion as a new attempt', async () => {
+    signIn();
+    await load(activity([reading(0, 'Text')]));
+    await clickButton('Continue');
+    http.expectOne('/api/attempts').flush({ id: 9 });
+    await fixture.whenStable();
+
+    await clickButton('Start again');
+    expect(element.textContent).not.toContain('Your result is saved.');
+    await clickButton('Continue');
+
+    http.expectOne('/api/attempts').flush({ id: 10 });
+  });
+
+  it('does not save the result of a visitor and invites them to sign in', async () => {
+    await load(activity([reading(0, 'Text')]));
+    await clickButton('Continue');
+
+    http.expectNone('/api/attempts');
+    const signInLink = element.querySelector<HTMLAnchorElement>('.save-status a');
+    expect(signInLink?.getAttribute('href')).toBe('/sign-in?returnUrl=%2Factivities%2F3');
   });
 
   it('shows a message for an activity without modules', async () => {

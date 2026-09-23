@@ -2,83 +2,10 @@
 
 <h2>New activity</h2>
 
-<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-  <div class="field">
-    <label for="title">Title</label>
-    <input id="title" type="text" formControlName="title" />
-    @let title = form.controls.title;
-    @if (title.touched && title.hasError('required')) {
-      <p class="error">The title is required.</p>
-    }
-    @if (title.hasError('maxlength')) {
-      <p class="error">The title must be at most {{ limits.titleMaxLength }} characters.</p>
-    }
-  </div>
-
-  <div class="field">
-    <label for="description">Description <span class="optional">(optional)</span></label>
-    <textarea id="description" rows="4" formControlName="description"></textarea>
-    @if (form.controls.description.hasError('maxlength')) {
-      <p class="error">
-        The description must be at most {{ limits.descriptionMaxLength }} characters.
-      </p>
-    }
-  </div>
-
-  <div class="field">
-    <label for="themes">Themes</label>
-    <input id="themes" type="text" formControlName="themes" placeholder="Biology, Cell division" />
-    <p class="hint">Separate themes with commas. Existing themes are reused.</p>
-    @let themes = form.controls.themes;
-    @if (themes.touched && themes.hasError('required')) {
-      <p class="error">At least one theme is required.</p>
-    }
-    @if (themes.hasError('themeTooLong')) {
-      <p class="error">Theme names must be at most {{ limits.themeNameMaxLength }} characters.</p>
-    }
-  </div>
-
-  <fieldset class="modules">
-    <legend>Modules</legend>
-
-    @for (module of modules.controls; track module; let i = $index, first = $first, last = $last) {
-      <section class="card module">
-        <div class="module-header">
-          <h3>{{ i + 1 }}. {{ moduleLabel(module.controls.type.value) }}</h3>
-          <div class="module-actions">
-            <button type="button" class="button-secondary" (click)="moveModule(i, -1)" [disabled]="first" [attr.aria-label]="'Move module ' + (i + 1) + ' up'">↑</button>
-            <button type="button" class="button-secondary" (click)="moveModule(i, 1)" [disabled]="last" [attr.aria-label]="'Move module ' + (i + 1) + ' down'">↓</button>
-            <button type="button" class="button-secondary" (click)="removeModule(i)" [attr.aria-label]="'Remove module ' + (i + 1)">Remove</button>
-          </div>
-        </div>
-        <app-module-editor-host [type]="module.controls.type.value" [form]="module.controls.content" />
-      </section>
-    } @empty {
-      <p class="empty">No modules yet. Add the steps of the activity below.</p>
-    }
-
-    @if (modules.touched && modules.hasError('required')) {
-      <p class="error">At least one module is required.</p>
-    }
-
-    <div class="add-module">
-      <label for="new-module-type">Module type</label>
-      <select id="new-module-type" #newModuleType>
-        @for (moduleType of moduleTypes; track moduleType.type) {
-          <option [value]="moduleType.type">{{ moduleType.label }}</option>
-        }
-      </select>
-      <button type="button" class="button-secondary" (click)="addModule(newModuleType.value)">
-        Add module
-      </button>
-    </div>
-  </fieldset>
-
-  @for (message of serverErrors(); track message) {
-    <p class="error">{{ message }}</p>
-  }
-
-  <button type="submit" class="button" [disabled]="submitting()">
-    {{ submitting() ? 'Creating…' : 'Create activity' }}
-  </button>
-</form>
+<app-activity-form
+  submitLabel="Create activity"
+  submittingLabel="Creating…"
+  [submitting]="submitting()"
+  [serverErrors]="serverErrors()"
+  (saved)="create($event)"
+/>
