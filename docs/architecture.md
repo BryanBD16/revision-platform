@@ -75,7 +75,10 @@ No database migration is needed: the content is stored as JSON.
 
 ```
 revision_activities
-  id, title, description, created_at (indexed), updated_at
+  id, title, description, created_at (indexed), updated_at,
+  visibility ('private' or 'public', indexed),
+  owner_id -> users (cascade delete, null for a public activity)
+  check: public and no owner, or private and an owner
 
 revision_modules
   id, activity_id -> revision_activities (cascade delete),
@@ -193,6 +196,27 @@ client-side. Nothing about a completion is stored.
 - **Tests** use the real flow: `ApiFactory.CreateApiClient()` keeps the
   cookies and sends the anti-forgery header like the browser, and
   `RegisterAsync()` creates and signs in a user.
+
+## Private and public activities
+
+- **The rule is in one place:** `ActivityVisibility.VisibleTo(viewerId)`
+  keeps the public activities and the viewer's own private activities.
+  `ActivityService` (list and detail) and `ThemeService` (themes and
+  courses) start their queries from it, so a new query cannot forget it
+  by accident as long as it uses these services. Admins are not an
+  exception: publishing is their only extra right.
+- **Another user's private activity returns 404**, not 403, so its
+  existence is not revealed.
+- **Public activities have no owner.** Only the users with the
+  `publish-activities` permission can create one; the controller checks
+  it. A check constraint in the database refuses a public activity with
+  an owner or a private activity without one.
+- **Themes and courses stay shared** (one row per name), but the lists
+  only return the names used by visible activities.
+- **Seed activities** are created by a backend command (`dotnet run --
+  seed <directory>`, `make db-seed`), as public activities. It validates
+  every file with `ActivityValidator` before creating any activity. The
+  activities created before users existed became public.
 
 ## Roles and permissions
 

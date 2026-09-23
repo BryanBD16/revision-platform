@@ -169,13 +169,27 @@ the same table but have separate ids and lists.
 
 ### `GET /api/themes`
 
-Returns all themes, sorted by name: `[ { "id": 1, "name": "Biology" } ]`.
+Returns the themes used by at least one activity that the caller can
+see (see [Visibility](#visibility)), sorted by name:
+`[ { "id": 1, "name": "Biology" } ]`. The themes used only by other
+users' private activities are not listed.
 
 ### `GET /api/courses`
 
-Returns all courses, sorted by name, in the same format.
+Returns the courses in the same way and format.
 
 ## Revision activities
+
+### Visibility
+
+Each activity is `private` or `public`:
+
+- A **private** activity belongs to the user who created it. Only that
+  user sees it, in the list and by id; for anyone else, including
+  admins, it does not exist (`404`).
+- A **public** activity has no owner and everyone sees it, including
+  visitors who are not signed in. Only the users with the
+  `publish-activities` permission can create one.
 
 ### Activity summary (list)
 
@@ -186,6 +200,7 @@ Returns all courses, sorted by name, in the same format.
   "description": "Chapter 3",
   "themes": [ { "id": 1, "name": "Biology" }, { "id": 2, "name": "Cells" } ],
   "courses": [ { "id": 3, "name": "BIO 101" } ],
+  "visibility": "public",
   "moduleCount": 2,
   "createdAt": "2026-09-23T03:06:18.742923Z",
   "updatedAt": "2026-09-23T03:06:18.742923Z"
@@ -201,6 +216,7 @@ Returns all courses, sorted by name, in the same format.
   "description": "Chapter 3",
   "themes": [ { "id": 1, "name": "Biology" } ],
   "courses": [ { "id": 3, "name": "BIO 101" } ],
+  "visibility": "private",
   "modules": [
     { "id": 1, "position": 0, "type": "reading", "content": { "title": "Introduction", "body": "..." } }
   ],
@@ -215,8 +231,8 @@ the module `type` (see [Module types](#module-types)).
 
 ### `GET /api/activities`
 
-Returns one page of the activity summaries that match the filters,
-newest first.
+Returns one page of the activity summaries that the caller can see and
+that match the filters, newest first.
 
 | Parameter  | Default | Rules              |
 |------------|---------|--------------------|
@@ -225,6 +241,7 @@ newest first.
 | `title`    | none    | at most 200 characters |
 | `courseId` | none    | a course id        |
 | `themeIds` | none    | theme ids, repeated: `themeIds=1&themeIds=4` (at most 20) |
+| `visibility` | none  | `private` or `public` |
 
 Each filter that is set narrows the result; an activity is listed only if
 it matches all of them:
@@ -233,6 +250,8 @@ it matches all of them:
   Surrounding spaces are removed and a blank value is ignored.
 - `courseId`: the activity is part of this course.
 - `themeIds`: the activity has **all** these themes.
+- `visibility`: the activity has this visibility. `private` returns the
+  caller's own private activities (nothing for a visitor).
 
 A course id is not a theme id and the reverse: an unknown id, or the id
 of a theme passed as `courseId`, matches no activity.
@@ -254,12 +273,14 @@ last one returns an empty `items` list. An invalid parameter returns
 
 ### `GET /api/activities/{id}`
 
-Returns one activity with its modules, or `404` if it does not exist.
+Returns one activity with its modules, or `404` if it does not exist or
+is another user's private activity.
 
 ### `POST /api/activities`
 
-Creates an activity with its modules and returns `201` with the created
-activity and a `Location` header.
+Requires a signed-in user (`401` otherwise). Creates an activity with its
+modules and returns `201` with the created activity and a `Location`
+header.
 
 ```json
 {
@@ -267,6 +288,7 @@ activity and a `Location` header.
   "description": "Chapter 3",
   "themes": ["Biology", "Cells"],
   "courses": ["BIO 101"],
+  "visibility": "private",
   "modules": [
     { "type": "reading", "content": { "title": "Introduction", "body": "..." } }
   ]
@@ -281,6 +303,10 @@ activity and a `Location` header.
 - `courses`: optional, the courses the activity is part of (any number).
   Same rules as `themes` for each name. Courses do not count as themes:
   a course and a theme can have the same name and are still different.
+- `visibility`: optional, `private` (the default) or `public`. A private
+  activity belongs to the caller. A public activity has no owner and
+  needs the `publish-activities` permission: without it, the request
+  returns `403` and nothing is created.
 - `modules`: at least one module. Each module needs a known `type` and a
   `content` that is valid for that type. Modules are stored in the order
   of the list.
