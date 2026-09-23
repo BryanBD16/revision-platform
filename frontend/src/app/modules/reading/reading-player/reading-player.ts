@@ -5,6 +5,7 @@ import { ReadingContent } from '../reading-content';
 @Component({
   selector: 'app-reading-player',
   templateUrl: './reading-player.html',
+  styleUrl: './reading-player.css',
 })
 export class ReadingPlayer implements ModulePlayer<ReadingContent> {
   readonly content = input.required<ReadingContent>();

@@ -221,10 +221,6 @@ a {
   font: inherit;
 }
 
-.reading-body {
-  white-space: pre-line;
-}
-
 .progress {
   margin: 1rem 0 0.25rem;
   color: var(--color-muted);
@@ -266,85 +262,4 @@ a.button-secondary {
   padding: 0.375rem 0.5rem;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
-}
-
-.choices {
-  margin: 0 0 1rem;
-  padding: 0;
-  border: none;
-}
-
-.choices legend {
-  font-weight: 600;
-}
-
-.choice-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.choice-row input[type='text'] {
-  flex: 1;
-  min-width: 0;
-  padding: 0.5rem;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  font: inherit;
-}
-
-.multiple-choice {
-  margin: 0 0 1rem;
-  padding: 0;
-  border: none;
-  display: grid;
-  gap: 0.5rem;
-}
-
-.multiple-choice .question {
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-}
-
-.choice {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.choice-correct {
-  border-color: var(--color-success);
-  background: var(--color-success-bg);
-}
-
-.choice-wrong {
-  border-color: var(--color-error);
-  background: var(--color-error-bg);
-}
-
-.choice-tag {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-muted);
-}
-
-.feedback {
-  font-weight: 600;
-}
-
-.feedback-correct {
-  color: var(--color-success);
-}
-
-.feedback-wrong {
-  color: var(--color-error);
-}
-
-.explanation {
-  white-space: pre-line;
 }

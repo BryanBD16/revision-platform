@@ -63,7 +63,9 @@ No database migration is needed: the content is stored as JSON.
 1. Create `modules/<type-name>/` with the content interface, an editor
    component implementing `ModuleEditor`, a player component
    implementing `ModulePlayer`, and the `ModuleTypeDefinition` (see
-   `modules/reading/`).
+   `modules/reading/`). Put the type's styles in its components' CSS
+   files, not in the global `styles.css`, which only holds shared styles
+   (layout, fields, buttons, colors).
 2. Add the definition to `MODULE_TYPES` in `modules/module-types.ts`.
 3. Add tests for the definition, the editor and the player.
 

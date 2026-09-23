@@ -8,6 +8,7 @@ let nextId = 0;
 @Component({
   selector: 'app-multiple-choice-player',
   templateUrl: './multiple-choice-player.html',
+  styleUrl: './multiple-choice-player.css',
 })
 export class MultipleChoicePlayer implements ModulePlayer<MultipleChoiceContent> {
   readonly content = input.required<MultipleChoiceContent>();
