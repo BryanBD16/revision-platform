@@ -1,0 +1,530 @@
+{
+  "title": "Cult films",
+  "description": "Directors, famous scenes and twists, from Hitchcock to The Matrix.",
+  "themes": [
+    "Cinema",
+    "General knowledge"
+  ],
+  "courses": [],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Lights, camera, action",
+        "body": "Hitchcock thrillers, mind-bending science fiction and Tarantino dialogue: these questions are about films that people still talk about. No big spoilers, but a few famous twists are mentioned!"
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In In Time (2011), what is used as money?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The time people have left to live"
+          },
+          {
+            "id": "b",
+            "text": "Gold coins"
+          },
+          {
+            "id": "c",
+            "text": "Memories"
+          },
+          {
+            "id": "d",
+            "text": "Drops of water"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "People stop ageing at 25; after that, every second must be earned and paid for. When the clock on your arm reaches zero, you die."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Time was directed by Andrew Niccol. Which other film on this list did he direct?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Gattaca"
+          },
+          {
+            "id": "b",
+            "text": "Dark City"
+          },
+          {
+            "id": "c",
+            "text": "Inception"
+          },
+          {
+            "id": "d",
+            "text": "Stardust"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Niccol wrote and directed Gattaca (1997), another story about a society that sorts people, this time by their genes."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Where does the title Gattaca come from?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The letters G, A, T and C, the four bases of DNA"
+          },
+          {
+            "id": "b",
+            "text": "The name of the director's dog"
+          },
+          {
+            "id": "c",
+            "text": "A city in Greece"
+          },
+          {
+            "id": "d",
+            "text": "An old word for \"stars\""
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Guanine, adenine, thymine and cytosine. In the film, people are judged by their DNA, and Vincent, born without genetic selection, fights to go to space."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Inception (2010), what object does Cobb use as a totem to check whether he is dreaming?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A spinning top"
+          },
+          {
+            "id": "b",
+            "text": "A coin"
+          },
+          {
+            "id": "c",
+            "text": "A chess piece"
+          },
+          {
+            "id": "d",
+            "text": "A watch"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "If the top keeps spinning forever, he is in a dream. The famous last shot of Christopher Nolan's film ends before we know whether it falls."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which famous line does the little boy Cole whisper in The Sixth Sense (1999)?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "\"I see dead people.\""
+          },
+          {
+            "id": "b",
+            "text": "\"I'll be back.\""
+          },
+          {
+            "id": "c",
+            "text": "\"Here's Johnny!\""
+          },
+          {
+            "id": "d",
+            "text": "\"May the Force be with you.\""
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The film by M. Night Shyamalan is famous for its final twist. The other lines come from The Terminator, The Shining and Star Wars."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Pulp Fiction, Vincent explains that in France, a Quarter Pounder with Cheese is called...",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A Royale with cheese"
+          },
+          {
+            "id": "b",
+            "text": "A Big Cheese"
+          },
+          {
+            "id": "c",
+            "text": "Le Quart de Livre"
+          },
+          {
+            "id": "d",
+            "text": "A Croque-Burger"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "\"They got the metric system, they wouldn't know what the... a Quarter Pounder is.\" Quentin Tarantino's film won the Palme d'Or at Cannes in 1994."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Dark City (1998), what happens every night at midnight?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Time stops, everyone falls asleep, and mysterious Strangers reshape the city and people's memories"
+          },
+          {
+            "id": "b",
+            "text": "The sun rises in the west"
+          },
+          {
+            "id": "c",
+            "text": "The city is flooded"
+          },
+          {
+            "id": "d",
+            "text": "All the lights go out for one minute and nothing else happens"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "In Alex Proyas's film, the hero is the only one who stays awake. Its themes of a fake reality came out one year before a very famous film..."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In The Matrix (1999), Morpheus offers Neo two pills. Which one shows him the truth?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The red pill"
+          },
+          {
+            "id": "b",
+            "text": "The blue pill"
+          },
+          {
+            "id": "c",
+            "text": "Both"
+          },
+          {
+            "id": "d",
+            "text": "Neither: the truth is in a phone call"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "\"You take the blue pill, the story ends... You take the red pill, you stay in Wonderland.\" The film was made by the Wachowskis."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Stardust (2007), Tristan goes to find a fallen star. What is the star?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A young woman named Yvaine"
+          },
+          {
+            "id": "b",
+            "text": "A glowing rock that grants wishes"
+          },
+          {
+            "id": "c",
+            "text": "A baby dragon"
+          },
+          {
+            "id": "d",
+            "text": "A golden bird"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Adapted from Neil Gaiman's novel, the film also features Robert De Niro as the surprising Captain Shakespeare, the captain of a flying pirate ship."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What do Cloud Atlas (2012) and The Matrix have in common?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "They were directed by the Wachowskis (Cloud Atlas together with Tom Tykwer)"
+          },
+          {
+            "id": "b",
+            "text": "They have the same main actor"
+          },
+          {
+            "id": "c",
+            "text": "They both take place in a single day"
+          },
+          {
+            "id": "d",
+            "text": "Nothing at all"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Cloud Atlas, adapted from David Mitchell's novel, weaves six stories across several centuries, and the same actors play several roles in different stories."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Psycho, Vertigo and The Birds were all directed by...",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Alfred Hitchcock"
+          },
+          {
+            "id": "b",
+            "text": "Stanley Kubrick"
+          },
+          {
+            "id": "c",
+            "text": "Orson Welles"
+          },
+          {
+            "id": "d",
+            "text": "Steven Spielberg"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Hitchcock, the \"Master of Suspense\", also appeared briefly in most of his own films: spotting his cameo is a game for his fans."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which of these three Hitchcock films came out first?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Vertigo"
+          },
+          {
+            "id": "b",
+            "text": "Psycho"
+          },
+          {
+            "id": "c",
+            "text": "The Birds"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Vertigo came out in 1958, Psycho in 1960 and The Birds in 1963."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Psycho, where does the famous shower scene take place?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "At the Bates Motel"
+          },
+          {
+            "id": "b",
+            "text": "At the Overlook Hotel"
+          },
+          {
+            "id": "c",
+            "text": "In a train"
+          },
+          {
+            "id": "d",
+            "text": "In a lighthouse"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Marion Crane stops at the motel run by Norman Bates. The Overlook Hotel is in The Shining."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "In Vertigo, what does the detective Scottie, played by James Stewart, suffer from?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A fear of heights"
+          },
+          {
+            "id": "b",
+            "text": "A fear of birds"
+          },
+          {
+            "id": "c",
+            "text": "Loss of memory"
+          },
+          {
+            "id": "d",
+            "text": "Blindness"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "His acrophobia is at the heart of the plot, set in San Francisco. For the dizzying shots, Hitchcock used a camera trick now called the \"dolly zoom\"."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What attacks the small town of Bodega Bay in The Birds (1963)?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Birds"
+          },
+          {
+            "id": "b",
+            "text": "Rats"
+          },
+          {
+            "id": "c",
+            "text": "Bees"
+          },
+          {
+            "id": "d",
+            "text": "Aliens"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Yes, it is in the title! Hitchcock never explains why the birds attack, which makes the film even more unsettling."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each film with its director.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Inception",
+            "definition": "Christopher Nolan"
+          },
+          {
+            "id": "p2",
+            "concept": "The Sixth Sense",
+            "definition": "M. Night Shyamalan"
+          },
+          {
+            "id": "p3",
+            "concept": "Pulp Fiction",
+            "definition": "Quentin Tarantino"
+          },
+          {
+            "id": "p4",
+            "concept": "Dark City",
+            "definition": "Alex Proyas"
+          },
+          {
+            "id": "p5",
+            "concept": "Stardust",
+            "definition": "Matthew Vaughn"
+          },
+          {
+            "id": "p6",
+            "concept": "Psycho",
+            "definition": "Alfred Hitchcock"
+          },
+          {
+            "id": "p7",
+            "concept": "Gattaca",
+            "definition": "Andrew Niccol"
+          },
+          {
+            "id": "p8",
+            "concept": "The Matrix",
+            "definition": "The Wachowskis"
+          }
+        ]
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each film with its story.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "In Time",
+            "definition": "Time is money, and the rich can live forever"
+          },
+          {
+            "id": "p2",
+            "concept": "Gattaca",
+            "definition": "A man without selected genes pretends to be someone else to reach space"
+          },
+          {
+            "id": "p3",
+            "concept": "Inception",
+            "definition": "A team steals and plants ideas inside people's dreams"
+          },
+          {
+            "id": "p4",
+            "concept": "The Sixth Sense",
+            "definition": "A child psychologist tries to help a boy who has a strange gift"
+          },
+          {
+            "id": "p5",
+            "concept": "Dark City",
+            "definition": "A man wakes up in a city where it is always night"
+          },
+          {
+            "id": "p6",
+            "concept": "The Matrix",
+            "definition": "A hacker discovers that the world is a simulation"
+          },
+          {
+            "id": "p7",
+            "concept": "Cloud Atlas",
+            "definition": "Six stories linked across the centuries"
+          },
+          {
+            "id": "p8",
+            "concept": "The Birds",
+            "definition": "Birds attack a small coastal town"
+          }
+        ]
+      }
+    }
+  ]
+}

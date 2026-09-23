@@ -1,0 +1,546 @@
+{
+  "title": "Greek mythology",
+  "description": "Gods, heroes and monsters of ancient Greece, and the expressions they left us.",
+  "themes": [
+    "Greek mythology",
+    "General knowledge"
+  ],
+  "courses": [],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Gods, heroes and monsters",
+        "body": "The ancient Greeks told stories about the gods of Mount Olympus, the heroes who fought monsters, and the humans punished for their pride. These myths still live in our books, films and everyday expressions."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Who is the king of the gods of Olympus?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Zeus"
+          },
+          {
+            "id": "b",
+            "text": "Apollo"
+          },
+          {
+            "id": "c",
+            "text": "Hades"
+          },
+          {
+            "id": "d",
+            "text": "Cronus"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Zeus, god of the sky and thunder, took power after defeating his father Cronus and the Titans."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which god rules the seas and carries a trident?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Poseidon"
+          },
+          {
+            "id": "b",
+            "text": "Hermes"
+          },
+          {
+            "id": "c",
+            "text": "Ares"
+          },
+          {
+            "id": "d",
+            "text": "Hephaestus"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Poseidon, brother of Zeus, can also cause earthquakes. His Roman name is Neptune."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Who rules the underworld, the kingdom of the dead?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Hades"
+          },
+          {
+            "id": "b",
+            "text": "Zeus"
+          },
+          {
+            "id": "c",
+            "text": "Dionysus"
+          },
+          {
+            "id": "d",
+            "text": "Charon"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Hades is another brother of Zeus. Charon is only the ferryman who takes the souls across the river."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How was the goddess Athena born?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "She came out of Zeus's head, fully grown and armed"
+          },
+          {
+            "id": "b",
+            "text": "From the foam of the sea"
+          },
+          {
+            "id": "c",
+            "text": "From a golden egg"
+          },
+          {
+            "id": "d",
+            "text": "Like everyone else, as a baby"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Athena, goddess of wisdom and of war strategy, gave her name to Athens. The goddess born from the sea foam is Aphrodite."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What did Prometheus steal from the gods to give to humans?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Fire"
+          },
+          {
+            "id": "b",
+            "text": "Gold"
+          },
+          {
+            "id": "c",
+            "text": "Immortality"
+          },
+          {
+            "id": "d",
+            "text": "The first book"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "As punishment, Zeus had him chained to a rock, where an eagle came every day to eat his liver, which grew back every night."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Pandora opened the box (in fact a jar) and all the evils escaped into the world. What stayed inside?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Hope"
+          },
+          {
+            "id": "b",
+            "text": "Love"
+          },
+          {
+            "id": "c",
+            "text": "Money"
+          },
+          {
+            "id": "d",
+            "text": "Nothing at all"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "That is why \"opening Pandora's box\" means starting something that causes many unexpected problems."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How did Perseus manage to kill Medusa, whose gaze turned people to stone?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "He looked at her only through the reflection in his polished shield"
+          },
+          {
+            "id": "b",
+            "text": "He closed his eyes and guessed where she was"
+          },
+          {
+            "id": "c",
+            "text": "He sent her a mirror as a gift"
+          },
+          {
+            "id": "d",
+            "text": "He asked Hercules to do it"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Medusa was a Gorgon with snakes for hair. Perseus cut off her head and later used it as a weapon."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why was Achilles' heel his only weak spot?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "His mother held him by the heel when she dipped him in the river Styx"
+          },
+          {
+            "id": "b",
+            "text": "He was born without a heel"
+          },
+          {
+            "id": "c",
+            "text": "A snake bit him there when he was a child"
+          },
+          {
+            "id": "d",
+            "text": "He always forgot to protect it with his armour"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The waters of the Styx made his body invulnerable, except where Thetis's hand had held him. Paris killed him with an arrow in the heel during the Trojan War."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Whose idea was the Trojan Horse?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Odysseus"
+          },
+          {
+            "id": "b",
+            "text": "Achilles"
+          },
+          {
+            "id": "c",
+            "text": "Hector"
+          },
+          {
+            "id": "d",
+            "text": "Agamemnon"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The Greeks hid soldiers inside a giant wooden horse and pretended to leave. The Trojans brought it into their city, and Troy fell."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "After the ten-year Trojan War, how long does Odysseus take to come home to Ithaca?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Ten more years"
+          },
+          {
+            "id": "b",
+            "text": "Ten days"
+          },
+          {
+            "id": "c",
+            "text": "One year"
+          },
+          {
+            "id": "d",
+            "text": "He never comes home"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "His journey, told in Homer's Odyssey, includes the Cyclops, the Sirens and the witch Circe. When he finally arrives in disguise, his old dog Argos is the first to recognise him."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How does Theseus find his way out of the Labyrinth after killing the Minotaur?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "He follows the thread that Ariadne gave him"
+          },
+          {
+            "id": "b",
+            "text": "He climbs over the walls"
+          },
+          {
+            "id": "c",
+            "text": "The Minotaur shows him the way"
+          },
+          {
+            "id": "d",
+            "text": "He flies out with wings of wax"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Ariadne, daughter of King Minos, gave him a ball of thread to unroll behind him. The wings of wax belong to another story..."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why did Icarus fall into the sea?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "He flew too close to the sun and the wax of his wings melted"
+          },
+          {
+            "id": "b",
+            "text": "He flew too low and the waves caught him"
+          },
+          {
+            "id": "c",
+            "text": "Zeus struck him with lightning"
+          },
+          {
+            "id": "d",
+            "text": "His father Daedalus forgot to give him wings"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Daedalus had warned him to fly neither too high nor too low. The story is still used to warn against too much ambition."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Orpheus is allowed to bring his wife Eurydice back from the underworld on one condition. Which one?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "He must not look back at her before they are out"
+          },
+          {
+            "id": "b",
+            "text": "He must stop playing music forever"
+          },
+          {
+            "id": "c",
+            "text": "He must stay silent for a year"
+          },
+          {
+            "id": "d",
+            "text": "He must give Hades his lyre"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Just before reaching the light, Orpheus turns around to check that she is following him, and loses her forever."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which everyday expressions come from Greek mythology?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "An Achilles' heel"
+          },
+          {
+            "id": "b",
+            "text": "Opening Pandora's box"
+          },
+          {
+            "id": "c",
+            "text": "A Herculean task"
+          },
+          {
+            "id": "d",
+            "text": "Raining cats and dogs"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b",
+          "c"
+        ],
+        "explanation": "A Herculean task is a very hard one, like the twelve labours of Heracles (Hercules for the Romans). \"Narcissism\" also comes from Narcissus, who fell in love with his own reflection."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Sisyphus was punished for tricking the gods. What must he do for eternity?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Push a boulder up a hill, only for it to roll back down every time"
+          },
+          {
+            "id": "b",
+            "text": "Carry the sky on his shoulders"
+          },
+          {
+            "id": "c",
+            "text": "Fill a jar that has a hole in it"
+          },
+          {
+            "id": "d",
+            "text": "Stand in water that moves away when he tries to drink"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Carrying the sky is the punishment of Atlas, and the water that escapes him is Tantalus's torment."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each Greek god with their Roman name.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Zeus",
+            "definition": "Jupiter"
+          },
+          {
+            "id": "p2",
+            "concept": "Hera",
+            "definition": "Juno"
+          },
+          {
+            "id": "p3",
+            "concept": "Poseidon",
+            "definition": "Neptune"
+          },
+          {
+            "id": "p4",
+            "concept": "Hades",
+            "definition": "Pluto"
+          },
+          {
+            "id": "p5",
+            "concept": "Ares",
+            "definition": "Mars"
+          },
+          {
+            "id": "p6",
+            "concept": "Aphrodite",
+            "definition": "Venus"
+          },
+          {
+            "id": "p7",
+            "concept": "Hermes",
+            "definition": "Mercury"
+          },
+          {
+            "id": "p8",
+            "concept": "Athena",
+            "definition": "Minerva"
+          },
+          {
+            "id": "p9",
+            "concept": "Artemis",
+            "definition": "Diana"
+          },
+          {
+            "id": "p10",
+            "concept": "Dionysus",
+            "definition": "Bacchus"
+          }
+        ]
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each god with their domain.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Ares",
+            "definition": "War and battle"
+          },
+          {
+            "id": "p2",
+            "concept": "Aphrodite",
+            "definition": "Love and beauty"
+          },
+          {
+            "id": "p3",
+            "concept": "Hermes",
+            "definition": "Messenger of the gods, travellers and thieves"
+          },
+          {
+            "id": "p4",
+            "concept": "Hephaestus",
+            "definition": "The forge and craftsmen"
+          },
+          {
+            "id": "p5",
+            "concept": "Artemis",
+            "definition": "The hunt and wild animals"
+          },
+          {
+            "id": "p6",
+            "concept": "Demeter",
+            "definition": "The harvest and agriculture"
+          },
+          {
+            "id": "p7",
+            "concept": "Dionysus",
+            "definition": "Wine and festivities"
+          },
+          {
+            "id": "p8",
+            "concept": "Apollo",
+            "definition": "Music, poetry and prophecy"
+          }
+        ]
+      }
+    }
+  ]
+}
