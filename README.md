@@ -53,10 +53,14 @@ to them.
 
 ### Seed data
 
-`seed/activities/` contains revision activities about the project itself
-(database, Docker, backend, frontend and Makefile). They are all part of
-the course `Revision Platform` and have themes describing their content
-(for example `MySQL`, `Angular` or `Testing`). Each file has the format of
+`seed/activities/` contains two courses:
+
+- `Revision Platform` (`01-…` to `05-…`): the project itself (database,
+  Docker, backend, frontend and Makefile), with themes such as `MySQL`,
+  `Angular` or `Testing`.
+- `Introduction to C#` (`csharp-…`): five short activities on the
+  language, its syntax, encapsulation, inheritance and ASP.NET Core.
+ Each file has the format of
 a `POST /api/activities` request body. The backend does not need to be
 running:
 

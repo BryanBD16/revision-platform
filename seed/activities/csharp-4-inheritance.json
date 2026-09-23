@@ -1,0 +1,295 @@
+{
+  "title": "Inheritance and polymorphism",
+  "description": "Base and derived classes, virtual and override, abstract classes, interfaces, and when not to inherit.",
+  "themes": [
+    "C#",
+    "OOP",
+    "Inheritance"
+  ],
+  "courses": [
+    "Introduction to C#"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Inheritance: \"is a\"",
+        "body": "A class can inherit from another one: class Cat : Animal { }. Cat (the derived class) gets the members of Animal (the base class), and can add its own. A cat is an animal, so a Cat can be used wherever an Animal is expected.\n\nIn C#, a class has exactly one base class; when you do not write one, it is object. A class can also implement any number of interfaces.\n\nA method marked virtual can be replaced in a derived class with override. Which version runs is decided by the real type of the object at run time: that is polymorphism."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "How many base classes can a C# class inherit from?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Exactly one (object when none is written), plus any number of interfaces"
+          },
+          {
+            "id": "b",
+            "text": "As many as it wants"
+          },
+          {
+            "id": "c",
+            "text": "None: C# has no inheritance"
+          },
+          {
+            "id": "d",
+            "text": "Two at most"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "C# has single inheritance for classes, which avoids the ambiguities of multiple inheritance. Interfaces cover the need to have several \"abilities\"."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Animal { public virtual string Speak() => \"...\"; }\nclass Cat : Animal { public override string Speak() => \"Meow\"; }\n\nAnimal pet = new Cat();\nConsole.WriteLine(pet.Speak());\n\nWhat is printed?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Meow"
+          },
+          {
+            "id": "b",
+            "text": "..."
+          },
+          {
+            "id": "c",
+            "text": "Nothing, it does not compile"
+          },
+          {
+            "id": "d",
+            "text": "Meow and then ..."
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The variable's type is Animal, but the object is a Cat. With virtual and override, the object's real type decides: Cat.Speak runs. That is polymorphism."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Same code, but Cat hides the method instead of overriding it:\n\nclass Cat : Animal { public new string Speak() => \"Meow\"; }\n\nAnimal pet = new Cat();\nConsole.WriteLine(pet.Speak());\n\nWhat is printed now?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "..."
+          },
+          {
+            "id": "b",
+            "text": "Meow"
+          },
+          {
+            "id": "c",
+            "text": "Nothing, it does not compile"
+          },
+          {
+            "id": "d",
+            "text": "Meow and then ..."
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "new hides the base method instead of overriding it. The call goes through a variable of type Animal, so Animal.Speak runs. Only override gives polymorphism; this trap is why hiding is rare."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Cat : Animal\n{\n    public override string Speak() => base.Speak() + \" meow\";\n}\n\nIf Animal.Speak() returns \"...\", what does new Cat().Speak() return?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "\"... meow\""
+          },
+          {
+            "id": "b",
+            "text": "\" meow\""
+          },
+          {
+            "id": "c",
+            "text": "\"meow\""
+          },
+          {
+            "id": "d",
+            "text": "It loops forever"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "base.Speak() calls the version of the base class. It lets a derived class extend the behaviour instead of replacing it completely."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Abstract classes and interfaces",
+        "body": "An abstract class cannot be created with new. It is a base made to be completed: its abstract members have no body, and each derived class must override them.\n\nAn interface is a contract: a list of members a class promises to provide, such as interface IFlyable { void Fly(); }. A class inherits from one class at most, but can implement many interfaces.\n\nsealed does the opposite of abstract: no class can inherit from a sealed class."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "abstract class Shape\n{\n    public abstract double Area();\n}\n\nvar shape = new Shape();\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It does not compile: an abstract class cannot be instantiated"
+          },
+          {
+            "id": "b",
+            "text": "It creates a shape whose area is 0"
+          },
+          {
+            "id": "c",
+            "text": "It compiles, but Area() throws an exception"
+          },
+          {
+            "id": "d",
+            "text": "It creates an object of the first class that inherits from Shape"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Shape is incomplete: Area has no body. You create concrete derived classes instead, such as new Circle(2), and use them as Shapes."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "A Duck can fly and swim. A Plane can fly. What is the best design?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "An IFlyable interface implemented by both Duck and Plane"
+          },
+          {
+            "id": "b",
+            "text": "Plane inherits from Duck"
+          },
+          {
+            "id": "c",
+            "text": "Duck inherits from Plane"
+          },
+          {
+            "id": "d",
+            "text": "Copy the Fly method into both classes"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "A plane is not a duck, and a duck is not a plane, so inheritance is wrong here. They only share an ability, which is exactly what an interface describes."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Someone wrote class Car : Engine { } so that a car can Start(). What is the problem?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A car is not an engine, it has an engine: Car should hold an Engine field"
+          },
+          {
+            "id": "b",
+            "text": "Nothing, it is a good use of inheritance"
+          },
+          {
+            "id": "c",
+            "text": "Engine should inherit from Car instead"
+          },
+          {
+            "id": "d",
+            "text": "C# does not allow a class to inherit from another class"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Inheritance means \"is a\". For \"has a\", use composition: class Car { private readonly Engine engine; }. Prefer composition over inheritance when in doubt."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What does sealed class Token { } prevent?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Other classes from inheriting from Token"
+          },
+          {
+            "id": "b",
+            "text": "Creating Token objects with new"
+          },
+          {
+            "id": "c",
+            "text": "Changing the fields of a Token"
+          },
+          {
+            "id": "d",
+            "text": "Using Token outside its project"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "sealed closes a class to inheritance. It protects designs that were not made to be extended."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each concept with its meaning.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Base class",
+            "definition": "The class another class inherits from"
+          },
+          {
+            "id": "p2",
+            "concept": "Derived class",
+            "definition": "A class that inherits from another one"
+          },
+          {
+            "id": "p3",
+            "concept": "virtual",
+            "definition": "Allows derived classes to override a method"
+          },
+          {
+            "id": "p4",
+            "concept": "override",
+            "definition": "Replaces a virtual method in a derived class"
+          },
+          {
+            "id": "p5",
+            "concept": "abstract class",
+            "definition": "Cannot be instantiated; made to be inherited from"
+          },
+          {
+            "id": "p6",
+            "concept": "interface",
+            "definition": "A contract of members that a class promises to provide"
+          },
+          {
+            "id": "p7",
+            "concept": "sealed",
+            "definition": "Forbids inheriting from a class"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,263 @@
+{
+  "title": "ASP.NET Core: C# on the web",
+  "description": "What ASP.NET Core is, how a request travels through it, routing, controllers and dependency injection.",
+  "themes": [
+    "C#",
+    "ASP.NET Core",
+    "Web"
+  ],
+  "courses": [
+    "Introduction to C#"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "What is ASP.NET Core?",
+        "body": "ASP.NET Core is the framework of .NET for building web applications and web APIs in C#. It is open source and cross-platform, like .NET.\n\nAn ASP.NET Core application contains its own web server, Kestrel, which listens for HTTP requests. Each request goes through a pipeline of middleware (logging, authentication, error handling...) and then reaches an endpoint: a controller action or a minimal API, which produces the response.\n\nThe backend of this revision platform is an ASP.NET Core web API."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "ASP.NET Core is...",
+        "choices": [
+          {
+            "id": "a",
+            "text": "A framework, part of .NET, for building web apps and APIs"
+          },
+          {
+            "id": "b",
+            "text": "A programming language that replaces C#"
+          },
+          {
+            "id": "c",
+            "text": "A database made by Microsoft"
+          },
+          {
+            "id": "d",
+            "text": "A plugin that runs C# inside the browser"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "You write ASP.NET Core applications in C#. The language is C#; ASP.NET Core provides the web part: server, routing, controllers, security..."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What is Kestrel?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "The web server built into ASP.NET Core, which listens for HTTP requests"
+          },
+          {
+            "id": "b",
+            "text": "The C# compiler"
+          },
+          {
+            "id": "c",
+            "text": "The database access library of .NET"
+          },
+          {
+            "id": "d",
+            "text": "A test framework for controllers"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Kestrel is a fast cross-platform web server. In production it often sits behind a reverse proxy such as Nginx, but it can also be used directly."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "app.MapGet(\"/hello\", () => \"Hello!\");\n\nWhat does this line do?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Answers GET /hello with the text Hello!"
+          },
+          {
+            "id": "b",
+            "text": "Sends a GET request to /hello when the app starts"
+          },
+          {
+            "id": "c",
+            "text": "Redirects /hello to the home page"
+          },
+          {
+            "id": "d",
+            "text": "Prints Hello! in the console at start-up"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "This is a minimal API: a route and a lambda that produces the response, without a controller class."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Pipeline, routing and dependency injection",
+        "body": "Middleware are steps that every request goes through, in the order they are added in Program.cs. Each one can do something before and after the next one, or stop the request.\n\nRouting picks the endpoint from the HTTP method and the URL, for example [HttpGet(\"{id:int}\")] on a controller whose route is api/cats.\n\nDependency injection creates the services your code needs. You register them once, such as builder.Services.AddScoped<CatService>(), and ASP.NET Core passes them to the constructors that ask for them."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "[ApiController]\n[Route(\"api/cats\")]\npublic class CatsController : ControllerBase\n{\n    [HttpGet(\"{id:int}\")]\n    public ActionResult<Cat> Get(int id) => ...;\n}\n\nWhich request calls Get?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "GET /api/cats/7"
+          },
+          {
+            "id": "b",
+            "text": "POST /api/cats/7"
+          },
+          {
+            "id": "c",
+            "text": "GET /cats/7"
+          },
+          {
+            "id": "d",
+            "text": "GET /api/cats/seven"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The controller's route (api/cats) and the action's template ({id:int}) combine into GET /api/cats/{id}. The :int constraint rejects \"seven\", and POST does not match [HttpGet]."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why must app.UseAuthentication() come before app.UseAuthorization() in Program.cs?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Authorization needs to know who the user is, and authentication is what finds out"
+          },
+          {
+            "id": "b",
+            "text": "They are alphabetical"
+          },
+          {
+            "id": "c",
+            "text": "The order of middleware does not matter"
+          },
+          {
+            "id": "d",
+            "text": "Authentication is slower, so it should run first"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "Middleware run in the order they are added. Authentication reads the session cookie or token and sets the user; authorization then checks what that user is allowed to do."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "A service is registered with builder.Services.AddScoped<CartService>(). How many instances are created?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "One per HTTP request, shared by everything that handles that request"
+          },
+          {
+            "id": "b",
+            "text": "One for the whole application"
+          },
+          {
+            "id": "c",
+            "text": "A new one every time it is asked for"
+          },
+          {
+            "id": "d",
+            "text": "One per signed-in user"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "The three lifetimes are Transient (new each time), Scoped (one per request) and Singleton (one for the application). Database contexts are typically scoped."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What does the [ApiController] attribute give a controller?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "An automatic 400 response when the request is invalid"
+          },
+          {
+            "id": "b",
+            "text": "Complex parameters read from the JSON body without writing [FromBody]"
+          },
+          {
+            "id": "c",
+            "text": "Every action requires a signed-in user"
+          },
+          {
+            "id": "d",
+            "text": "A database table for the controller"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b"
+        ],
+        "explanation": "[ApiController] turns on API conventions such as automatic validation responses and binding inference. Requiring sign-in is the job of [Authorize]."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each ASP.NET Core concept with its role.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Middleware",
+            "definition": "A step of the pipeline that every request goes through"
+          },
+          {
+            "id": "p2",
+            "concept": "Routing",
+            "definition": "Picks the endpoint from the HTTP method and the URL"
+          },
+          {
+            "id": "p3",
+            "concept": "Controller",
+            "definition": "A class whose actions handle requests"
+          },
+          {
+            "id": "p4",
+            "concept": "Dependency injection",
+            "definition": "Creates services and passes them to the constructors that need them"
+          },
+          {
+            "id": "p5",
+            "concept": "Kestrel",
+            "definition": "The web server built into ASP.NET Core"
+          },
+          {
+            "id": "p6",
+            "concept": "appsettings.json",
+            "definition": "The configuration file of the application"
+          }
+        ]
+      }
+    }
+  ]
+}
