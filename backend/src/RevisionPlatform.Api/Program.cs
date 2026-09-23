@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RevisionPlatform.Api.Activities;
 using RevisionPlatform.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +11,8 @@ var connectionString = builder.Configuration.GetConnectionString("Default")
 builder.Services.AddDbContext<AppDbContext>(options => options
     .UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4)))
     .UseSnakeCaseNamingConvention());
+
+builder.Services.AddScoped<ActivityService>();
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();

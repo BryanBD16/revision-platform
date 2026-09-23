@@ -2,8 +2,9 @@
 
 A web application for reviewing course material through revision
 activities. See [docs/requirements.md](docs/requirements.md) for the
-current requirements and [docs/architecture.md](docs/architecture.md)
-for the architectural decisions.
+current requirements, [docs/architecture.md](docs/architecture.md)
+for the architectural decisions and [docs/api.md](docs/api.md) for the
+REST API.
 
 ## Prerequisites
 
