@@ -53,9 +53,9 @@ public class ThemesEndpointTests(ApiFactory factory) : IAsyncLifetime
 
     private async Task<ActivityResponse> CreateAsync(List<string?> themes, List<string?> courses)
     {
-        var reading = new CreateModuleRequest("reading", JsonSerializer.SerializeToElement(new { body = "Text" }));
+        var reading = new SaveModuleRequest("reading", JsonSerializer.SerializeToElement(new { body = "Text" }));
         var response = await _client.PostAsJsonAsync("/api/activities",
-            new CreateActivityRequest("Title", null, themes, [reading], courses));
+            new SaveActivityRequest("Title", null, themes, [reading], courses));
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<ActivityResponse>())!;
     }

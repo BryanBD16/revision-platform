@@ -4,11 +4,13 @@ namespace RevisionPlatform.Api.Activities;
 
 // Request properties are nullable so that missing values reach ActivityValidator
 // instead of being rejected by the framework with a different error format.
-public record CreateActivityRequest(
+
+/// <summary>The body of POST /api/activities (create) and PUT /api/activities/{id} (update).</summary>
+public record SaveActivityRequest(
     string? Title,
     string? Description,
     List<string?>? Themes,
-    List<CreateModuleRequest?>? Modules,
+    List<SaveModuleRequest?>? Modules,
     List<string?>? Courses = null,
     string? Visibility = null);
 
@@ -25,7 +27,7 @@ public record ActivityListRequest(
     string? Visibility = null);
 
 /// <summary>A module to create; its position is its index in the request.</summary>
-public record CreateModuleRequest(string? Type, JsonElement? Content);
+public record SaveModuleRequest(string? Type, JsonElement? Content);
 
 /// <summary>A topic or a course.</summary>
 public record ThemeResponse(int Id, string Name);

@@ -183,13 +183,13 @@ public class ActivityVisibilityTests(ApiFactory factory) : IAsyncLifetime
             .ExecuteUpdateAsync(set => set.SetProperty(a => a.OwnerId, (int?)null)));
     }
 
-    private static CreateActivityRequest Request(
+    private static SaveActivityRequest Request(
         string title, string? visibility = null, List<string?>? themes = null, List<string?>? courses = null) =>
         new(title, null, themes ?? ["Biology"],
-            [new CreateModuleRequest("reading", JsonSerializer.SerializeToElement(new { body = "Text" }))],
+            [new SaveModuleRequest("reading", JsonSerializer.SerializeToElement(new { body = "Text" }))],
             courses, visibility);
 
-    private static async Task<ActivityResponse> CreateAsync(HttpClient client, CreateActivityRequest request)
+    private static async Task<ActivityResponse> CreateAsync(HttpClient client, SaveActivityRequest request)
     {
         var response = await client.PostAsJsonAsync("/api/activities", request);
         response.EnsureSuccessStatusCode();

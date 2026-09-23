@@ -68,10 +68,10 @@ public static class SeedCommand
         string file, ActivityValidator validator, out ValidatedActivity? activity)
     {
         activity = null;
-        CreateActivityRequest? request;
+        SaveActivityRequest? request;
         try
         {
-            request = JsonSerializer.Deserialize<CreateActivityRequest>(File.ReadAllText(file), JsonOptions);
+            request = JsonSerializer.Deserialize<SaveActivityRequest>(File.ReadAllText(file), JsonOptions);
         }
         catch (JsonException exception)
         {

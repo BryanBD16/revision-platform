@@ -37,7 +37,7 @@ public class ActivitiesController(
     /// <summary>Creates an activity: private by default, public only for the users allowed to publish.</summary>
     [Authorize]
     [HttpPost]
-    public async Task<ActionResult<ActivityResponse>> Create(CreateActivityRequest request)
+    public async Task<ActionResult<ActivityResponse>> Create(SaveActivityRequest request)
     {
         var validation = activityValidator.Validate(request);
         if (validation.Activity is null)

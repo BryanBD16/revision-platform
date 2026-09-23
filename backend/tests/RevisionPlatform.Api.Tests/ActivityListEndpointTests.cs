@@ -240,9 +240,9 @@ public class ActivityListEndpointTests(ApiFactory factory) : IAsyncLifetime
 
     private async Task<ActivityResponse> CreateAsync(string title, List<string?> themes, List<string?>? courses = null)
     {
-        var reading = new CreateModuleRequest("reading", JsonSerializer.SerializeToElement(new { body = "Text" }));
+        var reading = new SaveModuleRequest("reading", JsonSerializer.SerializeToElement(new { body = "Text" }));
         var response = await _client.PostAsJsonAsync("/api/activities",
-            new CreateActivityRequest(title, null, themes, [reading], courses));
+            new SaveActivityRequest(title, null, themes, [reading], courses));
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<ActivityResponse>())!;
     }

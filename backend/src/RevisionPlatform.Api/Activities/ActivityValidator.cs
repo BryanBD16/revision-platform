@@ -20,7 +20,7 @@ public record ActivityValidationResult(ValidatedActivity? Activity, Dictionary<s
 
 public class ActivityValidator(ModuleTypeRegistry moduleTypes)
 {
-    public ActivityValidationResult Validate(CreateActivityRequest request)
+    public ActivityValidationResult Validate(SaveActivityRequest request)
     {
         var errors = new Dictionary<string, string[]>();
 
@@ -94,7 +94,7 @@ public class ActivityValidator(ModuleTypeRegistry moduleTypes)
     }
 
     /// <summary>Validates each module with its module type and returns the normalized modules.</summary>
-    private List<ValidatedModule> ValidateModules(List<CreateModuleRequest?> modules, Dictionary<string, string[]> errors)
+    private List<ValidatedModule> ValidateModules(List<SaveModuleRequest?> modules, Dictionary<string, string[]> errors)
     {
         if (modules.Count == 0)
         {
