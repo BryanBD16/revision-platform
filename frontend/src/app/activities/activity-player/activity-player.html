@@ -1,0 +1,73 @@
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading…</p>
+  }
+  @case ('not-found') {
+    <p class="error">This activity does not exist.</p>
+    <a routerLink="/activities">← All activities</a>
+  }
+  @case ('error') {
+    <p class="error">The activity could not be loaded. Please try again later.</p>
+    <a routerLink="/activities">← All activities</a>
+  }
+  @case ('loaded') {
+    @if (activity(); as activity) {
+      <a [routerLink]="['/activities', activity.id]">← {{ activity.title }}</a>
+
+      @if (modules().length === 0) {
+        <p class="empty">This activity has no modules.</p>
+      } @else if (finished()) {
+        <section class="card completed">
+          <h2>Activity completed</h2>
+          @if (modules().length === 1) {
+            <p>You went through the module of “{{ activity.title }}”.</p>
+          } @else {
+            <p>You went through all {{ modules().length }} modules of “{{ activity.title }}”.</p>
+          }
+
+          @if (total(); as total) {
+            <p class="total-grade">
+              Total grade: <strong>{{ total.score }} / {{ total.maxScore }}</strong>
+              ({{ total.percentage }}%)
+            </p>
+          } @else {
+            <p class="meta">This activity has no graded modules.</p>
+          }
+
+          <table class="grades">
+            <thead>
+              <tr>
+                <th scope="col">Module</th>
+                <th scope="col">Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (module of modules(); track module.id; let i = $index) {
+                <tr>
+                  <td>{{ i + 1 }}. {{ moduleLabel(module.type) }}</td>
+                  <td>
+                    @if (results()[i]; as result) {
+                      {{ result.score }} / {{ result.maxScore }}
+                    } @else {
+                      <span class="meta">Not graded</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="actions">
+            <button type="button" class="button" (click)="restart()">Start again</button>
+            <a class="button-secondary" routerLink="/activities">Back to activities</a>
+          </div>
+        </section>
+      } @else if (currentModule(); as module) {
+        <p class="progress">Module {{ currentIndex() + 1 }} of {{ modules().length }}</p>
+        <progress [value]="currentIndex()" [max]="modules().length"></progress>
+        <section class="card">
+          <app-module-player-host [module]="module" (completed)="next($event)" />
+        </section>
+      }
+    }
+  }
+}

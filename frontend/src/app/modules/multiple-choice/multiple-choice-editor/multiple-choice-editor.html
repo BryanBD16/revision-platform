@@ -1,0 +1,79 @@
+<div [formGroup]="form()">
+  <div class="field">
+    <label [for]="id + '-question'">Question</label>
+    <textarea [id]="id + '-question'" rows="2" formControlName="question"></textarea>
+    @let question = form().controls.question;
+    @if (question.touched && question.hasError('required')) {
+      <p class="error">The question is required.</p>
+    }
+    @if (question.hasError('maxlength')) {
+      <p class="error">The question must be at most {{ limits.questionMaxLength }} characters.</p>
+    }
+  </div>
+
+  <fieldset class="field choices" formArrayName="choices">
+    <legend>Choices</legend>
+    <p class="hint">Check the correct answer. Check several if more than one is correct.</p>
+
+    @for (choice of choices.controls; track choice; let i = $index) {
+      <div class="choice-row" [formGroupName]="i">
+        <input
+          type="checkbox"
+          formControlName="correct"
+          [attr.aria-label]="'Choice ' + (i + 1) + ' is correct'"
+        />
+        <input
+          type="text"
+          formControlName="text"
+          [attr.aria-label]="'Choice ' + (i + 1)"
+          [placeholder]="'Choice ' + (i + 1)"
+        />
+        <button
+          type="button"
+          class="button-secondary"
+          (click)="removeChoice(i)"
+          [disabled]="choices.length <= limits.minChoices"
+          [attr.aria-label]="'Remove choice ' + (i + 1)"
+        >
+          Remove
+        </button>
+      </div>
+      @let text = choice.controls.text;
+      @if (text.touched && text.hasError('required')) {
+        <p class="error">Choice {{ i + 1 }} needs a text.</p>
+      }
+      @if (text.hasError('maxlength')) {
+        <p class="error">
+          Choice {{ i + 1 }} must be at most {{ limits.choiceTextMaxLength }} characters.
+        </p>
+      }
+    }
+
+    @if (choices.touched && choices.hasError('noCorrectChoice')) {
+      <p class="error">Mark at least one choice as correct.</p>
+    }
+
+    <div>
+      <button
+        type="button"
+        class="button-secondary"
+        (click)="addChoice()"
+        [disabled]="choices.length >= limits.maxChoices"
+      >
+        Add choice
+      </button>
+    </div>
+  </fieldset>
+
+  <div class="field">
+    <label [for]="id + '-explanation'">
+      Explanation <span class="optional">(optional, shown after answering)</span>
+    </label>
+    <textarea [id]="id + '-explanation'" rows="2" formControlName="explanation"></textarea>
+    @if (form().controls.explanation.hasError('maxlength')) {
+      <p class="error">
+        The explanation must be at most {{ limits.explanationMaxLength }} characters.
+      </p>
+    }
+  </div>
+</div>

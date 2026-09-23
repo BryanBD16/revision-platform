@@ -1,0 +1,27 @@
+# Local development services.
+# Only the database runs in Docker; the backend and frontend run on the host.
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env (see .env.example)}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?Set MYSQL_DATABASE in .env (see .env.example)}
+      MYSQL_USER: ${MYSQL_USER:?Set MYSQL_USER in .env (see .env.example)}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env (see .env.example)}
+    ports:
+      # Bound to localhost only; 3307 avoids clashing with a MySQL server on the host.
+      - "127.0.0.1:${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Scripts here run only once, when the data volume is first initialized.
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  mysql-data:

@@ -1,0 +1,44 @@
+<fieldset class="multiple-choice" [disabled]="answered()">
+  <legend class="question">{{ content().question }}</legend>
+  @if (severalAnswers()) {
+    <p class="hint">Select all the correct answers.</p>
+  }
+
+  @for (choice of choices(); track choice.id) {
+    @let isSelected = selected().has(choice.id);
+    @let isCorrect = isCorrectChoice(choice.id);
+    <label
+      class="choice"
+      [class.choice-correct]="answered() && isCorrect"
+      [class.choice-wrong]="answered() && isSelected && !isCorrect"
+    >
+      <input
+        [type]="severalAnswers() ? 'checkbox' : 'radio'"
+        [name]="name"
+        [checked]="isSelected"
+        (change)="toggle(choice.id)"
+      />
+      <span>{{ choice.text }}</span>
+      @if (answered() && isCorrect) {
+        <span class="choice-tag">Correct answer</span>
+      }
+      @if (answered() && isSelected) {
+        <span class="choice-tag">Your answer</span>
+      }
+    </label>
+  }
+</fieldset>
+
+@if (!answered()) {
+  <button type="button" class="button" (click)="checkAnswer()" [disabled]="selected().size === 0">
+    Check answer
+  </button>
+} @else {
+  <p class="feedback" [class.feedback-correct]="correct()" [class.feedback-wrong]="!correct()">
+    {{ correct() ? 'Correct!' : 'Incorrect.' }}
+  </p>
+  @if (content().explanation) {
+    <p class="explanation">{{ content().explanation }}</p>
+  }
+  <button type="button" class="button" (click)="continue()">Continue</button>
+}

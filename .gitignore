@@ -1,0 +1,6 @@
+# Local environment (credentials)
+.env
+
+# .NET build output
+bin/
+obj/

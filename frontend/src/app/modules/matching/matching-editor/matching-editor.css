@@ -1,0 +1,26 @@
+.pairs {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+}
+
+.pairs legend {
+  font-weight: 600;
+}
+
+.pair-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+@media (max-width: 36rem) {
+  .pair-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .pair-row textarea {
+    grid-column: 1;
+  }
+}

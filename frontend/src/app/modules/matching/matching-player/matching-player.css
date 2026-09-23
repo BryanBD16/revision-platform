@@ -1,0 +1,56 @@
+.instructions {
+  font-weight: 600;
+}
+
+.pairs {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.pair {
+  display: grid;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.pair-correct {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.pair-wrong {
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+.concept {
+  font-weight: 600;
+}
+
+select {
+  width: 100%;
+  padding: 0.375rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.pair-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.correction {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.feedback {
+  font-weight: 600;
+}

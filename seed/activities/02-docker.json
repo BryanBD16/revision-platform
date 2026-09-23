@@ -1,0 +1,301 @@
+{
+  "title": "Docker and the development database",
+  "description": "What Docker is, and how the project uses it to run MySQL during development.",
+  "themes": [
+    "revision-plateforme"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "What is Docker?",
+        "body": "Docker runs applications in containers. A container is an isolated process with its own filesystem, network and environment variables, created from an image.\n\nAn image is a read-only template: a filesystem snapshot with everything a program needs (the program, its libraries and a default configuration). Images are identified by a name and a tag, like mysql:8.4, and are downloaded from a registry such as Docker Hub the first time they are used. A container is an instance of an image, running or stopped; several containers can be created from the same image.\n\nContainers are not virtual machines. A virtual machine emulates hardware and boots a whole operating system with its own kernel. Containers share the kernel of the host and only isolate processes, so they start in seconds and use much less memory.\n\nThe files a container writes are lost when the container is removed. Data that must survive is stored outside of it, either in a volume (storage managed by Docker) or in a bind mount (a folder of the host mounted into the container).\n\nA container has its own network. To reach a service inside it from the host, a port is published: a port of the host is forwarded to a port of the container.\n\nDocker Compose describes one or more containers, called services, in a YAML file (their image, environment variables, ports, volumes and health checks) and starts them with a single command, docker compose up. The containers are actually run by Docker Engine, a background service (daemon). The docker command talks to it through a socket file, which is why a user must belong to the docker group to use Docker without sudo."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "What is the difference between an image and a container?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "An image is a read-only template; a container is an instance created from it."
+          },
+          {
+            "id": "c2",
+            "text": "An image is a container that has been stopped."
+          },
+          {
+            "id": "c3",
+            "text": "A container is the file downloaded from Docker Hub; an image is its configuration."
+          },
+          {
+            "id": "c4",
+            "text": "They are two names for the same thing."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The same image (mysql:8.4) can be used to create many containers. Stopping a container does not turn it into an image: it is still a container, just not running."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why do containers start much faster than virtual machines?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "They share the kernel of the host and only isolate processes, instead of booting a whole operating system."
+          },
+          {
+            "id": "c2",
+            "text": "They are compiled into machine code in advance."
+          },
+          {
+            "id": "c3",
+            "text": "They keep running in the background even when they are stopped."
+          },
+          {
+            "id": "c4",
+            "text": "They do not have their own filesystem."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "Starting a container is close to starting a process with some isolation. A virtual machine must emulate hardware and boot a full operating system with its own kernel."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "How the project uses Docker",
+        "body": "Only MySQL runs in Docker. The backend and the frontend run directly on the host (dotnet watch and ng serve) so that code changes reload immediately and debuggers work normally.\n\nThe service, called db, is described in compose.yaml:\n- image: mysql:8.4. Pinning the version means every developer, and later the server, runs the same MySQL.\n- environment: MYSQL_ROOT_PASSWORD, MYSQL_DATABASE, MYSQL_USER and MYSQL_PASSWORD, read from the .env file. The syntax ${MYSQL_PASSWORD:?message} makes Compose stop with that message when the variable is missing. The .env file is not committed; .env.example documents the variables.\n- ports: \"127.0.0.1:3307:3306\". MySQL listens on port 3306 inside the container. It is published on port 3307 of the host, because a MySQL server may already use 3306 on the developer's machine, and only on 127.0.0.1, so other computers on the network cannot reach it.\n- volumes: the named volume mysql-data is mounted at /var/lib/mysql, where MySQL keeps its data, so the data survives stopping and recreating the container. The folder docker/mysql/init is bind-mounted, read-only, at /docker-entrypoint-initdb.d.\n- healthcheck: every 5 seconds, Docker runs mysqladmin ping inside the container. The container is \"healthy\" only once MySQL accepts connections.\n\nWhen the MySQL container starts with an empty data volume, its entrypoint initializes the server: it creates the database and the user given by the environment variables, then runs the scripts found in /docker-entrypoint-initdb.d. The project's script creates revision_platform_test and gives the application user access to it. These scripts only run during this first initialization: changing them has no effect on an existing volume until the data is deleted with make db-reset.\n\nThe Makefile wraps the Docker commands:\n- make db-up runs docker compose up -d --wait db: start in the background and wait until the container is healthy.\n- make db-down stops and removes the container but keeps the volume.\n- make db-reset also removes the volume, and therefore all the data.\n- make db-logs follows the MySQL logs, and make db-shell opens a MySQL prompt inside the container.\n\nFor deployment, the backend and the frontend will later get their own Dockerfiles, recipes that build images, so the same images can run on a cloud server."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which statements about the port mapping \"127.0.0.1:3307:3306\" are true?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "The backend connects to port 3307 on the host."
+          },
+          {
+            "id": "c2",
+            "text": "MySQL still listens on port 3306 inside the container."
+          },
+          {
+            "id": "c3",
+            "text": "Other computers on the network cannot connect to this MySQL."
+          },
+          {
+            "id": "c4",
+            "text": "MySQL listens on port 3307 inside the container."
+          },
+          {
+            "id": "c5",
+            "text": "Port 3307 is required by MySQL 8.4."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1",
+          "c2",
+          "c3"
+        ],
+        "explanation": "The format is host_ip:host_port:container_port. Binding to 127.0.0.1 publishes the port on the loopback interface only, and 3307 was chosen to avoid a MySQL server already using 3306 on the host."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "You run make db-down, then make db-up. What happened to the activities you created before?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "They are still there: the data is in the mysql-data volume, which db-down keeps."
+          },
+          {
+            "id": "c2",
+            "text": "They are lost, because db-up creates a new container."
+          },
+          {
+            "id": "c3",
+            "text": "They are recreated from the seed files."
+          },
+          {
+            "id": "c4",
+            "text": "They are lost unless you run make db-migrate."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The new container mounts the same volume at /var/lib/mysql and finds the existing data. Only make db-reset (docker compose down --volumes) deletes it."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "You change the SQL in docker/mysql/init/01-create-test-database.sh, then run make db-down and make db-up. Why does nothing change?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "The init scripts only run when the data volume is empty, during the first initialization."
+          },
+          {
+            "id": "c2",
+            "text": "The folder is mounted read-only, so the new version is ignored."
+          },
+          {
+            "id": "c3",
+            "text": "Compose copied the scripts into the image when it was first downloaded."
+          },
+          {
+            "id": "c4",
+            "text": "The script must be made executable before MySQL runs it."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "The volume still contains an initialized database, so the entrypoint skips the initialization. To run the scripts again, the data must be deleted with make db-reset, then make db-up."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why does make db-up call docker compose up with the --wait option?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "To return only once the health check says MySQL accepts connections, so the next commands do not fail."
+          },
+          {
+            "id": "c2",
+            "text": "To wait until the image has been downloaded, without starting it."
+          },
+          {
+            "id": "c3",
+            "text": "To stay attached to the container and show its logs."
+          },
+          {
+            "id": "c4",
+            "text": "To wait until the backend has started."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "A started container is not necessarily ready: MySQL needs a few seconds (more on the first initialization). With --wait, commands like make db-migrate or make backend-test can run right after db-up."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "docker compose stops with \"required variable MYSQL_PASSWORD is missing a value\". What is the most likely cause?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "There is no .env file, or it does not define MYSQL_PASSWORD. It should be created from .env.example."
+          },
+          {
+            "id": "c2",
+            "text": "The mysql:8.4 image does not support passwords."
+          },
+          {
+            "id": "c3",
+            "text": "The mysql-data volume is corrupted."
+          },
+          {
+            "id": "c4",
+            "text": "The user is not in the docker group."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "compose.yaml uses ${MYSQL_PASSWORD:?...}, which makes a missing variable an error instead of silently using an empty password. The values come from .env, which is not committed."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Why do the backend and the frontend run on the host rather than in containers during development?",
+        "choices": [
+          {
+            "id": "c1",
+            "text": "Hot reload (dotnet watch, ng serve) and debuggers work best directly on the host, giving faster feedback."
+          },
+          {
+            "id": "c2",
+            "text": "Docker cannot run .NET applications."
+          },
+          {
+            "id": "c3",
+            "text": "A container cannot connect to MySQL in another container."
+          },
+          {
+            "id": "c4",
+            "text": "Angular applications cannot be served from a container."
+          }
+        ],
+        "correctChoiceIds": [
+          "c1"
+        ],
+        "explanation": "All of these can run in containers, and they will for deployment. During development, the priority is a fast edit-and-reload loop, and only the database benefits from being isolated and version-pinned."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each Docker concept with its definition.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "Image",
+            "definition": "Read-only template containing a program and everything it needs, like mysql:8.4."
+          },
+          {
+            "id": "p2",
+            "concept": "Container",
+            "definition": "Isolated process created from an image, with its own filesystem and network."
+          },
+          {
+            "id": "p3",
+            "concept": "Volume",
+            "definition": "Storage managed by Docker that keeps data when containers are removed, like mysql-data."
+          },
+          {
+            "id": "p4",
+            "concept": "Bind mount",
+            "definition": "Folder of the host made visible inside a container, like docker/mysql/init."
+          },
+          {
+            "id": "p5",
+            "concept": "Published port",
+            "definition": "Port of the host forwarded to a port of a container."
+          },
+          {
+            "id": "p6",
+            "concept": "Health check",
+            "definition": "Command run regularly inside a container to know if the service is ready."
+          },
+          {
+            "id": "p7",
+            "concept": "Docker Compose",
+            "definition": "Tool that describes services in a YAML file and starts them together."
+          },
+          {
+            "id": "p8",
+            "concept": "Registry",
+            "definition": "Server from which images are downloaded, such as Docker Hub."
+          }
+        ]
+      }
+    }
+  ]
+}

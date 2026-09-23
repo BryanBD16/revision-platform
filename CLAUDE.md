@@ -11,35 +11,18 @@ maintainable, testable, and extensible.
 The project is also used as a learning project for professional
 software development and AI-assisted development with Claude Code.
 
-## Initial Goal
+## Core Concept
 
-The first iteration should allow a user to:
+A revision activity is an ordered collection of revision modules.
 
-1. Create a revision activity.
-2. View existing revision activities.
-3. Open a revision activity and complete it.
-4. Support multiple types of revision modules within an activity.
+Each module represents a specific learning interaction and has a
+defined module type.
 
-A revision activity is composed of an ordered series of modules.
+The module system must allow new module types to be introduced
+without requiring major changes to unrelated existing functionality.
 
-The initial module types should include:
-
-- Reading material
-- Multiple-choice questions
-- Concept-to-definition matching
-
-The architecture must make it possible to add new module types later
-without requiring major changes to existing functionality.
-
-Examples of future module types could include:
-
-- True/false questions
-- Short-answer questions
-- Flashcards
-- Ordering exercises
-- Fill-in-the-blank exercises
-
-Do not implement these future module types unless explicitly requested.
+Module-specific behavior should remain isolated while all modules
+follow a consistent application-level contract where appropriate.
 
 ## Technology Stack
 

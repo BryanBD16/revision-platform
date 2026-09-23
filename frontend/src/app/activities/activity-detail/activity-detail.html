@@ -1,0 +1,35 @@
+<a routerLink="/activities">← All activities</a>
+
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading…</p>
+  }
+  @case ('not-found') {
+    <p class="error">This activity does not exist.</p>
+  }
+  @case ('error') {
+    <p class="error">The activity could not be loaded. Please try again later.</p>
+  }
+  @case ('loaded') {
+    @if (activity(); as activity) {
+      <h2>{{ activity.title }}</h2>
+      <ul class="themes">
+        @for (theme of activity.themes; track theme.id) {
+          <li class="theme">{{ theme.name }}</li>
+        }
+      </ul>
+      @if (activity.description) {
+        <p class="description">{{ activity.description }}</p>
+      }
+      <p class="meta">
+        {{ activity.modules.length }} {{ activity.modules.length === 1 ? 'module' : 'modules' }}
+        · Created {{ activity.createdAt | date: 'medium' }}
+      </p>
+      @if (activity.modules.length > 0) {
+        <p>
+          <a class="button" [routerLink]="['/activities', activity.id, 'play']">Start activity</a>
+        </p>
+      }
+    }
+  }
+}
