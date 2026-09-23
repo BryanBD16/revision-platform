@@ -38,6 +38,15 @@
     }
   </div>
 
+  <div class="field">
+    <label for="courses">Courses <span class="optional">(optional)</span></label>
+    <input id="courses" type="text" formControlName="courses" placeholder="BIO 101, BIO 201" />
+    <p class="hint">Separate courses with commas. Existing courses are reused.</p>
+    @if (form.controls.courses.hasError('courseTooLong')) {
+      <p class="error">Course names must be at most {{ limits.themeNameMaxLength }} characters.</p>
+    }
+  </div>
+
   <fieldset class="modules">
     <legend>Modules</legend>
 

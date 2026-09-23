@@ -63,6 +63,25 @@ describe('ActivityCreate', () => {
     http.expectNone('/api/activities');
   });
 
+  it('does not require a course', async () => {
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    fillActivity();
+    await addReadingModule('Text');
+
+    await submit();
+
+    const request = http.expectOne('/api/activities');
+    expect(request.request.body.courses).toEqual([]);
+    request.flush({ id: 1 });
+  });
+
+  it('rejects a course name that is too long', async () => {
+    type('#courses', 'a'.repeat(101));
+    await fixture.whenStable();
+
+    expect(element.textContent).toContain('Course names must be at most 100 characters.');
+  });
+
   it('validates the content of each module', async () => {
     fillActivity();
     await addReadingModule('   ');
@@ -78,6 +97,7 @@ describe('ActivityCreate', () => {
     type('#title', '  Cell biology ');
     type('#description', '  ');
     type('#themes', 'Biology, cells, , biology');
+    type('#courses', ' BIO 101, bio 101 ');
     await addReadingModule('  Some text ');
 
     await submit();
@@ -87,6 +107,7 @@ describe('ActivityCreate', () => {
       title: 'Cell biology',
       description: null,
       themes: ['Biology', 'cells'],
+      courses: ['BIO 101'],
       modules: [{ type: 'reading', content: { title: null, body: 'Some text' } }],
     });
     request.flush({ id: 5 });

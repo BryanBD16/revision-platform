@@ -1,0 +1,24 @@
+<dl class="activity-themes">
+  @if (courses().length > 0) {
+    <div class="row">
+      <dt>{{ courses().length === 1 ? 'Course' : 'Courses' }}</dt>
+      <dd>
+        <ul class="themes">
+          @for (course of courses(); track course.id) {
+            <li class="theme course">{{ course.name }}</li>
+          }
+        </ul>
+      </dd>
+    </div>
+  }
+  <div class="row">
+    <dt>Themes</dt>
+    <dd>
+      <ul class="themes">
+        @for (theme of themes(); track theme.id) {
+          <li class="theme">{{ theme.name }}</li>
+        }
+      </ul>
+    </dd>
+  </div>
+</dl>

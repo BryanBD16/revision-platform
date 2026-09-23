@@ -31,6 +31,7 @@ describe('ActivityDetail', () => {
       title: 'Cell biology',
       description: 'Chapter 3',
       themes: [{ id: 1, name: 'Biology' }],
+      courses: [{ id: 2, name: 'BIO 101' }],
       modules: [{ id: 1, position: 0, type: 'reading', content: { title: null, body: 'Text' } }],
       createdAt: '2026-09-23T03:06:18Z',
       updatedAt: '2026-09-23T03:06:18Z',
@@ -40,6 +41,9 @@ describe('ActivityDetail', () => {
     expect(text()).toContain('Cell biology');
     expect(text()).toContain('Chapter 3');
     expect(text()).toContain('Biology');
+    const themes = (fixture.nativeElement as HTMLElement).querySelector('app-activity-themes');
+    expect(themes?.textContent).toContain('Course');
+    expect(themes?.textContent).toContain('BIO 101');
     expect(text()).toContain('1 module');
     const start = (fixture.nativeElement as HTMLElement).querySelector('a.button');
     expect(start?.textContent).toContain('Start activity');

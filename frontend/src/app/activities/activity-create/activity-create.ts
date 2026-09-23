@@ -33,6 +33,13 @@ function validThemeNames(control: AbstractControl<string>): ValidationErrors | n
   return null;
 }
 
+function validCourseNames(control: AbstractControl<string>): ValidationErrors | null {
+  const names = parseThemeNames(control.value);
+  return names.some((name) => name.length > ACTIVITY_LIMITS.themeNameMaxLength)
+    ? { courseTooLong: true }
+    : null;
+}
+
 function atLeastOne(control: AbstractControl<unknown[]>): ValidationErrors | null {
   return control.value.length > 0 ? null : { required: true };
 }
@@ -59,6 +66,7 @@ export class ActivityCreate {
       validators: [Validators.maxLength(ACTIVITY_LIMITS.descriptionMaxLength)],
     }),
     themes: new FormControl('', { nonNullable: true, validators: [validThemeNames] }),
+    courses: new FormControl('', { nonNullable: true, validators: [validCourseNames] }),
     modules: new FormArray<ModuleForm>([], { validators: [atLeastOne] }),
   });
 
@@ -103,7 +111,7 @@ export class ActivityCreate {
       return;
     }
 
-    const { title, description, themes } = this.form.getRawValue();
+    const { title, description, themes, courses } = this.form.getRawValue();
     this.submitting.set(true);
     this.serverErrors.set([]);
 
@@ -112,6 +120,7 @@ export class ActivityCreate {
         title: title.trim(),
         description: description.trim() || null,
         themes: parseThemeNames(themes),
+        courses: parseThemeNames(courses),
         modules: this.modules.controls.map((module) => {
           const type = module.controls.type.value;
           return { type, content: findModuleType(type)!.toContent(module.controls.content) };

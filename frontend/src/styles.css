@@ -11,6 +11,8 @@
   --color-success-bg: #dafbe1;
   --color-theme-bg: #ddf4ff;
   --color-theme-text: #0550ae;
+  --color-course-bg: #fbefff;
+  --color-course-text: #6639ba;
 }
 
 *,
@@ -113,6 +115,11 @@ a {
   font-size: 0.875rem;
 }
 
+.theme.course {
+  background: var(--color-course-bg);
+  color: var(--color-course-text);
+}
+
 .meta,
 .hint,
 .optional,
@@ -171,6 +178,47 @@ a {
 .button-secondary:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+a.button-secondary {
+  text-decoration: none;
+}
+
+.filters {
+  margin-bottom: 1rem;
+}
+
+.filter-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0 1rem;
+}
+
+.filter-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.remove-theme {
+  margin-left: 0.25rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
 }
 
 .modules {

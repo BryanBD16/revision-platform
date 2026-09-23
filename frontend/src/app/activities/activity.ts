@@ -1,3 +1,4 @@
+/** A theme or a course. */
 export interface Theme {
   id: number;
   name: string;
@@ -17,9 +18,29 @@ export interface ActivitySummary {
   title: string;
   description: string | null;
   themes: Theme[];
+  courses: Theme[];
   moduleCount: number;
   createdAt: string;
   updatedAt: string;
+}
+
+/** One page of the activity list. */
+export interface ActivityPage {
+  items: ActivitySummary[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+}
+
+/**
+ * What the activity list shows. Each filter that is set narrows the result
+ * (see docs/api.md). The server uses its default page size.
+ */
+export interface ActivityListQuery {
+  page: number;
+  title: string | null;
+  courseId: number | null;
+  themeIds: number[];
 }
 
 export interface Activity {
@@ -27,6 +48,7 @@ export interface Activity {
   title: string;
   description: string | null;
   themes: Theme[];
+  courses: Theme[];
   modules: RevisionModule[];
   createdAt: string;
   updatedAt: string;
@@ -36,6 +58,7 @@ export interface CreateActivityRequest {
   title: string;
   description: string | null;
   themes: string[];
+  courses: string[];
   modules: { type: string; content: unknown }[];
 }
 

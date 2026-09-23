@@ -75,7 +75,7 @@ No database migration is needed: the content is stored as JSON.
 
 ```
 revision_activities
-  id, title, description, created_at, updated_at
+  id, title, description, created_at (indexed), updated_at
 
 revision_modules
   id, activity_id -> revision_activities (cascade delete),
@@ -83,7 +83,8 @@ revision_modules
   created_at, updated_at
 
 themes
-  id, name (unique, case-insensitive), created_at
+  id, name (case-insensitive), kind ('topic' or 'course'),
+  unique (kind, name), created_at
 
 activity_themes
   activity_id -> revision_activities (cascade delete),
@@ -101,6 +102,11 @@ activity_themes
   Themes are typed freely when creating an activity: an existing theme
   with the same name (ignoring case) is reused, otherwise it is created.
   There is no separate theme management.
+- A course is a theme with the kind `course` (the others are `topic`).
+  An activity can be part of any number of courses, and courses do not
+  count toward the required theme. Storing both in one table lets them
+  share the reuse logic and the join table; the API still exposes them
+  as separate `themes` and `courses` lists with their own endpoints.
 - The schema changes only through EF Core migrations
   (`backend/src/RevisionPlatform.Api/Data/Migrations`). Tables and
   columns use `snake_case` (EFCore.NamingConventions); C# code uses the
@@ -110,6 +116,24 @@ activity_themes
   while "Resume" and "Résumé" are different.
 - The backend reads its connection string from `ConnectionStrings:Default`.
   In development the Makefile builds it from `.env`.
+
+### Listing and filtering activities
+
+The activity list is paginated and filtered by the server
+(`GET /api/activities`, see `docs/api.md`), because the list will grow
+and future personal activities must never be sent to other users.
+
+- **Backend:** `ActivityListValidator` checks the query parameters and
+  applies the defaults. `ActivityService` adds each filter that is set
+  to the EF Core query (title contains, course, every selected theme),
+  then runs a count query and a page query sorted by `created_at`, then
+  `id`, so pages are stable.
+- **Frontend:** the URL query parameters (`page`, `title`, `courseId`,
+  `themeIds`) are the state of the list page, so reloading, the back
+  button and shared links keep the filters. `ActivityFilters` emits a new
+  query (always on page 1) and `ActivityList` navigates to it; the list
+  reloads when the URL changes. The course and theme fields use a native
+  `<datalist>` for text search in the existing names.
 
 ### Completing an activity
 

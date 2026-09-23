@@ -10,6 +10,20 @@ endpoints and can call them.
 
 `GET /api/health` returns `200` with the text `Healthy`.
 
+## Themes and courses
+
+Themes (what an activity is about) and courses (where it is used) are
+created with activities (see `POST /api/activities`). They are stored in
+the same table but have separate ids and lists.
+
+### `GET /api/themes`
+
+Returns all themes, sorted by name: `[ { "id": 1, "name": "Biology" } ]`.
+
+### `GET /api/courses`
+
+Returns all courses, sorted by name, in the same format.
+
 ## Revision activities
 
 ### Activity summary (list)
@@ -20,6 +34,7 @@ endpoints and can call them.
   "title": "Cell biology",
   "description": "Chapter 3",
   "themes": [ { "id": 1, "name": "Biology" }, { "id": 2, "name": "Cells" } ],
+  "courses": [ { "id": 3, "name": "BIO 101" } ],
   "moduleCount": 2,
   "createdAt": "2026-09-23T03:06:18.742923Z",
   "updatedAt": "2026-09-23T03:06:18.742923Z"
@@ -34,6 +49,7 @@ endpoints and can call them.
   "title": "Cell biology",
   "description": "Chapter 3",
   "themes": [ { "id": 1, "name": "Biology" } ],
+  "courses": [ { "id": 3, "name": "BIO 101" } ],
   "modules": [
     { "id": 1, "position": 0, "type": "reading", "content": { "title": "Introduction", "body": "..." } }
   ],
@@ -42,13 +58,48 @@ endpoints and can call them.
 }
 ```
 
-Themes are sorted by name. Modules are sorted by `position` (starting at
+Themes and courses are sorted by name. Modules are sorted by `position` (starting at
 0). `description` can be `null`. The structure of `content` depends on
 the module `type` (see [Module types](#module-types)).
 
 ### `GET /api/activities`
 
-Returns all activities as summaries, newest first.
+Returns one page of the activity summaries that match the filters,
+newest first.
+
+| Parameter  | Default | Rules              |
+|------------|---------|--------------------|
+| `page`     | `1`     | at least 1         |
+| `pageSize` | `20`    | between 1 and 100  |
+| `title`    | none    | at most 200 characters |
+| `courseId` | none    | a course id        |
+| `themeIds` | none    | theme ids, repeated: `themeIds=1&themeIds=4` (at most 20) |
+
+Each filter that is set narrows the result; an activity is listed only if
+it matches all of them:
+
+- `title`: the title contains this text, ignoring case and accents.
+  Surrounding spaces are removed and a blank value is ignored.
+- `courseId`: the activity is part of this course.
+- `themeIds`: the activity has **all** these themes.
+
+A course id is not a theme id and the reverse: an unknown id, or the id
+of a theme passed as `courseId`, matches no activity.
+
+Example: `GET /api/activities?title=cell&courseId=3&themeIds=1&page=2`
+
+```json
+{
+  "items": [ /* activity summaries */ ],
+  "page": 2,
+  "pageSize": 20,
+  "totalCount": 45
+}
+```
+
+`totalCount` is the number of activities on all pages. A page after the
+last one returns an empty `items` list. An invalid parameter returns
+`400` with the validation errors keyed by parameter name.
 
 ### `GET /api/activities/{id}`
 
@@ -64,6 +115,7 @@ activity and a `Location` header.
   "title": "Cell biology",
   "description": "Chapter 3",
   "themes": ["Biology", "Cells"],
+  "courses": ["BIO 101"],
   "modules": [
     { "type": "reading", "content": { "title": "Introduction", "body": "..." } }
   ]
@@ -75,6 +127,9 @@ activity and a `Location` header.
 - `themes`: at least one name, each non-blank and at most 100 characters.
   An existing theme with the same name, ignoring case, is reused (keeping
   its original spelling). Duplicate names in the request are merged.
+- `courses`: optional, the courses the activity is part of (any number).
+  Same rules as `themes` for each name. Courses do not count as themes:
+  a course and a theme can have the same name and are still different.
 - `modules`: at least one module. Each module needs a known `type` and a
   `content` that is valid for that type. Modules are stored in the order
   of the list.

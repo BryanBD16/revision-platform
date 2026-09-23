@@ -9,6 +9,7 @@ public record ValidatedActivity(
     string Title,
     string? Description,
     IReadOnlyList<string> Themes,
+    IReadOnlyList<string> Courses,
     IReadOnlyList<ValidatedModule> Modules);
 
 public record ValidatedModule(string Type, JsonElement Content);
@@ -39,7 +40,14 @@ public class ActivityValidator(ModuleTypeRegistry moduleTypes)
                 [$"The description must be at most {RevisionActivity.DescriptionMaxLength} characters."];
         }
 
-        var themes = ValidateThemes(request.Themes ?? [], errors);
+        var themes = ValidateNames(request.Themes ?? [], "themes", "Theme", errors);
+        if (themes.Count == 0 && !errors.ContainsKey("themes"))
+        {
+            errors["themes"] = ["At least one theme is required."];
+        }
+
+        // Courses are optional: an activity can be part of any number of courses.
+        var courses = ValidateNames(request.Courses ?? [], "courses", "Course", errors);
         var modules = ValidateModules(request.Modules ?? [], errors);
 
         if (errors.Count > 0)
@@ -51,27 +59,25 @@ public class ActivityValidator(ModuleTypeRegistry moduleTypes)
             title!,
             string.IsNullOrEmpty(description) ? null : description,
             themes,
+            courses,
             modules);
         return new ActivityValidationResult(activity, errors);
     }
 
-    /// <summary>Returns the trimmed theme names without duplicates (ignoring case).</summary>
-    private static List<string> ValidateThemes(List<string?> themes, Dictionary<string, string[]> errors)
+    /// <summary>Returns the trimmed theme or course names without duplicates (ignoring case).</summary>
+    private static List<string> ValidateNames(
+        List<string?> names, string field, string label, Dictionary<string, string[]> errors)
     {
-        if (themes.Count == 0)
+        if (names.Any(string.IsNullOrWhiteSpace))
         {
-            errors["themes"] = ["At least one theme is required."];
+            errors[field] = [$"{label} names cannot be empty."];
         }
-        else if (themes.Any(string.IsNullOrWhiteSpace))
+        else if (names.Any(name => name!.Trim().Length > Theme.NameMaxLength))
         {
-            errors["themes"] = ["Theme names cannot be empty."];
-        }
-        else if (themes.Any(name => name!.Trim().Length > Theme.NameMaxLength))
-        {
-            errors["themes"] = [$"Theme names must be at most {Theme.NameMaxLength} characters."];
+            errors[field] = [$"{label} names must be at most {Theme.NameMaxLength} characters."];
         }
 
-        return themes
+        return names
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Select(name => name!.Trim())
             .Distinct(StringComparer.InvariantCultureIgnoreCase)

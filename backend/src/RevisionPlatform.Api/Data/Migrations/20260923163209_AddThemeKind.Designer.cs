@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RevisionPlatform.Api.Data;
 
@@ -11,9 +12,11 @@ using RevisionPlatform.Api.Data;
 namespace RevisionPlatform.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260923163209_AddThemeKind")]
+    partial class AddThemeKind
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,9 +54,6 @@ namespace RevisionPlatform.Api.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_revision_activities");
-
-                    b.HasIndex("CreatedAt")
-                        .HasDatabaseName("ix_revision_activities_created_at");
 
                     b.ToTable("revision_activities", (string)null);
                 });

@@ -8,12 +8,18 @@ namespace RevisionPlatform.Api.Activities;
 
 public class ActivityService(AppDbContext db)
 {
-    public async Task<IReadOnlyList<ActivitySummaryResponse>> GetAllAsync()
+    /// <summary>Returns one page of the activities matching the query filters, newest first.</summary>
+    public async Task<ActivityPageResponse> GetPageAsync(ActivityListQuery query)
     {
-        var activities = await db.RevisionActivities
-            .AsNoTracking()
+        var matching = Filter(db.RevisionActivities.AsNoTracking(), query);
+
+        var totalCount = await matching.CountAsync();
+
+        var activities = await matching
             .OrderByDescending(a => a.CreatedAt)
             .ThenByDescending(a => a.Id)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
             .Select(a => new
             {
                 a.Id,
@@ -26,16 +32,41 @@ public class ActivityService(AppDbContext db)
             })
             .ToListAsync();
 
-        return activities
+        var items = activities
             .Select(a => new ActivitySummaryResponse(
                 a.Id,
                 a.Title,
                 a.Description,
-                ToResponse(a.Themes),
+                ToResponse(a.Themes, ThemeKind.Topic),
+                ToResponse(a.Themes, ThemeKind.Course),
                 a.ModuleCount,
                 AsUtc(a.CreatedAt),
                 AsUtc(a.UpdatedAt)))
             .ToList();
+
+        return new ActivityPageResponse(items, query.Page, query.PageSize, totalCount);
+    }
+
+    private static IQueryable<RevisionActivity> Filter(IQueryable<RevisionActivity> activities, ActivityListQuery query)
+    {
+        if (query.Title is not null)
+        {
+            // The title column collation ignores case (and accents).
+            activities = activities.Where(a => a.Title.Contains(query.Title));
+        }
+
+        if (query.CourseId is { } courseId)
+        {
+            activities = activities.Where(a => a.Themes.Any(t => t.Id == courseId && t.Kind == ThemeKind.Course));
+        }
+
+        // Each selected theme narrows the result: the activity must have all of them.
+        foreach (var themeId in query.ThemeIds)
+        {
+            activities = activities.Where(a => a.Themes.Any(t => t.Id == themeId && t.Kind == ThemeKind.Topic));
+        }
+
+        return activities;
     }
 
     public async Task<ActivityResponse?> GetByIdAsync(int id)
@@ -59,7 +90,11 @@ public class ActivityService(AppDbContext db)
             Description = request.Description,
             CreatedAt = now,
             UpdatedAt = now,
-            Themes = await FindOrCreateThemesAsync(request.Themes, now),
+            Themes =
+            [
+                .. await FindOrCreateThemesAsync(request.Themes, ThemeKind.Topic, now),
+                .. await FindOrCreateThemesAsync(request.Courses, ThemeKind.Course, now),
+            ],
             Modules = request.Modules
                 .Select((module, index) => new RevisionModule
                 {
@@ -78,16 +113,23 @@ public class ActivityService(AppDbContext db)
         return ToResponse(activity);
     }
 
-    /// <summary>Reuses existing themes with the same name (ignoring case) and creates the missing ones.</summary>
-    private async Task<List<Theme>> FindOrCreateThemesAsync(IReadOnlyList<string> names, DateTime now)
+    /// <summary>
+    /// Reuses existing themes of the same kind with the same name (ignoring case) and creates the missing ones.
+    /// </summary>
+    private async Task<List<Theme>> FindOrCreateThemesAsync(IReadOnlyList<string> names, string kind, DateTime now)
     {
+        if (names.Count == 0)
+        {
+            return [];
+        }
+
         // The theme name column collation is case-insensitive, so this also matches other casings.
-        var existing = await db.Themes.Where(t => names.Contains(t.Name)).ToListAsync();
+        var existing = await db.Themes.Where(t => t.Kind == kind && names.Contains(t.Name)).ToListAsync();
 
         return names
             .Select(name =>
                 existing.FirstOrDefault(t => string.Equals(t.Name, name, StringComparison.InvariantCultureIgnoreCase))
-                ?? new Theme { Name = name, CreatedAt = now })
+                ?? new Theme { Name = name, Kind = kind, CreatedAt = now })
             .ToList();
     }
 
@@ -95,7 +137,8 @@ public class ActivityService(AppDbContext db)
         activity.Id,
         activity.Title,
         activity.Description,
-        ToResponse(activity.Themes),
+        ToResponse(activity.Themes, ThemeKind.Topic),
+        ToResponse(activity.Themes, ThemeKind.Course),
         activity.Modules
             .OrderBy(m => m.Position)
             .Select(m => new ModuleResponse(m.Id, m.Position, m.Type, JsonSerializer.Deserialize<JsonElement>(m.Content)))
@@ -103,7 +146,8 @@ public class ActivityService(AppDbContext db)
         AsUtc(activity.CreatedAt),
         AsUtc(activity.UpdatedAt));
 
-    private static List<ThemeResponse> ToResponse(IEnumerable<Theme> themes) => themes
+    private static List<ThemeResponse> ToResponse(IEnumerable<Theme> themes, string kind) => themes
+        .Where(t => t.Kind == kind)
         .OrderBy(t => t.Name, StringComparer.InvariantCultureIgnoreCase)
         .Select(t => new ThemeResponse(t.Id, t.Name))
         .ToList();

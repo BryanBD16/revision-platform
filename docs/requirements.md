@@ -22,6 +22,28 @@ The first version should allow a user to:
 - An existing theme with the same name, ignoring case, is reused.
 - Themes are used to organize and find revision activities.
 
+### Courses
+
+- A revision activity can be part of any number of courses, including
+  none, so an activity can be reused in several courses.
+- A course is a specific kind of theme. Courses are entered by name
+  when creating an activity, and an existing course with the same name,
+  ignoring case, is reused.
+- Courses do not count toward the required theme, and a course and a
+  theme can have the same name.
+
+### Finding Activities
+
+- The list of activities is paginated, newest first.
+- The list can be filtered by:
+  - title (contains the text, ignoring case and accents);
+  - one course, chosen from a list that can be searched by typing;
+  - any number of themes, chosen the same way.
+- Every filter that is set narrows the result: an activity is listed
+  only if it matches all of them, and it must have all the selected
+  themes.
+- Filtering and pagination are done by the server.
+
 ### Initial Module Types
 
 The MVP supports the following module types:
@@ -60,10 +82,9 @@ Future module types may include:
 - Ordering exercises
 - Fill-in-the-blank exercises
 
-### Organization
+### Personal and Public Activities
 
-The application may eventually provide more structured organization
-of revision activities, potentially by course and/or subject.
-
-The exact relationship between courses, subjects, and themes has not yet
-been decided.
+- Revision activities should eventually be either personal (visible
+  only to their owner) or public.
+- The activity list should then also be filtered by this visibility.
+- This depends on user accounts.

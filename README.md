@@ -54,8 +54,9 @@ to them.
 ### Seed data
 
 `seed/activities/` contains revision activities about the project itself
-(database, Docker, backend, frontend and Makefile), with the theme
-`revision-plateforme`. Each file is a request body for
+(database, Docker, backend, frontend and Makefile). They are all part of
+the course `Revision Platform` and have themes describing their content
+(for example `MySQL`, `Angular` or `Testing`). Each file is a request body for
 `POST /api/activities`. With the backend running:
 
 ```sh

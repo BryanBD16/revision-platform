@@ -17,6 +17,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             activity.Property(a => a.Title).HasMaxLength(RevisionActivity.TitleMaxLength);
             activity.Property(a => a.Description).HasColumnType("text");
+            // The list is sorted by creation date.
+            activity.HasIndex(a => a.CreatedAt);
 
             activity
                 .HasMany(a => a.Themes)
@@ -47,7 +49,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             theme.Property(t => t.Name)
                 .HasMaxLength(Theme.NameMaxLength)
                 .UseCollation("utf8mb4_0900_as_ci");
-            theme.HasIndex(t => t.Name).IsUnique();
+            theme.Property(t => t.Kind).HasMaxLength(Theme.KindMaxLength);
+            // A topic and a course can have the same name.
+            theme.HasIndex(t => new { t.Kind, t.Name }).IsUnique();
         });
     }
 }

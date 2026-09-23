@@ -1,0 +1,68 @@
+<section class="card filters" aria-label="Filters">
+  <div class="filter-fields">
+    <div class="field">
+      <label for="filter-title">Title</label>
+      <input id="filter-title" type="search" [formControl]="title" placeholder="Search by title" />
+    </div>
+
+    <div class="field">
+      <label for="filter-course">Course</label>
+      <input
+        #courseInput
+        id="filter-course"
+        type="search"
+        list="filter-course-options"
+        [formControl]="course"
+        (input)="onCourseInput($event)"
+        (change)="selectCourse(courseInput.value)"
+        placeholder="All courses"
+      />
+      <datalist id="filter-course-options">
+        @for (course of courses(); track course.id) {
+          <option [value]="course.name"></option>
+        }
+      </datalist>
+      @if (unknownCourse(); as name) {
+        <p class="error">No course is named “{{ name }}”.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="filter-theme">Themes</label>
+      <input
+        #themeInput
+        id="filter-theme"
+        type="search"
+        list="filter-theme-options"
+        [formControl]="theme"
+        (input)="onThemeInput($event)"
+        (change)="addTheme(themeInput.value)"
+        placeholder="Add a theme"
+      />
+      <datalist id="filter-theme-options">
+        @for (theme of availableThemes(); track theme.id) {
+          <option [value]="theme.name"></option>
+        }
+      </datalist>
+      @if (unknownTheme(); as name) {
+        <p class="error">No theme is named “{{ name }}”.</p>
+      }
+    </div>
+  </div>
+
+  @if (hasFilters()) {
+    <div class="filter-summary">
+      <ul class="themes" aria-label="Selected themes">
+        @for (theme of selectedThemes(); track theme.id) {
+          <li class="theme">
+            {{ theme.name }}
+            <button type="button" class="remove-theme" (click)="removeTheme(theme.id)" [attr.aria-label]="'Remove the theme ' + theme.name">×</button>
+          </li>
+        }
+      </ul>
+      @if (hasFilters()) {
+        <button type="button" class="button-secondary" (click)="clear()">Clear filters</button>
+      }
+    </div>
+  }
+</section>

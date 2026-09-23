@@ -70,7 +70,7 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
         await CreateAsync(new CreateActivityRequest("First", null, ["Biology"], [Reading("Text")]));
         await CreateAsync(new CreateActivityRequest("Second", null, ["Biology"], [Reading("Text")]));
 
-        var activities = await _client.GetFromJsonAsync<List<ActivitySummaryResponse>>("/api/activities");
+        var activities = await GetListAsync();
 
         Assert.NotNull(activities);
         Assert.Equal(["Second", "First"], activities.Select(a => a.Title));
@@ -79,7 +79,7 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
     [Fact]
     public async Task GetAll_ReturnsEmptyListWhenThereAreNoActivities()
     {
-        var activities = await _client.GetFromJsonAsync<List<ActivitySummaryResponse>>("/api/activities");
+        var activities = await GetListAsync();
 
         Assert.NotNull(activities);
         Assert.Empty(activities);
@@ -104,6 +104,56 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
         Assert.Equal(["Biology", "Cells"], activity.Themes.Select(t => t.Name));
     }
 
+    [Fact]
+    public async Task Create_StoresCoursesSeparatelyFromThemes()
+    {
+        var created = await CreateAsync(new CreateActivityRequest(
+            "Title", null, ["Cells"], [Reading("Text")], ["  Biology 201 ", "Biology 101", "BIOLOGY 101"]));
+
+        var activity = await _client.GetFromJsonAsync<ActivityResponse>($"/api/activities/{created.Id}");
+
+        Assert.Equal(["Cells"], activity!.Themes.Select(t => t.Name));
+        Assert.Equal(["Biology 101", "Biology 201"], activity.Courses.Select(c => c.Name));
+    }
+
+    [Fact]
+    public async Task Create_AcceptsActivityWithoutCourses()
+    {
+        var activity = await CreateAsync(new CreateActivityRequest("Title", null, ["Cells"], [Reading("Text")]));
+
+        Assert.Empty(activity.Courses);
+    }
+
+    [Fact]
+    public async Task Create_ReusesExistingCourseIgnoringCase()
+    {
+        var first = await CreateAsync(new CreateActivityRequest("First", null, ["Cells"], [Reading("Text")], ["Biology 101"]));
+        var second = await CreateAsync(new CreateActivityRequest("Second", null, ["Cells"], [Reading("Text")], ["biology 101"]));
+
+        var course = Assert.Single(second.Courses);
+        Assert.Equal(first.Courses[0].Id, course.Id);
+        Assert.Equal("Biology 101", course.Name);
+    }
+
+    [Fact]
+    public async Task Create_KeepsThemeAndCourseWithSameNameSeparate()
+    {
+        var activity = await CreateAsync(new CreateActivityRequest("Title", null, ["Biology"], [Reading("Text")], ["Biology"]));
+
+        Assert.NotEqual(Assert.Single(activity.Themes).Id, Assert.Single(activity.Courses).Id);
+    }
+
+    [Fact]
+    public async Task GetAll_ReturnsThemesAndCourses()
+    {
+        await CreateAsync(new CreateActivityRequest("Title", null, ["Cells"], [Reading("Text")], ["Biology 101"]));
+
+        var activity = Assert.Single(await GetListAsync());
+
+        Assert.Equal(["Cells"], activity.Themes.Select(t => t.Name));
+        Assert.Equal(["Biology 101"], activity.Courses.Select(c => c.Name));
+    }
+
     public static TheoryData<CreateActivityRequest, string> InvalidRequests => new()
     {
         { new CreateActivityRequest(null, null, ["Biology"], [Reading("Text")]), "title" },
@@ -114,6 +164,9 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
         { new CreateActivityRequest("Title", null, [], [Reading("Text")]), "themes" },
         { new CreateActivityRequest("Title", null, ["Biology", "  "], [Reading("Text")]), "themes" },
         { new CreateActivityRequest("Title", null, [new string('a', 101)], [Reading("Text")]), "themes" },
+        { new CreateActivityRequest("Title", null, [], [Reading("Text")], ["Biology 101"]), "themes" },
+        { new CreateActivityRequest("Title", null, ["Biology"], [Reading("Text")], ["Biology 101", " "]), "courses" },
+        { new CreateActivityRequest("Title", null, ["Biology"], [Reading("Text")], [new string('a', 101)]), "courses" },
         { new CreateActivityRequest("Title", null, ["Biology"], null), "modules" },
         { new CreateActivityRequest("Title", null, ["Biology"], []), "modules" },
         { new CreateActivityRequest("Title", null, ["Biology"], [null]), "modules[0]" },
@@ -134,8 +187,8 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
         Assert.NotNull(problem);
         Assert.Equal([invalidField], problem.Errors.Keys);
 
-        var activities = await _client.GetFromJsonAsync<List<ActivitySummaryResponse>>("/api/activities");
-        Assert.Empty(activities!);
+        var activities = await GetListAsync();
+        Assert.Empty(activities);
     }
 
     [Fact]
@@ -210,9 +263,9 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
     {
         await CreateAsync(new CreateActivityRequest("Title", null, ["Biology"], [Reading("One"), Reading("Two")]));
 
-        var activities = await _client.GetFromJsonAsync<List<ActivitySummaryResponse>>("/api/activities");
+        var activities = await GetListAsync();
 
-        Assert.Equal(2, Assert.Single(activities!).ModuleCount);
+        Assert.Equal(2, Assert.Single(activities).ModuleCount);
     }
 
     [Fact]
@@ -228,6 +281,12 @@ public class ActivitiesEndpointTests(ApiFactory factory) : IAsyncLifetime
     private static JsonElement Json(object value) => JsonSerializer.SerializeToElement(value);
 
     private static CreateModuleRequest Reading(string body) => new("reading", Json(new { body }));
+
+    private async Task<IReadOnlyList<ActivitySummaryResponse>> GetListAsync()
+    {
+        var page = await _client.GetFromJsonAsync<ActivityPageResponse>("/api/activities");
+        return page!.Items;
+    }
 
     private async Task<ActivityResponse> CreateAsync(CreateActivityRequest request)
     {

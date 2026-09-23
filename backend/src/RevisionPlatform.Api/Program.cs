@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
 using RevisionPlatform.Api.Data;
 using RevisionPlatform.Api.Modules;
+using RevisionPlatform.Api.Themes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options
 builder.Services.AddModuleTypes();
 builder.Services.AddScoped<ActivityValidator>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<ThemeService>();
 
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
