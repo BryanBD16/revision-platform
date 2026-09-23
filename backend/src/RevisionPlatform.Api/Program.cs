@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RevisionPlatform.Api.Activities;
+using RevisionPlatform.Api.Admin;
 using RevisionPlatform.Api.Auth;
 using RevisionPlatform.Api.Commands;
 using RevisionPlatform.Api.Data;
@@ -31,6 +32,7 @@ builder.Services.AddAppAuthentication(builder.Configuration, builder.Environment
 builder.Services.AddModuleTypes();
 builder.Services.AddScoped<ActivityValidator>();
 builder.Services.AddScoped<ActivityService>();
+builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<ThemeService>();
 
 // Every POST, PUT and DELETE request needs the anti-forgery token (see XsrfCookie).
