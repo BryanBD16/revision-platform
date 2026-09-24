@@ -54,10 +54,10 @@ Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.8
 | 5 | [Get the code and the settings](#5-get-the-code-and-the-settings) | Droplet | `production` branch, `.env.production` |
 | 6 | [Start the application](#6-start-the-application) | Droplet | Site running on `https://165.227.81.12` |
 | 7 | [Admin and content](#7-first-admin-and-content) | Droplet | Admin account, seed activities |
-| 8 | [Domain and DNS](#8-domain-and-dns) | Namecheap | `revision.bryanbd16.xyz` → `165.227.81.12` |
+| 8 | [Domain and DNS](#8-domain-and-dns) | Namecheap | `revision.bryanbd16.xyz` → `165.227.81.12` (took ~30 min to publish) |
 | 9 | [Firewall](#9-firewall) | DigitalOcean panel | Only 22, 80, 443 reachable |
 | 10 | [Prepare the certificate](#10-prepare-the-certificate) | Droplet | certbot + renewal hook ready |
-| 11 | [Get the certificate](#11-next-get-the-real-certificate) | Droplet | ⏳ Waiting for DNS |
+| 11 | [Get the certificate](#11-next-get-the-real-certificate) | Droplet | ⏳ Ready to do: DNS works |
 
 ## The server
 
@@ -258,11 +258,14 @@ release can never duplicate activities. Running `make prod-seed` twice
 - ✅ Namecheap's nameserver answers correctly:
   `dig +short A revision.bryanbd16.xyz @dns1.registrar-servers.com` →
   `165.227.81.12`.
-- ⏳ The `.xyz` registry had not published the new domain yet (checked
-  about 30 minutes after purchase:
-  `dig +norec NS bryanbd16.xyz @generationxyz.nic.xyz.` → `NXDOMAIN`), so
-  public resolvers cannot find it. Normal for a brand-new domain:
-  minutes to a few hours, rarely up to 48 hours.
+- ✅ The `.xyz` registry first did not know the new domain
+  (`dig +norec NS bryanbd16.xyz @generationxyz.nic.xyz.` → `NXDOMAIN`
+  for about 30 minutes after purchase), then published it with
+  Namecheap's nameservers (`NOERROR`, `dns1.registrar-servers.com`).
+  Right after, `dig +short A revision.bryanbd16.xyz` → `165.227.81.12` at
+  both `1.1.1.1` and `8.8.8.8`, and
+  `https://revision.bryanbd16.xyz/api/health` answered (still with the
+  self-signed certificate, so only with `curl -k`).
 
 ⚠️ What went wrong: the message said "bought `revisionplatform.xyz`,
 use a subdomain `bryanbd16.xyz`"; `whois` showed the domain actually
@@ -329,7 +332,7 @@ blocked.
 
 ### 11. Next: get the real certificate
 
-⏳ To do as soon as the domain resolves.
+⏳ To do: DNS resolves since 2026-09-24, the step can be done now.
 
 **1. Check DNS** from the laptop. Both must print `165.227.81.12`:
 
@@ -380,8 +383,8 @@ systemctl list-timers | grep certbot       # the timer that renews it automatica
 
 ## What is left
 
-1. ⏳ Wait for DNS, then [get the certificate](#11-next-get-the-real-certificate)
-   (~10 minutes).
+1. ⏳ [Get the certificate](#11-next-get-the-real-certificate)
+   (~10 minutes; DNS already works).
 2. ⏳ **Reboot test** (~5 minutes): `sudo reboot`, reconnect after a
    minute, then check that everything came back by itself
    ([manual 6.12](production.md#612-last-checks)):
