@@ -1,11 +1,63 @@
 # Deployment log
 
-The record of the first production deployment: what was done, in which
-order, what was verified, and what is left. The *how* and *why* of each
-step are in [production.md](production.md); this file tracks *where we
-are*. Update it at each step.
+The story of the first production deployment of the Revision Platform,
+on 2026-09-24: what was done, in which order, why, what was checked, what
+went wrong and what was learned.
 
-Legend: ✅ done and verified · ⚠️ done, not fully verified · ⏳ to do
+This file is the **diary**; [production.md](production.md) is the
+**manual** (the reference that explains each step in detail). Section
+numbers like "6.4" refer to the manual.
+
+Legend: ✅ done and verified · ⚠️ done, not fully verified · ⏳ to do ·
+⏭️ skipped on purpose
+
+## How to study this deployment
+
+Suggested reading order:
+
+1. [production.md, sections 1 to 3](production.md#1-key-concepts): the
+   vocabulary (container, reverse proxy, TLS, DNS...), branches vs
+   environments, and how the containers fit together.
+2. [In short](#in-short) below: the whole deployment on one page.
+3. [The stages](#the-stages-in-the-order-they-happened), in order, with
+   the manual open next to them for the details.
+4. [Decisions](#decisions-and-their-reasons) and
+   [lessons learned](#lessons-learned): the part worth remembering for the
+   next project.
+
+## In short
+
+**The goal:** put the application, running on a laptop until now, on a
+server on the internet, reachable at `https://revision.bryanbd16.xyz`.
+
+**The result:**
+
+```
+Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.81.12
+                                                   DigitalOcean Droplet (Ubuntu 24.04)
+                                                   ├─ Cloud Firewall: only 22, 80, 443 get in
+                                                   └─ Docker Compose (compose.prod.yaml)
+                                                      ├─ frontend: nginx, HTTPS, Angular, /api → backend
+                                                      ├─ backend:  ASP.NET Core API
+                                                      ├─ migrate:  applies migrations, then exits
+                                                      └─ db:       MySQL 8.4 (volume mysql-data)
+```
+
+**The path, in the order it was done:**
+
+| # | Stage | Where | Result |
+|---|---|---|---|
+| 1 | [Prepare the release](#1-prepare-the-release) | Laptop | Docker setup, guide, `v1.0.0` on GitHub |
+| 2 | [Create the Droplet](#2-create-the-droplet) | DigitalOcean panel | A Linux server with our SSH key |
+| 3 | [Secure the server](#3-secure-the-server) | Droplet | Updates, `deploy` user, SSH keys only |
+| 4 | [Install Docker](#4-install-docker-git-and-make) | Droplet | Docker 29.8.1, Compose, Git, Make |
+| 5 | [Get the code and the settings](#5-get-the-code-and-the-settings) | Droplet | `production` branch, `.env.production` |
+| 6 | [Start the application](#6-start-the-application) | Droplet | Site running on `https://165.227.81.12` |
+| 7 | [Admin and content](#7-first-admin-and-content) | Droplet | Admin account, seed activities |
+| 8 | [Domain and DNS](#8-domain-and-dns) | Namecheap | `revision.bryanbd16.xyz` → `165.227.81.12` (took ~30 min to publish) |
+| 9 | [Firewall](#9-firewall) | DigitalOcean panel | Only 22, 80, 443 reachable |
+| 10 | [Prepare the certificate](#10-prepare-the-certificate) | Droplet | certbot + renewal hook ready |
+| 11 | [Get the certificate](#11-next-get-the-real-certificate) | Droplet | ⏳ Ready to do: DNS works |
 
 ## The server
 
@@ -17,204 +69,385 @@ Legend: ✅ done and verified · ⚠️ done, not fully verified · ⏳ to do
 | Image | Ubuntu 24.04 LTS (24.04.5 after the updates) |
 | Disk | 47 GB |
 | Region | *to fill in* |
-| Size (RAM / CPU) | *to fill in* (2 GB RAM or more recommended) |
-| Admin user | `deploy` (SSH key only, `sudo` with its password) |
-| Domain | none yet |
+| Size (RAM / CPU) | *to fill in* |
+| Admin user | `deploy` (SSH key only; `sudo` asks for its password) |
+| Application folder | `/home/deploy/revision-platform` |
+| Domain | `bryanbd16.xyz` (Namecheap, registered 2026-09-24, **expires 2027-09-24**) |
+| Application URL | `https://revision.bryanbd16.xyz` |
 | Released version | `v1.0.0` (branch `production`), running since 2026-09-24 |
 
-## Release preparation (2026-09-24)
+The MySQL passwords are in `.env.production` on the Droplet and in the
+password manager, nowhere else.
 
-On the development computer, before touching the server:
+## The stages, in the order they happened
 
-- ✅ Production setup built and merged into `development`:
-  Dockerfiles, `compose.prod.yaml`, `prod-*` Makefile commands, the
-  `migrate` backend command. All tests passed (242 backend, 219 frontend).
-- ✅ Rehearsed locally with `make prod-cert` + `make prod-up` (see
-  [production.md, section 15](production.md#15-what-has-been-verified)).
-- ✅ Production guide written ([production.md](production.md)).
-- ✅ `development` pushed, merged into `production`, tagged `v1.0.0`,
-  `production` and `v1.0.0` pushed to GitHub.
+### 1. Prepare the release
 
-## On the server (2026-09-24)
+*Laptop. Manual: sections 2 to 5.*
 
-### Step 6.2: Droplet created ✅
+Before touching a server, the application had to be able to run without
+the development tools (`dotnet run`, `ng serve`):
 
-Created in the DigitalOcean control panel with Ubuntu 24.04 LTS and the
-development computer's SSH key (`~/.ssh/id_ed25519.pub`); no password.
-Monitoring enabled.
+- ✅ Docker images for the backend and the frontend, a production compose
+  file, `prod-*` Makefile commands, and a `migrate` backend command (the
+  production image has no `dotnet ef`). All tests passed (242 backend,
+  219 frontend).
+- ✅ Rehearsed on the laptop with `make prod-cert` + `make prod-up`. The
+  rehearsal caught a real problem: over plain HTTP, every API call
+  failed with a `500`, because the backend's cookies are HTTPS-only in
+  production. Decision: nginx serves HTTPS itself
+  ([manual 3](production.md#why-https-is-mandatory-even-to-try-it)).
+- ✅ Released: `development` merged into `production`, tagged `v1.0.0`,
+  both pushed to GitHub.
 
-- ✅ `ssh root@165.227.81.12` works; the server's fingerprint was accepted
-  (`SHA256:uEZa6/GEVOAD7UQ4oo6TbYBFt9diplVAlHg4QnQC1As`, ED25519). If SSH
-  ever reports a *different* fingerprint for this IP without the Droplet
-  having been rebuilt, do not connect.
+**Why both branches have all the files:** branches are *versions* of the
+code, environments are *places* where it runs. What differs between the
+laptop and the server is the settings file and the command, not the
+branch ([manual 2](production.md#2-branches-environments-and-releases)).
 
-Lesson learned: in commands like `ssh root@<ip>`, the `<...>` only marks
-a placeholder. Typed literally, bash reads `<` and `>` as redirections
-(`syntax error near unexpected token 'newline'`).
+### 2. Create the Droplet
 
-### Step 6.4: updates, `deploy` user, SSH lockdown ✅
+*DigitalOcean control panel. Manual: 6.2.*
 
-1. ✅ `apt update && apt upgrade -y`: 154 updates (125 security). The
-   server rebooted for the new kernel (`6.8.0-124` → `6.8.0-142`);
-   afterwards: 0 pending updates.
-2. ✅ User `deploy` created, added to the `sudo` group, given root's
-   `~/.ssh` (the authorized key). `sudo whoami` prints `root`.
-3. ✅ `/etc/ssh/sshd_config.d/00-hardening.conf` created with
-   `PasswordAuthentication no` and `PermitRootLogin no`, SSH restarted.
-   - ✅ `sudo sshd -T` shows `permitrootlogin no` and
-     `passwordauthentication no`.
-   - ✅ `ssh root@165.227.81.12` → `Permission denied (publickey)`.
-   - ✅ `ssh deploy@165.227.81.12` still works.
-   - ⚠️ Not run: `ssh -o PubkeyAuthentication=no deploy@165.227.81.12`
-     (should be refused without asking a password). The `sshd -T` output
-     already shows passwords are disabled.
+- Ubuntu 24.04 **LTS** (security updates for years), Basic shared CPU,
+  the laptop's public key `~/.ssh/id_ed25519.pub` for authentication (no
+  password), Monitoring enabled.
+- ✅ First login: `ssh root@165.227.81.12`. SSH showed the server's
+  fingerprint, `SHA256:uEZa6/GEVOAD7UQ4oo6TbYBFt9diplVAlHg4QnQC1As`
+  (ED25519), and saved it in `~/.ssh/known_hosts`. If SSH ever reports a
+  *different* fingerprint for this IP without the Droplet having been
+  rebuilt, do not connect: something is impersonating the server.
 
-Lessons learned:
+⚠️ What went wrong: `ssh root@<165.227.81.12>` → `syntax error near
+unexpected token 'newline'`. The `<...>` in instructions only marks a
+placeholder; bash reads `<` and `>` as file redirections.
 
-- `sshd -t` on the development computer → `command not found`: `sshd` is
-  the SSH *server*, it only exists on the Droplet.
-- `sshd -t` on the Droplet without `sudo` → `Permission denied` on
-  `50-cloud-init.conf`. That file exists on DigitalOcean's image, which
-  confirmed the choice of a `00-...` file (the first value found wins).
-  The guide initially said to edit `/etc/ssh/sshd_config`; it was
-  corrected.
+### 3. Secure the server
 
-### Step 6.5: Cloud Firewall ⏳ postponed
+*Droplet, as root, then as `deploy`. Manual: 6.4.*
 
-Decision: get the application working first, add the firewall **before
-sharing the link**. Meanwhile, only port 22 (SSH, keys only) and, once
-the application runs, nginx's port are reachable: MySQL and the backend
-publish no port.
+1. ✅ **Updates.** `apt update && apt upgrade -y`: 154 updates, 125 of
+   them security fixes (the Droplet image was a few weeks old). A new
+   kernel required a reboot (`6.8.0-124` → `6.8.0-142`).
+2. ✅ **A normal user.** `root` can do anything without confirmation, so
+   daily work uses `deploy`, which borrows root's rights with `sudo`:
+   ```sh
+   adduser deploy
+   usermod -aG sudo deploy                                  # -a: append to the groups
+   rsync --archive --chown=deploy:deploy ~/.ssh /home/deploy   # give it the SSH key
+   ```
+   Checked in a second terminal, keeping the root session open as a
+   safety net: `sudo whoami` → `root`.
+3. ✅ **SSH keys only, no root login.** In
+   `/etc/ssh/sshd_config.d/00-hardening.conf`:
+   ```
+   PasswordAuthentication no
+   PermitRootLogin no
+   ```
+   - `sudo sshd -T` → `permitrootlogin no`, `passwordauthentication no`.
+   - `ssh root@165.227.81.12` → `Permission denied (publickey)`.
+   - `ssh deploy@165.227.81.12` still works.
+   - ⚠️ Not run: `ssh -o PubkeyAuthentication=no deploy@...` (would prove
+     passwords are refused; `sshd -T` already shows it).
 
-### Step 6.6: Docker, Git and Make ✅
+**Why a file in `sshd_config.d/` named `00-...`:** those files are read
+before `sshd_config`, and for SSH *the first value found wins*.
+DigitalOcean's image has a `50-cloud-init.conf` there, which could
+override an edit of the main file. The manual first said to edit
+`sshd_config`; this deployment corrected it.
 
-Installed from Docker's own apt repository (see the guide):
+⚠️ What went wrong: `sshd -t` on the laptop → `command not found`
+(`sshd` is the SSH *server*, only on the Droplet); on the Droplet without
+`sudo` → `Permission denied` (the configuration is readable by root only).
 
-- Docker Engine 29.8.1 (the same version as the development computer),
-  Docker Compose plugin v5.5.1, Git 2.43.0, Make 4.3.
-- `deploy` added to the `docker` group, then logged out and in again.
-- ✅ `docker run --rm hello-world` prints "Hello from Docker!".
-- ✅ `groups` shows `deploy sudo users docker`.
+### 4. Install Docker, Git and Make
 
-Lessons learned:
+*Droplet, as `deploy`. Manual: 6.6.*
 
-- Paste **one block at a time** and wait for the prompt. A paste that
-  contains `exit` followed by other commands closes the session, and
-  the following lines never run where intended.
-- The install had in fact been run once already in a session that was
-  not recorded; running it again only printed `already the newest
-  version`. apt commands are safe to repeat.
+- ✅ Docker Engine **29.8.1** (same as the laptop), Compose plugin
+  **v5.5.1**, Git 2.43.0, Make 4.3, from Docker's own apt repository (more
+  recent than Ubuntu's).
+- ✅ `deploy` added to the `docker` group, then logged out and in again (a
+  new group only applies to new sessions): `groups` → `deploy sudo users
+  docker`; `docker run --rm hello-world` → "Hello from Docker!".
 
-### Step 6.7: code cloned ✅
+Being in the `docker` group is equivalent to being root: only for trusted
+users.
 
-The GitHub repository is **public**, so the Droplet clones it over HTTPS
-without any credential: no deploy key needed (the guide's deploy key is
-only for a private repository). This is also why no secret must ever be
-committed.
+⚠️ What went wrong: several blocks were pasted at once, including `exit`.
+`exit` closed the session and the lines after it never ran on the
+server. Paste one block at a time and wait for the prompt. (Docker turned
+out to be installed already from an earlier, unrecorded attempt;
+re-running apt only printed `already the newest version`: apt commands
+are safe to repeat.)
+
+### 5. Get the code and the settings
+
+*Droplet. Manual: 6.7 and 6.8.*
+
+- ✅ The GitHub repository is **public**, so the Droplet clones it over
+  HTTPS without any credential (no deploy key needed):
+  ```sh
+  git clone https://github.com/BryanBD16/revision-platform.git ~/revision-platform
+  cd ~/revision-platform && git checkout production
+  ```
+  `git describe --tags` → `v1.0.0`. The server always runs `production`,
+  never `development`.
+- ✅ `.env.production` created from the example with `sed`:
+  `APP_ADDRESS=0.0.0.0` (accept connections from the internet),
+  `APP_PORT=443` (the standard HTTPS port), and two passwords generated
+  by `openssl rand -hex 24` and written straight into the file.
+  - Mode `-rw-------`: only `deploy` can read it.
+  - Checked with `grep -c` that both passwords are 48 hex characters,
+    **without displaying them**. They were displayed once, to be saved in
+    the password manager. Passwords never go in a chat, a screenshot or
+    Git.
+
+A public repository is the reason why no secret must ever be committed:
+anyone can read everything in it.
+
+### 6. Start the application
+
+*Droplet. Manual: 6.9 (temporary part) and 6.10.*
+
+- ✅ No domain yet, so a **self-signed certificate** (`make prod-cert`).
+  The connection is encrypted, but browsers warn because nobody they
+  trust vouches for the server's identity. Temporary.
+- ✅ `make prod-up`: first build ~190 s (backend) and ~165 s (frontend);
+  later releases reuse Docker's cached layers. Volumes `mysql-data` and
+  `data-protection-keys` created; `db`, `backend`, `frontend` healthy;
+  `migrate` exited.
+- ✅ `https://165.227.81.12` opens after accepting the warning, and an
+  account was created: HTTPS, nginx, backend, MySQL and the session
+  cookies all work.
+- ⚠️ Not recorded: the `migrate` exit code and log, `free -h`, the `curl`
+  checks. The working sign-up shows the migrations ran.
+
+### 7. First admin and content
+
+*Droplet. Manual: 6.11.*
 
 ```sh
-git clone https://github.com/BryanBD16/revision-platform.git ~/revision-platform
-cd ~/revision-platform && git checkout production
+make prod-command CMD='users grant-role YOUR_EMAIL admin'   # the account's email; asks for "yes"
+make prod-seed                                                         # once only
 ```
 
-- ✅ `git log --oneline -1` → `64d1df9 ... Merge branch 'development' into
-  production`; `git describe --tags` → `v1.0.0`.
+- ✅ Admin role given; the seed activities appear on the site.
 
-### Step 6.8: `.env.production` ✅
+⚠️ What went wrong: the first attempt was
+`CMD='users grant-role your-<email>'`: the role was missing
+(the command only printed its usage, nothing changed) and the `your-`
+placeholder prefix was left in the email.
 
-Created from `.env.production.example` with `sed`: `APP_ADDRESS=0.0.0.0`,
-`APP_PORT=443`, and both MySQL passwords generated by
-`openssl rand -hex 24` (written directly into the file, never typed).
+Why the list was empty at first: the production database is new and
+separate from the laptop's. Seeding is deliberate, never automatic, so a
+release can never duplicate activities. Running `make prod-seed` twice
+*would* duplicate them.
 
-- ✅ Mode `-rw-------`, owner `deploy`.
-- ✅ Both passwords are 48 hexadecimal characters (checked with `grep -c`
-  without displaying them).
-- The passwords were displayed once to be saved in a password manager,
-  and never shared anywhere else.
+### 8. Domain and DNS
 
-### Step 6.9 (temporary): self-signed certificate ✅
+*Namecheap. Manual: 1 (why a domain), 6.3.*
 
-No domain yet, so `make prod-cert` created a self-signed certificate in
-`certs/`. Browsers show a warning (the certificate is signed by the
-Droplet itself and issued for `localhost`); the connection is encrypted
-but the server's identity is not proven. To be replaced by Let's Encrypt.
+- ✅ `bryanbd16.xyz` bought at Namecheap: `.xyz` was the cheapest first
+  year (renewal costs more, see the expiry date above). The application
+  uses a **subdomain**, `revision.bryanbd16.xyz`, so the bare domain
+  stays free for a portfolio page or other projects.
+- ✅ The DNS record: Namecheap → Domain List → Manage → Advanced DNS →
+  Add New Record → `A Record`, Host `revision`, Value `165.227.81.12`,
+  TTL Automatic → green ✓ to save. Nameservers: Namecheap BasicDNS.
+- ✅ Namecheap's nameserver answers correctly:
+  `dig +short A revision.bryanbd16.xyz @dns1.registrar-servers.com` →
+  `165.227.81.12`.
+- ✅ The `.xyz` registry first did not know the new domain
+  (`dig +norec NS bryanbd16.xyz @generationxyz.nic.xyz.` → `NXDOMAIN`
+  for about 30 minutes after purchase), then published it with
+  Namecheap's nameservers (`NOERROR`, `dns1.registrar-servers.com`).
+  Right after, `dig +short A revision.bryanbd16.xyz` → `165.227.81.12` at
+  both `1.1.1.1` and `8.8.8.8`, and
+  `https://revision.bryanbd16.xyz/api/health` answered (still with the
+  self-signed certificate, so only with `curl -k`).
 
-### Step 6.10: first `make prod-up` ✅
+⚠️ What went wrong: the message said "bought `revisionplatform.xyz`,
+use a subdomain `bryanbd16.xyz`"; `whois` showed the domain actually
+bought was `bryanbd16.xyz`. Check facts with tools (`whois`, `dig`)
+rather than memory.
 
-- Backend image built in ~190 s, frontend in ~165 s (first build: every
-  base image downloaded; later releases reuse the cached layers).
-- Volumes `mysql-data` and `data-protection-keys` created.
-- `db`, `backend`, `frontend` healthy; `migrate` exited.
-- ✅ `https://165.227.81.12` opens (after accepting the certificate
-  warning) and an account was created: the whole chain works (HTTPS,
-  nginx, backend, MySQL, session cookies).
-- ⚠️ The `migrate` exit code and log, `free -h` and the `curl` checks were
-  not recorded; the working sign-up shows the migrations were applied.
+**How a DNS lookup works** (why a correct record can still be
+invisible): a resolver (your ISP's, `1.1.1.1`, `8.8.8.8`) asks the root
+servers who handles `.xyz`, then asks the `.xyz` registry who handles
+`bryanbd16.xyz`, and only then asks Namecheap's nameservers for
+`revision.bryanbd16.xyz`. If the registry does not know the domain yet,
+the chain stops before reaching Namecheap. Resolvers also remember a
+"does not exist" answer (up to 1 hour for `.xyz`), which is why testing
+in the browser too early can delay things.
 
-### Step 6.11: first admin and seed activities ✅
+Namecheap sends an email to verify the contact address; an unverified
+domain is suspended after about 15 days.
+
+### 9. Firewall
+
+*DigitalOcean control panel. Manual: 6.5.*
+
+First postponed to get the site working, then done while waiting for DNS.
+
+- ✅ *Networking → Firewalls → Create Firewall*, named
+  `revision-platform-prod`. Inbound: SSH 22, HTTP 80, HTTPS 443, all
+  sources. Outbound: the defaults (everything: updates, Docker images,
+  GitHub, Let's Encrypt). Applied to the Droplet.
+- ✅ Checked from the laptop with `nc -zv -w 5 165.227.81.12 <port>`:
+
+  | Port | Result | Meaning |
+  |---|---|---|
+  | 22 | open | SSH allowed |
+  | 443 | open, `/api/health` → 200 | The site |
+  | 80 | refused | Allowed (for Let's Encrypt), nothing listening |
+  | 3306, 8080 | timeout | Blocked by the firewall |
+
+**Refused vs timeout:** *refused* means the packet reached the Droplet,
+which answered "nobody here". *Timeout* means the firewall dropped it
+silently before it arrived, and a scanner learns nothing.
+
+**Why DigitalOcean's firewall and not Ubuntu's `ufw`:** Docker writes its
+own network rules, which bypass `ufw`. The Cloud Firewall filters traffic
+before it reaches the Droplet, so Docker cannot bypass it. MySQL was
+already safe (Docker does not publish it); the firewall is a second layer
+in case a future mistake publishes a port.
+
+### 10. Prepare the certificate
+
+*Droplet. Manual: 6.9.*
+
+- ✅ certbot **5.8.0** installed with `sudo snap install --classic
+  certbot` (certbot's recommended way: it updates itself).
+- ✅ Renewal hook `/etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh`
+  (`-rwxr-xr-x root`, `DOMAIN=revision.bryanbd16.xyz`). After each
+  renewal, it copies the new certificate into
+  `/home/deploy/revision-platform/certs/` and reloads nginx. A copy is
+  needed because the files in `/etc/letsencrypt/live/` are symbolic links
+  that would point to nothing inside the container.
+
+`certbot certonly` was **not** run yet: Let's Encrypt must find the
+domain through public DNS, and repeated failed attempts get temporarily
+blocked.
+
+### 11. Next: get the real certificate
+
+⏳ To do: DNS resolves since 2026-09-24, the step can be done now.
+
+**1. Check DNS** from the laptop. Both must print `165.227.81.12`:
 
 ```sh
-make prod-command CMD='users grant-role <your email> admin'
-make prod-seed
+dig +short A revision.bryanbd16.xyz @1.1.1.1
+dig +short A revision.bryanbd16.xyz @8.8.8.8
 ```
 
-- ✅ The admin role was given, and the seed activities appear on the site.
+**2. Get the certificate** on the Droplet, in `~/revision-platform`.
+Replace `YOUR_EMAIL` entirely with your email address (Let's Encrypt's
+contact for your account):
 
-Lessons learned:
+```sh
+sudo certbot certonly --standalone -d revision.bryanbd16.xyz --agree-tos -m YOUR_EMAIL
+```
 
-- An empty activity list on a new server is normal: the production
-  database is separate from the development one, and seeding is a
-  deliberate step, never automatic.
-- `grant-role` takes **two** arguments, the email and the role; with one,
-  it only prints its usage and changes nothing.
-- Replace a placeholder entirely: `your-email@example.com` →
-  the real address, without the `your-` prefix.
-- `make prod-seed` must run **once**: running it again duplicates every
-  activity.
+*Standalone* mode: certbot briefly starts its own small web server on
+port 80, Let's Encrypt connects to `http://revision.bryanbd16.xyz/...` to
+check that you control the domain, and the certificate is saved in
+`/etc/letsencrypt/live/revision.bryanbd16.xyz/`. This is why port 80 is
+open in the firewall even though the application does not use it.
+
+**3. Install it for nginx.** The hook only runs automatically on
+*renewals*, so run it once by hand. It replaces the self-signed files and
+reloads nginx:
+
+```sh
+sudo /etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh
+```
+
+**4. Check**, from the laptop: no `-k` this time, curl must trust the
+certificate on its own:
+
+```sh
+curl https://revision.bryanbd16.xyz/api/health     # Healthy
+```
+
+Then open `https://revision.bryanbd16.xyz`: a padlock, no warning.
+
+**5. Check the automatic renewal** on the Droplet. The dry run talks to
+Let's Encrypt's test server and does not run the hook:
+
+```sh
+sudo certbot renew --dry-run
+sudo certbot certificates                  # the domain and the expiry date (90 days)
+systemctl list-timers | grep certbot       # the timer that renews it automatically
+```
 
 ## What is left
 
-In order. Each item points to the guide section.
+1. ⏳ [Get the certificate](#11-next-get-the-real-certificate)
+   (~10 minutes; DNS already works).
+2. ⏳ **Reboot test** (~5 minutes): `sudo reboot`, reconnect after a
+   minute, then check that everything came back by itself
+   ([manual 6.12](production.md#612-last-checks)):
+   ```sh
+   cd ~/revision-platform
+   docker compose --env-file .env.production -f compose.prod.yaml ps
+   ```
+3. ⏳ Go through the **security checklist**
+   ([manual 13](production.md#13-security-checklist)) (~10 minutes).
+4. ⏳ Fill in the region and size in [the server](#the-server) table, and
+   update [manual section 15](production.md#15-what-has-been-verified)
+   with what this deployment verified.
+5. ⏭️ **Backups: skipped on purpose** (see
+   [decisions](#decisions-and-their-reasons)).
 
-### To get the website working ✅ (done on 2026-09-24)
+Later improvements, all optional
+([manual 14](production.md#14-known-limitations-and-next-improvements)):
+redirect `http://` to `https://` (today `http://revision.bryanbd16.xyz`
+does not answer; browsers try HTTPS first when no scheme is typed),
+uptime monitoring, images built by GitHub Actions, HSTS.
 
-1. ✅ **Install Docker, Git and Make** on the Droplet
-   ([6.6](production.md#66-install-docker-git-and-make)), and add `deploy`
-   to the `docker` group.
-2. ✅ **Clone the repository** over HTTPS (public repository: no deploy
-   key needed), on the `production` branch ([6.7](production.md#67-get-the-code)).
-3. ✅ **Create `.env.production`** with random passwords, `APP_ADDRESS=0.0.0.0`,
-   `APP_PORT=443`; save the passwords in a password manager
-   ([6.8](production.md#68-production-settings)).
-4. ✅ **Temporary self-signed certificate** (`make prod-cert`), since
-   there is no domain yet ([6.9](production.md#69-the-https-certificate-lets-encrypt)).
-5. ✅ **`make prod-up`**, then check the containers, the migrations and
-   `https://165.227.81.12/api/health` ([6.10](production.md#610-start-the-application)).
-   The browser warns about the certificate: expected until step 9.
-6. ✅ **First admin and seed activities** ([6.11](production.md#611-first-admin-and-content)).
+**Before 2027-09-24:** decide whether to renew `bryanbd16.xyz` (renewal
+is more expensive than the first year) or move to another domain. If
+the domain expires, the site disappears under that name and the
+certificate can no longer be renewed.
 
-### Before sharing the link
+## Decisions and their reasons
 
-7. ⏳ **Buy a domain** and create its **A record** →
-   `165.227.81.12` ([6.3](production.md#63-point-the-domain-to-the-droplet)).
-8. ⏳ **Cloud Firewall**: inbound 22, 80, 443 only
-   ([6.5](production.md#65-firewall)). Then check with `nc -zv`: 22
-   succeeds, 443 answers, 8080 times out.
-9. ⏳ **Let's Encrypt certificate** with the deploy hook, replacing the
-   self-signed one; test the renewal with `certbot renew --dry-run`
-   ([6.9](production.md#69-the-https-certificate-lets-encrypt)).
-10. ⏳ **Backups**: `backup.sh`, daily cron job, a copy off the Droplet,
-    and one restore test ([9](production.md#9-backups-and-restore)).
-11. ⏳ **Reboot test**: everything comes back by itself
-    ([6.12](production.md#612-last-checks)).
-12. ⏳ Go through the **security checklist**
-    ([13](production.md#13-security-checklist)).
-13. ⏳ Update [production.md, section 15](production.md#15-what-has-been-verified)
-    with what the real deployment verified, and fill in the region and
-    size above.
+| Decision | Why | Consequence |
+|---|---|---|
+| Deployment files in every branch | Branches are versions, environments are places; releasing stays a simple merge | `production` is always an older or equal version of `development` |
+| nginx terminates HTTPS itself | The backend refuses plain HTTP in production (HTTPS-only cookies); one proxy keeps the real client IP for rate limiting | Certificates must be mounted into the frontend container |
+| Migrations run automatically at each `make prod-up` | No `dotnet ef` in the production image; nobody can forget them | Every migration must be read before a release ([manual 8](production.md#8-database-migrations-in-production)) |
+| DigitalOcean Droplet | A plain Linux server: `compose.prod.yaml` runs unchanged; good documentation | We manage the server ourselves (updates, security) |
+| `deploy` user, SSH keys only, no root login | Keys cannot be guessed; `root` is the first target of attacks | Losing the laptop's SSH key means using DigitalOcean's recovery console |
+| Clone over HTTPS, no deploy key | The repository is public | A private repository would need the deploy key of manual 6.7 |
+| Self-signed certificate first | Get the site working before having a domain | Browser warning until the Let's Encrypt certificate |
+| Firewall after the site worked | Priority to a working site; only 22 and 443 were exposed meanwhile | Done later the same day |
+| `.xyz` domain, app on a subdomain | Cheapest first year; the bare domain stays free for other projects | More expensive renewal; `.xyz` has a spam reputation with some filters |
+| **No backups** | Portfolio project: the data (accounts, activities, results) can be recreated, and the seed activities come from Git | If the Droplet or its volume is lost, users and results are lost; restart with `make prod-up` + `make prod-seed`. To add them later: [manual 9](production.md#9-backups-and-restore) (commands already tested) |
 
-### Later improvements
+## Lessons learned
 
-See [production.md, section 14](production.md#14-known-limitations-and-next-improvements):
-HTTP → HTTPS redirect, off-server backups, images built by CI, automated
-releases, uptime monitoring, HSTS.
+The ones worth remembering for the next deployment:
+
+1. **Rehearse production locally first.** The HTTPS-only cookie problem
+   was found on the laptop, not on the server.
+2. **Placeholders are not literal.** `<ip>`, `your-email@example.com`:
+   replace the whole thing, brackets and prefixes included.
+3. **Paste one block at a time** and wait for the prompt, especially when
+   a block contains `exit` or `reboot`.
+4. **Keep a safety session open** when changing SSH or firewall settings,
+   and test from a new terminal before closing it.
+5. **Check what a setting actually does** (`sshd -T`, `groups`, `dig`,
+   `nc`) rather than trusting that the edit worked.
+6. **Secrets never leave the server** except to the password manager: not
+   in Git, chats or screenshots. Check them without displaying them
+   (`grep -c`).
+7. **Know where a command must run**: laptop or Droplet, with or without
+   `sudo`. The prompt tells you (`bryan-blais-dupuis@...` vs
+   `deploy@revision-platform-prod`).
+8. **DNS has several layers** (registry → nameservers → record) and
+   caches; a correct record can take time to be visible.
+9. **Refused vs timeout** tells you whether a firewall is involved.
+10. **Idempotent commands are your friend**: apt, `mkdir -p` and
+    `make prod-up` can be repeated safely. `make prod-seed` cannot.

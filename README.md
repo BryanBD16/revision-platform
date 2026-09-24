@@ -151,6 +151,8 @@ so the backend must be running too. Tests use Vitest.
 
 The full guide (concepts, first deployment on DigitalOcean, releases,
 backups, troubleshooting) is in [docs/production.md](docs/production.md).
+The story of the actual deployment (what was done, decisions, lessons
+learned, what is left) is in [docs/deployment-log.md](docs/deployment-log.md).
 
 `compose.prod.yaml` runs the whole application in Docker:
 
