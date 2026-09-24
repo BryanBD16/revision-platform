@@ -9,7 +9,7 @@ db_connection = Server=127.0.0.1;Port=$(MYSQL_PORT);Database=$(1);User=$(MYSQL_U
         backend-build backend-test backend-run db-migrate db-migration \
         user-list user-grant-role user-revoke-role user-reset-password \
         frontend-install frontend-build frontend-test frontend-run \
-        prod-cert prod-build prod-up prod-down prod-logs prod-command
+        prod-cert prod-build prod-up prod-down prod-logs prod-command prod-seed
 
 help: ## List available commands
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
@@ -139,3 +139,7 @@ prod-command: ## Run a backend command in production: make prod-command CMD='use
 	$(prod_env_check)
 	@test -n "$(CMD)" || (echo "Usage: make prod-command CMD='users list'" && exit 1)
 	$(PROD_COMPOSE) run --rm --no-deps backend $(CMD)
+
+prod-seed: ## Create the seed activities in production, or some of them: make prod-seed FILES='csharp-*.json'
+	$(prod_env_check)
+	$(PROD_COMPOSE) run --rm --no-deps -v "$(CURDIR)/seed/activities:/seed:ro" backend seed /seed $(if $(FILES),"$(FILES)")

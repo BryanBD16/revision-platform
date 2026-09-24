@@ -181,6 +181,10 @@ first admin:
 make prod-command CMD='users grant-role ada@example.com admin'
 ```
 
+`make prod-seed [FILES=...]` creates the seed activities in production,
+like `make db-seed` (the `seed/activities` directory is mounted into the
+one-off container).
+
 ## Commands
 
 Run `make` to list all commands.
@@ -215,3 +219,4 @@ Run `make` to list all commands.
 | `make prod-down`             | Stop production (data is kept)                       |
 | `make prod-logs`             | Follow the production logs                           |
 | `make prod-command CMD=...`  | Run a backend command in production                  |
+| `make prod-seed [FILES=...]` | Create the seed activities (or some) in production   |
