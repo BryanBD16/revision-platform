@@ -1194,12 +1194,13 @@ Verified on a development machine with the production setup
 Verified on the real Droplet during the first deployment (2026-09-24,
 details in [deployment-log.md](deployment-log.md)):
 
-- every DigitalOcean step of section 6 except the reboot test (6.12);
+- every DigitalOcean step of section 6, including the reboot test (6.12:
+  the containers came back by themselves, data kept);
 - the Cloud Firewall (checked with `nc` from outside);
 - Let's Encrypt issuance with the deploy hook, the certificate trusted
   without `-k`, and a successful `certbot renew --dry-run`.
 
-**Not verified yet:** behaviour after a server reboot, a real renewal
+**Not verified yet:** a real renewal
 (due around 2026-11-23), the backup cron job (backups were skipped for
 this portfolio project), and that the rate limiting uses the real client
 IP (the setting is in place, but no test observed it).

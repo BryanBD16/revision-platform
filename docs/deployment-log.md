@@ -58,6 +58,7 @@ Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.8
 | 9 | [Firewall](#9-firewall) | DigitalOcean panel | Only 22, 80, 443 reachable |
 | 10 | [Prepare the certificate](#10-prepare-the-certificate) | Droplet | certbot + renewal hook ready |
 | 11 | [Get the certificate](#11-get-the-real-certificate) | Droplet | Let's Encrypt certificate, auto-renewed: **the site is live** |
+| 12 | [Reboot test](#12-reboot-test) | Droplet | Everything comes back by itself, data kept |
 
 ## The server
 
@@ -369,16 +370,37 @@ Things that looked alarming but were not:
 - A browser that accepted the self-signed warning for the IP may remember
   that exception: open the site in a new tab.
 
+### 12. Reboot test
+
+*Droplet. Manual: 6.12.* ✅ Done on 2026-09-24.
+
+**Why:** a reboot will happen sooner or later: a kernel update (Ubuntu
+installs security updates automatically but only reboots when asked, and
+creates `/var/run/reboot-required`), DigitalOcean maintenance or a
+hardware failure, a resize, a crash. After a reboot, Docker restarts the
+containers itself (`restart: unless-stopped`) **without** `make prod-up`'s
+ordering: the backend may start before MySQL, nginx before the backend.
+The test checks that everything still recovers on its own.
+
+```sh
+sudo reboot                      # the SSH session closes
+ssh deploy@165.227.81.12         # a minute later
+uptime                           # "up 1 min": the reboot happened
+cd ~/revision-platform
+docker compose --env-file .env.production -f compose.prod.yaml ps -a
+```
+
+- ✅ Reported: everything back up (`db`, `backend`, `frontend` Up; `migrate`
+  stays Exited, it only runs during `make prod-up`), site working.
+- ✅ Checked from the laptop: `https://revision.bryanbd16.xyz/api/health` →
+  200, and the API still lists the 18 seed activities: the data survived
+  in the `mysql-data` volume.
+- ⚠️ The `uptime` and `ps -a` outputs were not recorded.
+
 ## What is left
 
 1. ✅ [Get the certificate](#11-get-the-real-certificate).
-2. ⏳ **Reboot test** (~5 minutes): `sudo reboot`, reconnect after a
-   minute, then check that everything came back by itself
-   ([manual 6.12](production.md#612-last-checks)):
-   ```sh
-   cd ~/revision-platform
-   docker compose --env-file .env.production -f compose.prod.yaml ps
-   ```
+2. ✅ [Reboot test](#12-reboot-test).
 3. ⏳ Go through the **security checklist**
    ([manual 13](production.md#13-security-checklist)) (~10 minutes).
 4. ⏳ Fill in the region and size in [the server](#the-server) table.
