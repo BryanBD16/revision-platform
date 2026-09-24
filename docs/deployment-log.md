@@ -57,7 +57,7 @@ Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.8
 | 8 | [Domain and DNS](#8-domain-and-dns) | Namecheap | `revision.bryanbd16.xyz` → `165.227.81.12` (took ~30 min to publish) |
 | 9 | [Firewall](#9-firewall) | DigitalOcean panel | Only 22, 80, 443 reachable |
 | 10 | [Prepare the certificate](#10-prepare-the-certificate) | Droplet | certbot + renewal hook ready |
-| 11 | [Get the certificate](#11-next-get-the-real-certificate) | Droplet | ⏳ Ready to do: DNS works |
+| 11 | [Get the certificate](#11-get-the-real-certificate) | Droplet | Let's Encrypt certificate, auto-renewed: **the site is live** |
 
 ## The server
 
@@ -73,7 +73,7 @@ Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.8
 | Admin user | `deploy` (SSH key only; `sudo` asks for its password) |
 | Application folder | `/home/deploy/revision-platform` |
 | Domain | `bryanbd16.xyz` (Namecheap, registered 2026-09-24, **expires 2027-09-24**) |
-| Application URL | `https://revision.bryanbd16.xyz` |
+| Application URL | **https://revision.bryanbd16.xyz** (live, Let's Encrypt certificate until 2026-12-23, renewed automatically) |
 | Released version | `v1.0.0` (branch `production`), running since 2026-09-24 |
 
 The MySQL passwords are in `.env.production` on the Droplet and in the
@@ -326,24 +326,14 @@ in case a future mistake publishes a port.
   needed because the files in `/etc/letsencrypt/live/` are symbolic links
   that would point to nothing inside the container.
 
-`certbot certonly` was **not** run yet: Let's Encrypt must find the
+`certbot certonly` then waited for DNS: Let's Encrypt must find the
 domain through public DNS, and repeated failed attempts get temporarily
-blocked.
+blocked. Preparing everything else meanwhile made the final step a single
+command.
 
-### 11. Next: get the real certificate
+### 11. Get the real certificate
 
-⏳ To do: DNS resolves since 2026-09-24, the step can be done now.
-
-**1. Check DNS** from the laptop. Both must print `165.227.81.12`:
-
-```sh
-dig +short A revision.bryanbd16.xyz @1.1.1.1
-dig +short A revision.bryanbd16.xyz @8.8.8.8
-```
-
-**2. Get the certificate** on the Droplet, in `~/revision-platform`.
-Replace `YOUR_EMAIL` entirely with your email address (Let's Encrypt's
-contact for your account):
+*Droplet. Manual: 6.9.* ✅ Done on 2026-09-24, right after DNS resolved.
 
 ```sh
 sudo certbot certonly --standalone -d revision.bryanbd16.xyz --agree-tos -m YOUR_EMAIL
@@ -351,40 +341,37 @@ sudo certbot certonly --standalone -d revision.bryanbd16.xyz --agree-tos -m YOUR
 
 *Standalone* mode: certbot briefly starts its own small web server on
 port 80, Let's Encrypt connects to `http://revision.bryanbd16.xyz/...` to
-check that you control the domain, and the certificate is saved in
+check that we control the domain, and the certificate is saved in
 `/etc/letsencrypt/live/revision.bryanbd16.xyz/`. This is why port 80 is
 open in the firewall even though the application does not use it.
 
-**3. Install it for nginx.** The hook only runs automatically on
-*renewals*, so run it once by hand. It replaces the self-signed files and
-reloads nginx:
+- ✅ `Successfully received certificate`, expires **2026-12-23** (90 days).
+- ✅ Certbot ran the deploy hook **by itself** on this first issuance:
+  the certificate was copied into `certs/` and nginx reloaded. No manual
+  step was needed (the plan said to run the hook by hand; the manual was
+  corrected).
+- ✅ From the laptop, **without** `-k`:
+  `curl https://revision.bryanbd16.xyz/api/health` → 200. The served
+  certificate: `CN = revision.bryanbd16.xyz`, issuer
+  `Let's Encrypt (YE2)`, valid 2026-09-24 → 2026-12-23.
+- ✅ `sudo certbot renew --dry-run` → `all simulated renewals succeeded`.
+- ✅ `systemctl list-timers` shows `snap.certbot.renew.timer` (it checks
+  twice a day and renews when fewer than 30 days remain, so around
+  2026-11-23).
 
-```sh
-sudo /etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh
-```
+Things that looked alarming but were not:
 
-**4. Check**, from the laptop: no `-k` this time, curl must trust the
-certificate on its own:
-
-```sh
-curl https://revision.bryanbd16.xyz/api/health     # Healthy
-```
-
-Then open `https://revision.bryanbd16.xyz`: a padlock, no warning.
-
-**5. Check the automatic renewal** on the Droplet. The dry run talks to
-Let's Encrypt's test server and does not run the hook:
-
-```sh
-sudo certbot renew --dry-run
-sudo certbot certificates                  # the domain and the expiry date (90 days)
-systemctl list-timers | grep certbot       # the timer that renews it automatically
-```
+- `Hook 'deploy-hook' ran with error output: ... signal process started`:
+  nginx confirms the reload on its *error stream*, and certbot reports
+  anything written there. The reload worked.
+- The EFF newsletter question is optional (answered yes; any of their
+  emails has an unsubscribe link).
+- A browser that accepted the self-signed warning for the IP may remember
+  that exception: open the site in a new tab.
 
 ## What is left
 
-1. ⏳ [Get the certificate](#11-next-get-the-real-certificate)
-   (~10 minutes; DNS already works).
+1. ✅ [Get the certificate](#11-get-the-real-certificate).
 2. ⏳ **Reboot test** (~5 minutes): `sudo reboot`, reconnect after a
    minute, then check that everything came back by itself
    ([manual 6.12](production.md#612-last-checks)):
@@ -394,9 +381,9 @@ systemctl list-timers | grep certbot       # the timer that renews it automatica
    ```
 3. ⏳ Go through the **security checklist**
    ([manual 13](production.md#13-security-checklist)) (~10 minutes).
-4. ⏳ Fill in the region and size in [the server](#the-server) table, and
-   update [manual section 15](production.md#15-what-has-been-verified)
-   with what this deployment verified.
+4. ⏳ Fill in the region and size in [the server](#the-server) table.
+   ([Manual section 15](production.md#15-what-has-been-verified) is
+   updated with what this deployment verified.)
 5. ⏭️ **Backups: skipped on purpose** (see
    [decisions](#decisions-and-their-reasons)).
 
@@ -449,5 +436,8 @@ The ones worth remembering for the next deployment:
 8. **DNS has several layers** (registry → nameservers → record) and
    caches; a correct record can take time to be visible.
 9. **Refused vs timeout** tells you whether a firewall is involved.
-10. **Idempotent commands are your friend**: apt, `mkdir -p` and
+10. **Tools change; observe what they actually do.** The plan said the
+    certbot hook would need a manual first run; certbot 5.8.0 ran it by
+    itself. Check the result, then fix the documentation.
+11. **Idempotent commands are your friend**: apt, `mkdir -p` and
     `make prod-up` can be repeated safely. `make prod-seed` cannot.

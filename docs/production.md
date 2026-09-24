@@ -697,25 +697,29 @@ points to the Droplet (the deploy hook overwrites the files in `certs/`).
 
 `certbot` obtains a free certificate from Let's Encrypt. To prove you
 control the domain, Let's Encrypt connects to it on port 80; certbot's
-*standalone* mode answers on port 80 itself (nothing else uses it here).
+*standalone* mode answers on port 80 itself (nothing else uses it here,
+and the firewall allows it). The certificate is valid **90 days**;
+certbot installs a timer that renews it automatically about 30 days
+before expiry.
+
+**1. Install certbot** (certbot's recommended way: `snap` keeps it
+updated):
 
 ```sh
 droplet$ sudo snap install --classic certbot
 droplet$ sudo ln -s /snap/bin/certbot /usr/bin/certbot
-droplet$ sudo certbot certonly --standalone -d revision.example.com -m you@example.com --agree-tos
 ```
 
-The certificate is in `/etc/letsencrypt/live/revision.example.com/`. It is
-valid **90 days**; certbot installs a timer that renews it automatically
-about 30 days before expiry.
-
-The files in `live/` are symbolic links to `../../archive/...`; mounted
-alone into the container, those links would point to nothing. So a
-**deploy hook** copies the real files into `~/revision-platform/certs`
-and tells nginx to reload them. Certbot runs it after every successful
-renewal:
+**2. Create the deploy hook, before requesting the certificate.** The
+certificate files in `/etc/letsencrypt/live/<domain>/` are symbolic
+links to `../../archive/...`; mounted alone into the container, those
+links would point to nothing. So a **deploy hook** copies the real files
+into `~/revision-platform/certs` and tells nginx to reload them. Certbot
+runs every script of `renewal-hooks/deploy/` after each certificate it
+obtains: the first one (observed with certbot 5.8.0) and every renewal.
 
 ```sh
+droplet$ sudo mkdir -p /etc/letsencrypt/renewal-hooks/deploy
 droplet$ sudo nano /etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh
 ```
 
@@ -737,8 +741,6 @@ docker compose --env-file .env.production -f compose.prod.yaml exec -T frontend 
 
 ```sh
 droplet$ sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh
-droplet$ sudo /etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh   # first copy
-droplet$ ls -l ~/revision-platform/certs                                    # fullchain.pem, privkey.pem
 ```
 
 `install` copies the *content* of the linked files. `privkey.pem` stays
@@ -746,11 +748,40 @@ owned by root with mode `600`: nginx's master process runs as root in the
 container, so it can read it, and the `deploy` user cannot leak it by
 mistake.
 
-Check the renewal works (a dry run talks to Let's Encrypt's test server
-and does **not** run deploy hooks):
+**3. Request the certificate**, only once DNS resolves
+(`dig +short A revision.example.com @1.1.1.1` prints the Droplet's IP):
+Let's Encrypt temporarily blocks domains after repeated failures.
 
 ```sh
-droplet$ sudo certbot renew --dry-run
+droplet$ sudo certbot certonly --standalone -d revision.example.com -m you@example.com --agree-tos
+```
+
+Expected: `Successfully received certificate.` and the expiry date. The
+hook runs right away; certbot prints
+`Hook 'deploy-hook' ran with error output: ... signal process started`.
+Despite the wording, it is not an error: that line is nginx confirming
+the reload, written to the *error stream*, which certbot reports. (If the
+hook did not run, run it by hand:
+`sudo /etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh`.)
+
+Check from your computer, **without** `-k`, so curl must trust the
+certificate on its own:
+
+```sh
+local$ curl https://revision.example.com/api/health       # Healthy
+local$ echo | openssl s_client -connect revision.example.com:443 -servername revision.example.com 2>/dev/null \
+         | openssl x509 -noout -subject -issuer -dates   # CN = your domain, issuer Let's Encrypt
+```
+
+A browser that accepted the self-signed certificate's warning before
+may remember that exception: open the site in a new tab.
+
+**4. Check the automatic renewal.** A dry run rehearses a renewal against
+Let's Encrypt's test server (it does **not** run deploy hooks):
+
+```sh
+droplet$ sudo certbot renew --dry-run                # all simulated renewals succeeded
+droplet$ systemctl list-timers | grep certbot        # snap.certbot.renew.timer: runs twice a day
 ```
 
 ### 6.10 Start the application
@@ -1160,9 +1191,15 @@ Verified on a development machine with the production setup
 - the backup command, and restoring it into an empty database;
 - `nginx -s reload` after replacing the certificate files.
 
-**Not verified yet**, because they need the real server: every
-DigitalOcean step (6.2 to 6.7), Let's Encrypt issuance and renewal with
-the deploy hook, behaviour after a server reboot, the cron job, and that
-the rate limiting uses the real client IP (the setting is in place, but no
-test observed it). Check them during the first deployment and update this
-section.
+Verified on the real Droplet during the first deployment (2026-09-24,
+details in [deployment-log.md](deployment-log.md)):
+
+- every DigitalOcean step of section 6 except the reboot test (6.12);
+- the Cloud Firewall (checked with `nc` from outside);
+- Let's Encrypt issuance with the deploy hook, the certificate trusted
+  without `-k`, and a successful `certbot renew --dry-run`.
+
+**Not verified yet:** behaviour after a server reboot, a real renewal
+(due around 2026-11-23), the backup cron job (backups were skipped for
+this portfolio project), and that the rate limiting uses the real client
+IP (the setting is in place, but no test observed it).
