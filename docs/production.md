@@ -587,7 +587,15 @@ only give it to users you trust.
 
 ### 6.7 Get the code
 
-The Droplet needs read access to the GitHub repository. A **deploy key**
+**If the repository is public** (the case for this project), no key is
+needed; clone over HTTPS and skip the deploy key below:
+
+```sh
+droplet$ git clone https://github.com/BryanBD16/revision-platform.git ~/revision-platform
+droplet$ cd ~/revision-platform && git checkout production
+```
+
+**If the repository is private**, the Droplet needs read access to the GitHub repository. A **deploy key**
 is an SSH key that gives access to one repository only, read-only; if the
 Droplet were compromised, the attacker could not push code nor reach your
 other repositories.
