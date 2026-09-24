@@ -67,9 +67,37 @@ name, signed by an authority that browsers trust (here: Let's Encrypt,
 free). The certificate is made of two files: `fullchain.pem` (public, sent
 to browsers) and `privkey.pem` (secret, never shared).
 
+**Certificate authority and self-signed certificates.** Browsers trust a
+certificate only if it is signed by a *certificate authority* they know
+(such as Let's Encrypt), which first checked that the requester controls
+the name in it. A *self-signed* certificate (`make prod-cert`) is signed
+by the server itself: the connection is still encrypted, but nobody
+trusted vouches for the server's identity, so browsers show a warning.
+Fine for a rehearsal, not for users.
+
 **Domain name and DNS.** A domain (`revision.example.com`) is a
 human-friendly name. DNS is the system that translates it into the
-server's IP address, through an *A record*.
+server's IP address, through an *A record*. A lookup goes down a chain:
+a resolver (your ISP's, `1.1.1.1`, `8.8.8.8`) asks the root servers who
+handles `.com`, then the `.com` registry who handles `example.com`, then
+that domain's nameservers (the registrar's, for example) for the record
+of `revision.example.com`. Resolvers cache the answers, including "does
+not exist", for a time set by the domain (the *TTL*). That is why a new
+domain or record can take minutes to hours to be visible everywhere.
+
+**Why a domain rather than the IP address.** The site works at
+`https://<ip>`, but:
+
+- HTTPS certificates from a trusted authority are issued for names.
+  Certificates for IP addresses are rare (Let's Encrypt only recently
+  started offering short-lived ones), so an IP means a browser warning
+  that users rightly flee;
+- the IP belongs to the hosting provider: rebuild the server and it
+  changes, breaking every shared link, whereas a domain only needs its
+  DNS record updated;
+- people trust, remember and share names; links to bare IPs look like
+  phishing and are flagged by some filters;
+- one domain gives unlimited subdomains (`revision.`, `staging.`...).
 
 **VPS / Droplet.** A virtual private server: a Linux machine you rent and
 fully control. DigitalOcean calls them *Droplets*.
@@ -561,6 +589,11 @@ to the Droplet, with these inbound rules:
 | TCP | 80 | All | Let's Encrypt checks (certificate issuance and renewal) |
 | TCP | 443 | All | The application |
 
+To check the rules from your computer, `nc -zv -w 5 203.0.113.10 <port>`
+answers *succeeded* (allowed, something listens), *refused* (allowed,
+nothing listens: the packet reached the Droplet) or *timed out* (the
+firewall dropped the packet before it arrived).
+
 Why the Cloud Firewall rather than Ubuntu's `ufw`: **Docker writes its own
 network rules, which bypass `ufw`**. A port published by a container is
 reachable even if `ufw` blocks it. The Cloud Firewall filters traffic
@@ -858,6 +891,11 @@ and restore the backup if in doubt.
 ---
 
 ## 9. Backups and restore
+
+**Optional for a portfolio project.** The first deployment skipped
+backups on purpose (see [deployment-log.md](deployment-log.md#decisions-and-their-reasons)):
+its data can be recreated. Set them up before real users rely on the
+site: the commands below were tested.
 
 **A backup that was never restored is not a backup.** Test the restore at
 least once.
