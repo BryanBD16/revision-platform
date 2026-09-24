@@ -5,6 +5,9 @@ deploy it, update it, back it up and repair it. It is written to be
 studied, not only followed: each step says **why** it exists, not only
 **what** to type.
 
+The progress of the actual deployment is tracked in
+[deployment-log.md](deployment-log.md).
+
 It covers:
 
 1. [Key concepts](#1-key-concepts)
@@ -467,34 +470,73 @@ DNS changes can take from minutes to a few hours to spread. Check:
 local$ dig +short revision.example.com    # must print 203.0.113.10
 ```
 
-### 6.4 First login and a non-root user
+### 6.4 First login, updates and a non-root user
 
 ```sh
 local$ ssh root@203.0.113.10
 ```
 
-Working as `root` all the time is risky (one typo can break the system),
-so create a normal user with `sudo` rights and give it your SSH key:
+The first time, SSH shows the server's fingerprint and asks whether to
+trust it: answer `yes`. It saves it in `~/.ssh/known_hosts` and will warn
+you if the server's identity ever changes.
+
+A new Droplet's image is a few weeks old, so install the pending updates
+first (on the first deployment: 154 updates, 125 of them security fixes):
 
 ```sh
-droplet$ adduser deploy                  # choose a password (used for sudo)
-droplet$ usermod -aG sudo deploy
+droplet$ apt update && apt upgrade -y
+droplet$ ls /var/run/reboot-required && reboot    # reboots only if an update asks for it (kernel)
+```
+
+If a screen asks about a modified configuration file, keep the local
+version; if it asks which services to restart, accept the defaults.
+
+Working as `root` all the time is risky (it can do anything, with no
+confirmation), so create a normal user with `sudo` rights and give it your
+SSH key:
+
+```sh
+droplet$ adduser deploy                  # choose a password: sudo asks for it
+droplet$ usermod -aG sudo deploy         # -a = append to the groups
 droplet$ rsync --archive --chown=deploy:deploy ~/.ssh /home/deploy
-droplet$ exit
-local$ ssh deploy@203.0.113.10           # from now on, log in as deploy
 ```
 
-Then forbid password logins over SSH (keys only):
+**Keep the root session open**, and in a second terminal:
 
 ```sh
-droplet$ sudo nano /etc/ssh/sshd_config
-#   set:  PasswordAuthentication no
-#         PermitRootLogin no
-droplet$ sudo systemctl restart ssh
+local$ ssh deploy@203.0.113.10
+droplet$ sudo whoami                     # must print: root
 ```
 
-Before closing your current session, open a **second** terminal and check
-you can still log in as `deploy`. If not, fix it from the first session.
+Then forbid root logins and password logins over SSH (keys only). Do it
+in a file of `/etc/ssh/sshd_config.d/` rather than in
+`/etc/ssh/sshd_config`: those files are read first, and for SSH **the
+first value found wins**. On DigitalOcean's Ubuntu image,
+`50-cloud-init.conf` is there and could override an edit of the main
+file; the name `00-...` makes ours win.
+
+```sh
+droplet$ sudo tee /etc/ssh/sshd_config.d/00-hardening.conf > /dev/null <<'EOF'
+# Keys only, and no direct root login (use deploy + sudo).
+PasswordAuthentication no
+PermitRootLogin no
+EOF
+droplet$ sudo sshd -t && sudo systemctl restart ssh      # -t: checks the syntax first
+droplet$ sudo sshd -T | grep -E '^(passwordauthentication|permitrootlogin)'
+#   permitrootlogin no
+#   passwordauthentication no
+```
+
+`sshd` needs `sudo`: without it, it cannot read the configuration files
+(`Permission denied`). It only exists on the server, not on your computer.
+
+Test from a new terminal before closing the root session:
+
+```sh
+local$ ssh deploy@203.0.113.10                              # must work
+local$ ssh root@203.0.113.10                                # Permission denied (publickey)
+local$ ssh -o PubkeyAuthentication=no deploy@203.0.113.10   # Permission denied, no password asked
+```
 
 Ubuntu installs security updates automatically (`unattended-upgrades`).
 Apply the others from time to time:
@@ -504,6 +546,11 @@ droplet$ sudo apt update && sudo apt upgrade
 ```
 
 ### 6.5 Firewall
+
+This step can be done after the application works (that is what the
+first deployment did, see [deployment-log.md](deployment-log.md)), but
+**before sharing the link**. Until then, only SSH (keys only) and nginx's
+port are reachable: Docker publishes no other port.
 
 Use a **DigitalOcean Cloud Firewall** (*Networking → Firewalls*), applied
 to the Droplet, with these inbound rules:
@@ -595,6 +642,17 @@ the characters that break the connection string (`;`, `$`).
 password to restore a backup on a new server.
 
 ### 6.9 The HTTPS certificate (Let's Encrypt)
+
+**No domain yet?** Let's Encrypt needs one. To get the application
+running first, use a self-signed certificate and open
+`https://203.0.113.10`, accepting the browser's warning:
+
+```sh
+droplet$ cd ~/revision-platform && make prod-cert
+```
+
+Replace it with the Let's Encrypt certificate below once the domain
+points to the Droplet (the deploy hook overwrites the files in `certs/`).
 
 `certbot` obtains a free certificate from Let's Encrypt. To prove you
 control the domain, Let's Encrypt connects to it on port 80; certbot's
