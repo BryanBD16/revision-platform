@@ -86,13 +86,32 @@ sharing the link**. Meanwhile, only port 22 (SSH, keys only) and, once
 the application runs, nginx's port are reachable: MySQL and the backend
 publish no port.
 
+### Step 6.6: Docker, Git and Make ✅
+
+Installed from Docker's own apt repository (see the guide):
+
+- Docker Engine 29.8.1 (the same version as the development computer),
+  Docker Compose plugin v5.5.1, Git 2.43.0, Make 4.3.
+- `deploy` added to the `docker` group, then logged out and in again.
+- ✅ `docker run --rm hello-world` prints "Hello from Docker!".
+- ✅ `groups` shows `deploy sudo users docker`.
+
+Lessons learned:
+
+- Paste **one block at a time** and wait for the prompt. A paste that
+  contains `exit` followed by other commands closes the session, and
+  the following lines never run where intended.
+- The install had in fact been run once already in a session that was
+  not recorded; running it again only printed `already the newest
+  version`. apt commands are safe to repeat.
+
 ## What is left
 
 In order. Each item points to the guide section.
 
 ### To get the website working (current goal)
 
-1. ⏳ **Install Docker, Git and Make** on the Droplet
+1. ✅ **Install Docker, Git and Make** on the Droplet
    ([6.6](production.md#66-install-docker-git-and-make)), and add `deploy`
    to the `docker` group.
 2. ⏳ **Clone the repository** with a read-only GitHub deploy key, on the
