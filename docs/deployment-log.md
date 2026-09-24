@@ -59,6 +59,7 @@ Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.8
 | 10 | [Prepare the certificate](#10-prepare-the-certificate) | Droplet | certbot + renewal hook ready |
 | 11 | [Get the certificate](#11-get-the-real-certificate) | Droplet | Let's Encrypt certificate, auto-renewed: **the site is live** |
 | 12 | [Reboot test](#12-reboot-test) | Droplet | Everything comes back by itself, data kept |
+| 13 | [Security checklist](#13-security-checklist) | Everywhere | Done; backups and password manager skipped on purpose |
 
 ## The server
 
@@ -68,9 +69,8 @@ Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.8
 | Droplet name | `revision-platform-prod` |
 | Public IPv4 | `165.227.81.12` |
 | Image | Ubuntu 24.04 LTS (24.04.5 after the updates) |
-| Disk | 47 GB |
-| Region | *to fill in* |
-| Size (RAM / CPU) | *to fill in* |
+| Size | Basic (shared CPU): 1 vCPU, 2 GB RAM, 50 GB disk |
+| Region | not recorded (shown on the Droplet's page) |
 | Admin user | `deploy` (SSH key only; `sudo` asks for its password) |
 | Application folder | `/home/deploy/revision-platform` |
 | Domain | `bryanbd16.xyz` (Namecheap, registered 2026-09-24, **expires 2027-09-24**) |
@@ -409,17 +409,45 @@ docker compose --env-file .env.production -f compose.prod.yaml ps -a
   in the `mysql-data` volume.
 - ⚠️ The `uptime` and `ps -a` outputs were not recorded.
 
+### 13. Security checklist
+
+*Manual: 13.* ✅ Done on 2026-09-24.
+
+| Item | Result |
+|---|---|
+| SSH with keys only; root and password logins disabled | ✅ `sshd -T`, root refused ([stage 3](#3-secure-the-server)) |
+| Cloud Firewall: only 22, 80, 443 | ✅ `nc` from outside ([stage 9](#9-firewall)) |
+| `.env.production`: random passwords, mode `600`, not in Git | ✅ ([stage 5](#5-get-the-code-and-the-settings)) |
+| Passwords saved in a password manager | ⏭️ Skipped on purpose ([decisions](#decisions-and-their-reasons)) |
+| GitHub deploy key read-only | ➖ Not applicable: public repository cloned over HTTPS |
+| HTTPS with Let's Encrypt, renewal tested | ✅ `certbot renew --dry-run` ([stage 11](#11-get-the-real-certificate)) |
+| Only nginx publishes a port | ✅ From outside, only 22, 80 and 443 answer; 3306 and 8080 time out |
+| Daily backups | ⏭️ Skipped on purpose ([decisions](#decisions-and-their-reasons)) |
+| Only you have admin accounts | ✅ `make prod-command CMD='users list'`: one user, the owner, role `admin` |
+
+Recommended outside the server: two-factor authentication on the
+DigitalOcean and Namecheap accounts ([secrets](#secrets-and-accounts)).
+
 ## What is left
+
+**The first deployment is complete** (2026-09-24): the application runs
+at https://revision.bryanbd16.xyz with a trusted, automatically renewed
+certificate, behind a firewall, and survives reboots.
 
 1. ✅ [Get the certificate](#11-get-the-real-certificate).
 2. ✅ [Reboot test](#12-reboot-test).
-3. ⏳ Go through the **security checklist**
-   ([manual 13](production.md#13-security-checklist)) (~10 minutes).
-4. ⏳ Fill in the region and size in [the server](#the-server) table.
-   ([Manual section 15](production.md#15-what-has-been-verified) is
-   updated with what this deployment verified.)
-5. ⏭️ **Backups: skipped on purpose** (see
+3. ✅ [Security checklist](#13-security-checklist).
+4. ⏭️ Backups and password manager: skipped on purpose (see
    [decisions](#decisions-and-their-reasons)).
+
+To keep an eye on:
+
+- **Around 2026-11-23:** the first real certificate renewal. Check with
+  `sudo certbot certificates` that the expiry date moved to February 2027.
+- **Every few weeks:** `sudo apt update && sudo apt upgrade` on the
+  Droplet, and reboot if `/var/run/reboot-required` exists (the reboot
+  test showed it is safe).
+- **Next release:** follow [manual 7](production.md#7-releasing-an-update).
 
 Later improvements, all optional
 ([manual 14](production.md#14-known-limitations-and-next-improvements)):
