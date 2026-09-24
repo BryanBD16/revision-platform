@@ -147,6 +147,44 @@ The app is served on `http://localhost:4200`. Requests to `/api` are
 forwarded to the backend on port 5044 (see `frontend/proxy.conf.json`),
 so the backend must be running too. Tests use Vitest.
 
+## Production (Docker)
+
+`compose.prod.yaml` runs the whole application in Docker:
+
+- `frontend`: nginx serves the Angular production build over HTTPS and
+  forwards `/api` to the backend. It is the only published port.
+- `backend`: the API (`backend/Dockerfile`), reachable only from nginx.
+- `migrate`: applies the pending migrations at each start, then exits;
+  the backend starts after it succeeds.
+- `db`: MySQL, with its data in a Docker volume.
+
+The settings are read from `.env.production` (not committed):
+
+```sh
+cp .env.production.example .env.production   # then set strong passwords
+make prod-cert                               # self-signed certificate in certs/, for trying it locally
+make prod-up                                 # https://localhost:8443 (the browser warns about the certificate)
+```
+
+The session cookies are HTTPS-only, so the application does not work
+over plain HTTP. On a server, put a real certificate (`fullchain.pem` and
+`privkey.pem`, for example from Let's Encrypt) in the directory set by
+`CERT_DIR`, and publish it with `APP_ADDRESS=0.0.0.0` and `APP_PORT=443`.
+
+The keys that encrypt the session cookies are kept in a volume, so users
+stay signed in when the backend container is recreated.
+
+The backend commands run in a one-off container, for example to make the
+first admin:
+
+```sh
+make prod-command CMD='users grant-role ada@example.com admin'
+```
+
+`make prod-seed [FILES=...]` creates the seed activities in production,
+like `make db-seed` (the `seed/activities` directory is mounted into the
+one-off container).
+
 ## Commands
 
 Run `make` to list all commands.
@@ -175,3 +213,10 @@ Run `make` to list all commands.
 | `make user-grant-role EMAIL=... ROLE=...` | Give a role to a user (asks for confirmation) |
 | `make user-revoke-role EMAIL=... ROLE=...` | Remove a role from a user (asks for confirmation) |
 | `make user-reset-password EMAIL=...` | Give a user a temporary password          |
+| `make prod-cert`             | Create a self-signed certificate in `certs/`         |
+| `make prod-build`            | Build the production images                          |
+| `make prod-up`               | Build and start production (migrates the database)   |
+| `make prod-down`             | Stop production (data is kept)                       |
+| `make prod-logs`             | Follow the production logs                           |
+| `make prod-command CMD=...`  | Run a backend command in production                  |
+| `make prod-seed [FILES=...]` | Create the seed activities (or some) in production   |

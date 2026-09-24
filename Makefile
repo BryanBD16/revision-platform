@@ -8,7 +8,8 @@ db_connection = Server=127.0.0.1;Port=$(MYSQL_PORT);Database=$(1);User=$(MYSQL_U
 .PHONY: help build test db-up db-down db-logs db-shell db-reset db-clear db-seed \
         backend-build backend-test backend-run db-migrate db-migration \
         user-list user-grant-role user-revoke-role user-reset-password \
-        frontend-install frontend-build frontend-test frontend-run
+        frontend-install frontend-build frontend-test frontend-run \
+        prod-cert prod-build prod-up prod-down prod-logs prod-command prod-seed
 
 help: ## List available commands
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
@@ -105,3 +106,40 @@ db-clear: ## DELETE all activities, modules and themes (the tables and the users
 db-seed: export ConnectionStrings__Default := $(call db_connection,$(MYSQL_DATABASE))
 db-seed: ## Create the seed activities, or some of them: make db-seed FILES='csharp-*.json'
 	@dotnet run --project $(BACKEND_API) --no-launch-profile -- seed "$(CURDIR)/seed/activities" $(if $(FILES),"$(FILES)")
+
+# --- Production (the whole application in Docker, see compose.prod.yaml) -------
+
+PROD_ENV := .env.production
+PROD_COMPOSE = docker compose --env-file $(PROD_ENV) -f compose.prod.yaml
+prod_env_check = @test -f $(PROD_ENV) || (echo "Create $(PROD_ENV) from .env.production.example first." && exit 1)
+
+prod-cert: ## Create a self-signed HTTPS certificate in certs/ (for trying production locally)
+	@mkdir -p certs
+	openssl req -x509 -newkey rsa:2048 -nodes -days 365 -subj "/CN=localhost" \
+		-addext "subjectAltName=DNS:localhost,IP:127.0.0.1" \
+		-keyout certs/privkey.pem -out certs/fullchain.pem
+
+prod-build: ## Build the production images of the backend and the frontend
+	$(prod_env_check)
+	$(PROD_COMPOSE) build
+
+prod-up: ## Build and start production (migrates the database), https://localhost:8443 by default
+	$(prod_env_check)
+	$(PROD_COMPOSE) up -d --build --wait
+
+prod-down: ## Stop production (data is kept)
+	$(prod_env_check)
+	$(PROD_COMPOSE) down
+
+prod-logs: ## Follow the production logs
+	$(prod_env_check)
+	$(PROD_COMPOSE) logs -f
+
+prod-command: ## Run a backend command in production: make prod-command CMD='users list'
+	$(prod_env_check)
+	@test -n "$(CMD)" || (echo "Usage: make prod-command CMD='users list'" && exit 1)
+	$(PROD_COMPOSE) run --rm --no-deps backend $(CMD)
+
+prod-seed: ## Create the seed activities in production, or some of them: make prod-seed FILES='csharp-*.json'
+	$(prod_env_check)
+	$(PROD_COMPOSE) run --rm --no-deps -v "$(CURDIR)/seed/activities:/seed:ro" backend seed /seed $(if $(FILES),"$(FILES)")
