@@ -1,0 +1,70 @@
+# Production: the whole application in Docker. Run it through the Makefile
+# (make prod-up), which reads the settings from .env.production.
+#
+# Only the frontend publishes a port: nginx serves the Angular application over
+# HTTPS and forwards /api to the backend. The certificate is read from CERT_DIR
+# (make prod-cert creates a self-signed one for trying it locally).
+
+name: revision-platform-prod
+
+x-database-connection: &database-connection
+  ConnectionStrings__Default: Server=db;Port=3306;Database=${MYSQL_DATABASE};User=${MYSQL_USER};Password=${MYSQL_PASSWORD}
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env.production (see .env.production.example)}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?Set MYSQL_DATABASE in .env.production (see .env.production.example)}
+      MYSQL_USER: ${MYSQL_USER:?Set MYSQL_USER in .env.production (see .env.production.example)}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env.production (see .env.production.example)}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  # Applies the pending migrations, then exits; the backend starts after it succeeds.
+  migrate:
+    image: revision-platform-backend
+    command: ["migrate"]
+    environment:
+      <<: *database-connection
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    image: revision-platform-backend
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      <<: *database-connection
+      # Read the client address from nginx's X-Forwarded-For (used by the rate limiting).
+      # Safe because the backend is only reachable from inside this compose network.
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+    volumes:
+      - data-protection-keys:/home/app/.aspnet/DataProtection-Keys
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    image: revision-platform-frontend
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${APP_ADDRESS:-127.0.0.1}:${APP_PORT:-8443}:443"
+    volumes:
+      # Must contain fullchain.pem and privkey.pem.
+      - ${CERT_DIR:-./certs}:/etc/nginx/certs:ro
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:
+  data-protection-keys:
