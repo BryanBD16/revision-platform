@@ -77,8 +77,21 @@ Browser ──HTTPS──► revision.bryanbd16.xyz ──DNS──► 165.227.8
 | Application URL | **https://revision.bryanbd16.xyz** (live, Let's Encrypt certificate until 2026-12-23, renewed automatically) |
 | Released version | `v1.0.0` (branch `production`), running since 2026-09-24 |
 
-The MySQL passwords are in `.env.production` on the Droplet and in the
-password manager, nowhere else.
+### Secrets and accounts
+
+Every secret involved in this deployment, from most to least important.
+None of them is in Git.
+
+| Secret | Where it lives | What it protects | If it is lost |
+|---|---|---|---|
+| DigitalOcean account | Chosen by you | Everything: Droplet, firewall, billing | Whoever has it controls the server: enable **2FA** |
+| Namecheap account | Chosen by you | The domain and its DNS | The domain could be redirected elsewhere: enable **2FA** |
+| SSH private key `~/.ssh/id_ed25519` | A file on the laptop | Logging in to the Droplet | Recover access through DigitalOcean's web console |
+| `sudo` password of `deploy` | Chosen at `adduser`, remembered | Every administration command | Can still log in with the key, but not administer; recover through DigitalOcean's console |
+| Admin account of the site | Chosen at sign-up | The application's admin features | `make prod-command CMD='users reset-password <email>'` |
+| MySQL passwords (2) | Generated, only in `.env.production` | The backend's connection to MySQL | Only needed to restore a backup (none are made) |
+
+No password manager is used (see [decisions](#decisions-and-their-reasons)).
 
 ## The stages, in the order they happened
 
@@ -200,9 +213,8 @@ are safe to repeat.)
   by `openssl rand -hex 24` and written straight into the file.
   - Mode `-rw-------`: only `deploy` can read it.
   - Checked with `grep -c` that both passwords are 48 hex characters,
-    **without displaying them**. They were displayed once, to be saved in
-    the password manager. Passwords never go in a chat, a screenshot or
-    Git.
+    **without displaying them**. Passwords never go in a chat, a
+    screenshot or Git.
 
 A public repository is the reason why no secret must ever be committed:
 anyone can read everything in it.
@@ -433,6 +445,7 @@ certificate can no longer be renewed.
 | Self-signed certificate first | Get the site working before having a domain | Browser warning until the Let's Encrypt certificate |
 | Firewall after the site worked | Priority to a working site; only 22 and 443 were exposed meanwhile | Done later the same day |
 | `.xyz` domain, app on a subdomain | Cheapest first year; the bare domain stays free for other projects | More expensive renewal; `.xyz` has a spam reputation with some filters |
+| **No password manager** | The MySQL passwords are only needed to restore a backup on a new server, and there are no backups; the `sudo` password is remembered | The MySQL passwords exist only in `.env.production`. Forgetting the `sudo` password means recovering through DigitalOcean's console. The accounts that really protect the project are DigitalOcean and Namecheap: enable 2FA on both |
 | **No backups** | Portfolio project: the data (accounts, activities, results) can be recreated, and the seed activities come from Git | If the Droplet or its volume is lost, users and results are lost; restart with `make prod-up` + `make prod-seed`. To add them later: [manual 9](production.md#9-backups-and-restore) (commands already tested) |
 
 ## Lessons learned
@@ -449,8 +462,8 @@ The ones worth remembering for the next deployment:
    and test from a new terminal before closing it.
 5. **Check what a setting actually does** (`sshd -T`, `groups`, `dig`,
    `nc`) rather than trusting that the edit worked.
-6. **Secrets never leave the server** except to the password manager: not
-   in Git, chats or screenshots. Check them without displaying them
+6. **Secrets never leave the server** (except to a password manager, if
+   you use one): not in Git, chats or screenshots. Check them without displaying them
    (`grep -c`).
 7. **Know where a command must run**: laptop or Droplet, with or without
    `sudo`. The prompt tells you (`bryan-blais-dupuis@...` vs
