@@ -19,7 +19,8 @@ Legend: ✅ done and verified · ⚠️ done, not fully verified · ⏳ to do
 | Region | *to fill in* |
 | Size (RAM / CPU) | *to fill in* (2 GB RAM or more recommended) |
 | Admin user | `deploy` (SSH key only, `sudo` with its password) |
-| Domain | none yet |
+| Domain | `bryanbd16.xyz` (Namecheap, registered 2026-09-24, expires 2027-09-24) |
+| Application URL | `https://revision.bryanbd16.xyz` (once DNS and the certificate are in place) |
 | Released version | `v1.0.0` (branch `production`), running since 2026-09-24 |
 
 ## Release preparation (2026-09-24)
@@ -79,12 +80,24 @@ Lessons learned:
   The guide initially said to edit `/etc/ssh/sshd_config`; it was
   corrected.
 
-### Step 6.5: Cloud Firewall ⏳ postponed
+### Step 6.5: Cloud Firewall ✅ (done after step 6.11)
 
-Decision: get the application working first, add the firewall **before
-sharing the link**. Meanwhile, only port 22 (SSH, keys only) and, once
-the application runs, nginx's port are reachable: MySQL and the backend
-publish no port.
+First postponed to get the application working, then created while
+waiting for DNS: DigitalOcean *Networking → Firewalls*, named
+`revision-platform-prod`, applied to the Droplet. Inbound: SSH 22,
+HTTP 80, HTTPS 443 (all sources); outbound: defaults (everything).
+
+Checked from the development computer with `nc -zv -w 5`:
+
+| Port | Result | Meaning |
+|---|---|---|
+| 22 | open | SSH allowed |
+| 443 | open, `/api/health` → 200 | The site |
+| 80 | refused | Allowed (for Let's Encrypt), nothing listening |
+| 3306, 8080 | timeout | Blocked by the firewall |
+
+*Refused* means the packet reached the Droplet, which answered "nobody
+here"; *timeout* means the firewall dropped it silently before.
 
 ### Step 6.6: Docker, Git and Make ✅
 
@@ -172,6 +185,41 @@ Lessons learned:
 - `make prod-seed` must run **once**: running it again duplicates every
   activity.
 
+### Step 6.3: domain and DNS record ⚠️ waiting for the registry
+
+- `bryanbd16.xyz` bought at Namecheap (the cheapest first year; renewal
+  is more expensive, see the expiry date above). The application lives
+  on a subdomain, `revision.bryanbd16.xyz`, so the bare domain stays free
+  for other projects.
+- Namecheap → Domain List → Manage → Advanced DNS → Add New Record:
+  `A Record`, host `revision`, value `165.227.81.12`, TTL Automatic.
+  Nameservers: Namecheap BasicDNS.
+- ✅ Namecheap's nameserver answers:
+  `dig +short A revision.bryanbd16.xyz @dns1.registrar-servers.com` →
+  `165.227.81.12`.
+- ⏳ The `.xyz` registry has not published the new domain yet
+  (`dig +norec NS bryanbd16.xyz @generationxyz.nic.xyz.` → `NXDOMAIN`),
+  so public resolvers do not find it. Normal for a domain registered
+  minutes ago; it usually takes minutes to a few hours.
+
+Lessons learned:
+
+- In a DNS record, *Host* is only the part before the domain
+  (`revision`); the registrar adds `.bryanbd16.xyz`.
+- A lookup goes registry → the domain's nameservers. A correct record at
+  Namecheap is invisible until the registry points to Namecheap.
+- Resolvers remember a "does not exist" answer (up to 1 hour for
+  `.xyz`): testing in the browser too early can delay things locally.
+- Namecheap sends an email to verify the contact address; an unverified
+  domain is suspended after about 15 days.
+
+### Step 6.9 preparation: certbot and the deploy hook ✅
+
+- certbot 5.8.0 installed with `snap`.
+- `/etc/letsencrypt/renewal-hooks/deploy/revision-platform.sh` created
+  (`-rwxr-xr-x root`), with `DOMAIN=revision.bryanbd16.xyz`.
+- ⏳ `certbot certonly` not run yet: it needs public DNS.
+
 ## What is left
 
 In order. Each item points to the guide section.
@@ -195,9 +243,9 @@ In order. Each item points to the guide section.
 
 ### Before sharing the link
 
-7. ⏳ **Buy a domain** and create its **A record** →
-   `165.227.81.12` ([6.3](production.md#63-point-the-domain-to-the-droplet)).
-8. ⏳ **Cloud Firewall**: inbound 22, 80, 443 only
+7. ⚠️ **Buy a domain** and create its **A record** →
+   `165.227.81.12` (done; waiting for the registry to publish it) ([6.3](production.md#63-point-the-domain-to-the-droplet)).
+8. ✅ **Cloud Firewall**: inbound 22, 80, 443 only
    ([6.5](production.md#65-firewall)). Then check with `nc -zv`: 22
    succeeds, 443 answers, 8080 times out.
 9. ⏳ **Let's Encrypt certificate** with the deploy hook, replacing the
