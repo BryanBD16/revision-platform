@@ -149,6 +149,9 @@ so the backend must be running too. Tests use Vitest.
 
 ## Production (Docker)
 
+The full guide (concepts, first deployment on DigitalOcean, releases,
+backups, troubleshooting) is in [docs/production.md](docs/production.md).
+
 `compose.prod.yaml` runs the whole application in Docker:
 
 - `frontend`: nginx serves the Angular production build over HTTPS and
