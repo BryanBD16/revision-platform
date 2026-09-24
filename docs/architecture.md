@@ -14,6 +14,10 @@ Update it when one of these decisions changes.
 The backend and frontend run directly on the host during development.
 Only MySQL runs in Docker (see the README).
 
+In production, everything runs in Docker (`compose.prod.yaml`): nginx
+serves the Angular build over HTTPS and forwards `/api` to the backend.
+See [production.md](production.md).
+
 ## Revision modules
 
 A revision activity is an ordered list of modules. Each module has a

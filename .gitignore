@@ -1,6 +1,10 @@
-# Local environment (credentials)
+# Local and production environments (credentials)
 .env
+.env.production
 
 # .NET build output
 bin/
 obj/
+
+# Production TLS certificates
+certs/
