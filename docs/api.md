@@ -434,6 +434,43 @@ modules: `{ items, page, pageSize, totalCount }`, with `page` and
 
 Returns one of the user's attempts with its modules.
 
+## Trivia
+
+The trivia game asks the multiple-choice questions of the **public**
+activities only, for everyone: the private activities of the signed-in
+user are never used. Anyone can play, visitors included.
+
+### `GET /api/trivia/themes`
+
+Returns the themes (not the courses) of the public activities that have
+at least one multiple-choice module, sorted by name, with the number of
+these questions:
+`[ { "id": 1, "name": "Biology", "questionCount": 12 } ]`.
+
+### `GET /api/trivia/questions`
+
+Returns the multiple-choice modules of the public activities that have
+**at least one** of the given themes, each once, sorted by `moduleId`
+(the browser shuffles them).
+
+| Parameter  | Rules |
+|------------|-------|
+| `themeIds` | theme ids, repeated: `themeIds=1&themeIds=4`; between 1 and 3 different ids |
+
+```json
+[
+  {
+    "moduleId": 11,
+    "activityId": 3,
+    "activityTitle": "Cell biology",
+    "content": { /* multiple-choice content, correct answers included */ }
+  }
+]
+```
+
+An unknown id, or the id of a course, matches no question. Too few or
+too many themes return `400` with an error on `themeIds`.
+
 ## Module types
 
 ### `reading`

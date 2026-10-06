@@ -9,7 +9,10 @@ public class MultipleChoiceModuleType : ModuleType<MultipleChoiceContent>
     public const int ChoiceTextMaxLength = 500;
     public const int ExplanationMaxLength = 2000;
 
-    public override string Key => "multiple-choice";
+    /// <summary>The type key, also used by the trivia game, which only asks multiple-choice questions.</summary>
+    public const string TypeKey = "multiple-choice";
+
+    public override string Key => TypeKey;
 
     protected override IReadOnlyList<string> Validate(MultipleChoiceContent content)
     {
