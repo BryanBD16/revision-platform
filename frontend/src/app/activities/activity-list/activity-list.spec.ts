@@ -47,7 +47,7 @@ describe('ActivityList', () => {
   }
 
   function page(items: ActivitySummary[], page: number, totalCount: number): ActivityPage {
-    return { items, page, pageSize: 20, totalCount };
+    return { items, page, pageSize: 12, totalCount };
   }
 
   /** Answers the requests for the filter suggestions, sent once when the list is created. */
@@ -76,7 +76,7 @@ describe('ActivityList', () => {
       moduleCount: 2,
     };
 
-    await open('/activities', page([activity], 1, 1), '/api/activities?page=1');
+    await open('/activities', page([activity], 1, 1), '/api/activities?page=1&pageSize=12');
 
     const link = element().querySelector<HTMLAnchorElement>('.activity-title');
     expect(link?.textContent).toContain('Cell biology');
@@ -94,7 +94,7 @@ describe('ActivityList', () => {
     await open(
       '/activities',
       page([{ ...summary(1, 'Mine'), visibility: 'private' }, summary(2, 'Everyone')], 1, 2),
-      '/api/activities?page=1',
+      '/api/activities?page=1&pageSize=12',
     );
 
     const cards = [...element().querySelectorAll('.activity-list .card')];
@@ -105,9 +105,13 @@ describe('ActivityList', () => {
   });
 
   it('loads the page from the URL and links to the other pages', async () => {
-    await open('/activities?page=2', page([summary(1, 'First')], 2, 45), '/api/activities?page=2');
+    await open(
+      '/activities?page=2',
+      page([summary(1, 'First')], 2, 30),
+      '/api/activities?page=2&pageSize=12',
+    );
 
-    expect(text()).toContain('Page 2 of 3 · 45 activities');
+    expect(text()).toContain('Page 2 of 3 · 30 activities');
     const links = [...element().querySelectorAll<HTMLAnchorElement>('.pagination a')];
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/activities',
@@ -116,7 +120,11 @@ describe('ActivityList', () => {
   });
 
   it('does not link before the first or after the last page', async () => {
-    await open('/activities', page([summary(1, 'First')], 1, 1), '/api/activities?page=1');
+    await open(
+      '/activities',
+      page([summary(1, 'First')], 1, 1),
+      '/api/activities?page=1&pageSize=12',
+    );
 
     expect(text()).toContain('Page 1 of 1 · 1 activity');
     expect(element().querySelectorAll('.pagination a').length).toBe(0);
@@ -126,7 +134,7 @@ describe('ActivityList', () => {
     await open(
       '/activities?title=cell&courseId=3&themeIds=1&themeIds=2&page=2',
       page([summary(1, 'Cell division')], 2, 21),
-      '/api/activities?page=2&title=cell&courseId=3&themeIds=1&themeIds=2',
+      '/api/activities?page=2&pageSize=12&title=cell&courseId=3&themeIds=1&themeIds=2',
     );
 
     expect(element().querySelector<HTMLInputElement>('#filter-title')!.value).toBe('cell');
@@ -138,7 +146,11 @@ describe('ActivityList', () => {
   });
 
   it('puts a chosen filter in the URL and goes back to the first page', async () => {
-    await open('/activities?page=2', page([summary(1, 'First')], 2, 21), '/api/activities?page=2');
+    await open(
+      '/activities?page=2',
+      page([summary(1, 'First')], 2, 21),
+      '/api/activities?page=2&pageSize=12',
+    );
 
     const course = element().querySelector<HTMLInputElement>('#filter-course')!;
     course.value = 'bio 101';
@@ -146,20 +158,20 @@ describe('ActivityList', () => {
     await harness.fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe('/activities?courseId=3');
-    http.expectOne('/api/activities?page=1&courseId=3').flush(page([], 1, 0));
+    http.expectOne('/api/activities?page=1&pageSize=12&courseId=3').flush(page([], 1, 0));
     await harness.fixture.whenStable();
     expect(text()).toContain('No activities match these filters.');
   });
 
   it('shows a message when there are no activities', async () => {
-    await open('/activities', page([], 1, 0), '/api/activities?page=1');
+    await open('/activities', page([], 1, 0), '/api/activities?page=1&pageSize=12');
 
     expect(text()).toContain('No activities yet');
     expect(element().querySelector('.pagination')).toBeNull();
   });
 
   it('links to the first page when the page does not exist', async () => {
-    await open('/activities?page=9', page([], 9, 3), '/api/activities?page=9');
+    await open('/activities?page=9', page([], 9, 3), '/api/activities?page=9&pageSize=12');
 
     expect(text()).toContain('This page does not exist');
   });
@@ -169,7 +181,7 @@ describe('ActivityList', () => {
     await harness.fixture.whenStable();
     flushSuggestions();
     http
-      .expectOne('/api/activities?page=1')
+      .expectOne('/api/activities?page=1&pageSize=12')
       .flush(null, { status: 500, statusText: 'Server Error' });
     await navigation;
     await harness.fixture.whenStable();

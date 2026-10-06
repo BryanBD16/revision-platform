@@ -38,7 +38,7 @@ export interface ActivityPage {
 
 /**
  * What the activity list shows. Each filter that is set narrows the result
- * (see docs/api.md). The server uses its default page size.
+ * (see docs/api.md). The page size is fixed by ActivityApi.
  */
 export interface ActivityListQuery {
   page: number;
