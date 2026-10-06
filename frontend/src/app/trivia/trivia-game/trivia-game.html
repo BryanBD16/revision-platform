@@ -1,0 +1,116 @@
+<h2>Trivia game</h2>
+
+@switch (phase()) {
+  @case ('choosing') {
+    <p>
+      Choose {{ limits.min }} to {{ limits.max }} themes, then answer questions from the public
+      activities. The game stops at the first wrong answer: your score is the number of correct
+      answers in a row.
+    </p>
+
+    @switch (themesStatus()) {
+      @case ('loading') {
+        <p>Loading the themes…</p>
+      }
+      @case ('error') {
+        <p class="error">The themes could not be loaded. Please try again later.</p>
+      }
+      @case ('loaded') {
+        @if (themes().length === 0) {
+          <p class="empty">No public activity has questions yet.</p>
+        } @else {
+          <fieldset class="card trivia-themes">
+            <legend>Themes ({{ selectedIds().length }} / {{ limits.max }})</legend>
+            @for (theme of themes(); track theme.id) {
+              <label class="trivia-theme" [class.trivia-theme-disabled]="isDisabled(theme.id)">
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(theme.id)"
+                  [disabled]="isDisabled(theme.id)"
+                  (change)="toggleTheme(theme.id)"
+                />
+                {{ theme.name }}
+                <span class="meta">
+                  {{ theme.questionCount }}
+                  {{ theme.questionCount === 1 ? 'question' : 'questions' }}
+                </span>
+              </label>
+            }
+          </fieldset>
+          @if (loadError()) {
+            <p class="error">The questions could not be loaded. Please try again later.</p>
+          }
+          <button type="button" class="button" (click)="start()" [disabled]="!canStart()">
+            Start the game
+          </button>
+        }
+      }
+    }
+  }
+  @case ('loading') {
+    <p>Loading the questions…</p>
+  }
+  @case ('playing') {
+    @if (currentModule(); as module) {
+      <p class="progress">
+        Question {{ score() + 1 }} of {{ questionCount() }} · Score: <strong>{{ score() }}</strong>
+      </p>
+      <section class="card">
+        <p class="meta">From “{{ currentActivityTitle() }}”</p>
+        <app-module-player-host [module]="module" (completed)="answered($event)" />
+      </section>
+    }
+  }
+  @case ('over') {
+    <section class="card completed">
+      @if (questionCount() === 0) {
+        <p class="empty">These themes have no questions anymore.</p>
+      } @else {
+        <h3>{{ perfect() ? 'Perfect!' : 'Game over' }}</h3>
+        <p class="total-grade">
+          Your score: <strong>{{ score() }}</strong>
+          {{ score() === 1 ? 'correct answer' : 'correct answers' }} in a row
+          @if (perfect()) {
+            — every question of these themes!
+          }
+        </p>
+        <p class="meta">Themes: {{ selectedThemeNames().join(', ') }}</p>
+
+        <div class="save-status" aria-live="polite">
+          @if (!signedIn()) {
+            <p class="meta">
+              <a routerLink="/sign-in" [queryParams]="{ returnUrl: '/trivia' }">Sign in</a>
+              to save your scores next time.
+            </p>
+          } @else {
+            @switch (saveStatus()) {
+              @case ('saving') {
+                <p class="meta">Saving your score…</p>
+              }
+              @case ('saved') {
+                <p class="success">
+                  Your score is saved. <a routerLink="/trivia/scores">See all your scores</a>
+                </p>
+              }
+              @case ('error') {
+                <p class="error">Your score could not be saved. Please try again later.</p>
+                <button type="button" class="button-secondary" (click)="saveScore()">
+                  Try again
+                </button>
+              }
+            }
+          }
+        </div>
+      }
+
+      <div class="actions">
+        @if (questionCount() > 0) {
+          <button type="button" class="button" (click)="playAgain()">Play again</button>
+        }
+        <button type="button" class="button-secondary" (click)="chooseOtherThemes()">
+          Choose other themes
+        </button>
+      </div>
+    </section>
+  }
+}

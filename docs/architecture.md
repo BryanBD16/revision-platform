@@ -302,6 +302,46 @@ attempt_modules
   `?activityId=`), the attempt page (`/results/:id`) and the "Your
   results" section of the activity page.
 
+## Trivia game
+
+A game that asks random multiple-choice questions on 1 to 3 themes until
+the first wrong answer; the score is the number of correct answers in a
+row.
+
+- **Only public activities.** `TriviaService` uses the public activities
+  for everyone, never the signed-in user's private ones, and only their
+  topics (not the courses). A question matches if its activity has **at
+  least one** of the chosen themes, unlike the list filters.
+- **Built on the module contract.** The game only asks
+  `multiple-choice` modules, and the frontend plays them with the
+  existing multiple-choice player.
+- **The browser grades the answers**, as for activities (see
+  [Saved results](#saved-results)): `GET /api/trivia/questions` sends
+  the questions with their answers, and only the final score is saved.
+  The server checks that it is not more than the number of questions of
+  the themes. A score can therefore be faked, which only matters for the
+  user's own scores. **A leaderboard between users would need
+  server-side grading** (questions sent without answers, a game state on
+  the server).
+- **Scores never change.** Like attempts, they keep copies of the theme
+  names; the links become null when a theme is deleted. Visitors can
+  play, but only signed-in users save scores.
+- **Frontend:** `TriviaApi`, the game page (`/trivia`, `TriviaGame`),
+  which shuffles the questions and shows each one with
+  `ModulePlayerHost`, and the My scores page (`/trivia/scores`). The
+  header's drop-down menu is a native `<details>` element, closed by
+  `App` on a click outside of it or on Escape.
+
+```
+trivia_scores
+  id, user_id -> users (cascade delete), score, played_at;
+  index (user_id, played_at)
+
+trivia_score_themes
+  id, trivia_score_id -> trivia_scores (cascade delete),
+  theme_id -> themes (set null on delete), theme_name (copy)
+```
+
 ## Designed to evolve toward progress
 
 Long term, the application will track learning progress. The design

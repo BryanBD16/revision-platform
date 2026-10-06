@@ -117,6 +117,22 @@ The first version should allow a user to:
 - An admin with access to the server resets a forgotten password with a
   command, which gives a temporary password to send to the user.
 
+### Trivia Game
+
+- A separate page, reached from a **Trivia game** drop-down menu in the
+  header: *Play* for everyone, *My scores* for signed-in users.
+- The player chooses 1 to 3 themes (not courses). The questions are the
+  multiple-choice modules of the **public** activities that have at
+  least one of these themes; private activities are never used, not
+  even the player's own.
+- The questions come in a random order, each at most once per game. A
+  wrong answer ends the game, after showing the correct answer; answering
+  every question correctly ends it too (a perfect game).
+- The score is the number of correct answers in a row.
+- Anyone can play. For signed-in users, the final score is saved with
+  the chosen themes and the date; scores cannot be changed or deleted,
+  and only their owner sees them, with their best score.
+
 ### Initial Module Types
 
 The MVP supports the following module types:

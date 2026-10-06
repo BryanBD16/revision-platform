@@ -12,6 +12,8 @@ import { permissionGuard, signedInGuard } from './auth/auth.guards';
 import { PERMISSIONS } from './auth/auth.service';
 import { Register } from './auth/register/register';
 import { SignIn } from './auth/sign-in/sign-in';
+import { TriviaGame } from './trivia/trivia-game/trivia-game';
+import { TriviaScores } from './trivia/trivia-scores/trivia-scores';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'activities' },
@@ -35,6 +37,13 @@ export const routes: Routes = [
     path: 'results/:id',
     component: AttemptDetail,
     title: 'Result',
+    canActivate: [signedInGuard],
+  },
+  { path: 'trivia', component: TriviaGame, title: 'Trivia game' },
+  {
+    path: 'trivia/scores',
+    component: TriviaScores,
+    title: 'My trivia scores',
     canActivate: [signedInGuard],
   },
   { path: 'sign-in', component: SignIn, title: 'Sign in' },
