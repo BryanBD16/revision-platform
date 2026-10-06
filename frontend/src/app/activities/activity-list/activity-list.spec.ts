@@ -1,5 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { ViewportScroller } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -113,10 +114,66 @@ describe('ActivityList', () => {
 
     expect(text()).toContain('Page 2 of 3 · 30 activities');
     const links = [...element().querySelectorAll<HTMLAnchorElement>('.pagination a')];
-    expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/activities',
-      '/activities?page=3',
+    expect(links.map((link) => [link.textContent?.trim(), link.getAttribute('href')])).toEqual([
+      ['← Previous', '/activities'],
+      ['1', '/activities'],
+      ['3', '/activities?page=3'],
+      ['Next →', '/activities?page=3'],
     ]);
+    expect(element().querySelector('[aria-current="page"]')?.textContent).toBe('2');
+  });
+
+  it('shows the first, last and neighbouring page numbers when there are many pages', async () => {
+    await open(
+      '/activities?page=10',
+      page([summary(1, 'First')], 10, 240),
+      '/api/activities?page=10&pageSize=12',
+    );
+
+    const pages = [...element().querySelectorAll('.page-links > *')]
+      .map((item) => item.textContent?.trim())
+      .slice(1, -1);
+    expect(pages).toEqual(['1', '…', '9', '10', '11', '…', '20']);
+  });
+
+  it('disables Previous on the first page and Next on the last page', async () => {
+    await open(
+      '/activities',
+      page([summary(1, 'First')], 1, 30),
+      '/api/activities?page=1&pageSize=12',
+    );
+
+    const disabled = [...element().querySelectorAll('.page-links [aria-disabled="true"]')];
+    expect(disabled.map((item) => item.textContent?.trim())).toEqual(['← Previous']);
+
+    await open(
+      '/activities?page=3',
+      page([summary(1, 'Last')], 3, 30),
+      '/api/activities?page=3&pageSize=12',
+    );
+
+    const disabledOnLast = [...element().querySelectorAll('.page-links [aria-disabled="true"]')];
+    expect(disabledOnLast.map((item) => item.textContent?.trim())).toEqual(['Next →']);
+  });
+
+  it('goes to the chosen page, keeping the filters, and shows it from the top', async () => {
+    await open(
+      '/activities?title=cell',
+      page([summary(1, 'First')], 1, 30),
+      '/api/activities?page=1&pageSize=12&title=cell',
+    );
+    const scroll = vi.spyOn(TestBed.inject(ViewportScroller), 'scrollToPosition');
+
+    element().querySelector<HTMLAnchorElement>('.page-links a[aria-label="Page 3"]')!.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(Router).url).toBe('/activities?page=3&title=cell');
+    expect(scroll).toHaveBeenCalledWith([0, 0]);
+    http
+      .expectOne('/api/activities?page=3&pageSize=12&title=cell')
+      .flush(page([summary(2, 'Third page')], 3, 30));
+    await harness.fixture.whenStable();
+    expect(text()).toContain('Third page');
   });
 
   it('does not link before the first or after the last page', async () => {
@@ -128,6 +185,7 @@ describe('ActivityList', () => {
 
     expect(text()).toContain('Page 1 of 1 · 1 activity');
     expect(element().querySelectorAll('.pagination a').length).toBe(0);
+    expect(element().querySelector('.page-links')).toBeNull();
   });
 
   it('sends the filters of the URL to the server', async () => {

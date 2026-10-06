@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, ViewportScroller } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import { ActivityApi } from '../activity-api';
 import { ActivityFilters } from '../activity-filters/activity-filters';
 import { ActivityThemes } from '../activity-themes/activity-themes';
 import { EMPTY_QUERY, hasFilters, paramsFromQuery, queryFromParams } from './activity-list-query';
+import { pageLinks } from './page-links';
 
 @Component({
   selector: 'app-activity-list',
@@ -21,6 +22,7 @@ export class ActivityList {
   private readonly themeApi = inject(ThemeApi);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly viewportScroller = inject(ViewportScroller);
 
   protected readonly signedIn = inject(AuthService).signedIn;
 
@@ -41,6 +43,7 @@ export class ActivityList {
     const result = this.result();
     return result ? Math.ceil(result.totalCount / result.pageSize) : 0;
   });
+  protected readonly pageLinks = computed(() => pageLinks(this.query().page, this.totalPages()));
 
   constructor() {
     // The URL holds the query, so reloading the page or going back keeps it.
@@ -67,5 +70,10 @@ export class ActivityList {
   /** The URL query parameters of another page with the same filters. */
   protected pageParams(page: number): Params {
     return paramsFromQuery({ ...this.query(), page });
+  }
+
+  /** The page links are below the list: show the new page from its top. */
+  protected scrollToTop(): void {
+    this.viewportScroller.scrollToPosition([0, 0]);
   }
 }
