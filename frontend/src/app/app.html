@@ -1,5 +1,16 @@
 <header class="app-header">
   <h1><a routerLink="/">Course Revision Platform</a></h1>
+  <nav class="main-nav" aria-label="Main">
+    <details #triviaMenu class="nav-menu">
+      <summary>Trivia game</summary>
+      <div class="nav-menu-items">
+        <a routerLink="/trivia" (click)="triviaMenu.open = false">Play</a>
+        @if (user()) {
+          <a routerLink="/trivia/scores" (click)="triviaMenu.open = false">My scores</a>
+        }
+      </div>
+    </details>
+  </nav>
   <nav class="user-nav" aria-label="Account">
     @if (user(); as user) {
       <a routerLink="/results">My results</a>

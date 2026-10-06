@@ -60,6 +60,38 @@ describe('App', () => {
     expect(links).toContain('/admin');
   });
 
+  it('offers visitors to play the trivia game, without their scores', async () => {
+    const element = await create();
+
+    const links = [...element.querySelectorAll('.nav-menu a')].map((a) => a.getAttribute('href'));
+    expect(element.querySelector('.nav-menu summary')?.textContent).toContain('Trivia game');
+    expect(links).toEqual(['/trivia']);
+  });
+
+  it('links signed-in users to their trivia scores', async () => {
+    signIn();
+    const element = await create();
+
+    const links = [...element.querySelectorAll('.nav-menu a')].map((a) => a.getAttribute('href'));
+    expect(links).toEqual(['/trivia', '/trivia/scores']);
+  });
+
+  it('closes the trivia menu on a click outside of it or on Escape', async () => {
+    const element = await create();
+    const menu = element.querySelector<HTMLDetailsElement>('.nav-menu')!;
+
+    menu.open = true;
+    element.querySelector<HTMLElement>('.app-main')!.click();
+    expect(menu.open).toBe(false);
+
+    menu.open = true;
+    menu.querySelector<HTMLElement>('.nav-menu-items')!.click();
+    expect(menu.open).toBe(true);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(menu.open).toBe(false);
+  });
+
   it('shows the signed-in user and signs out', async () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
     signIn();

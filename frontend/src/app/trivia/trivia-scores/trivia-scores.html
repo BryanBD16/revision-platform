@@ -1,0 +1,61 @@
+<div class="page-header">
+  <h2>My trivia scores</h2>
+  <a class="button" routerLink="/trivia">Play</a>
+</div>
+
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading your scores…</p>
+  }
+  @case ('error') {
+    <p class="error">Your scores could not be loaded. Please try again later.</p>
+  }
+  @case ('loaded') {
+    @if (result(); as result) {
+      @if (result.totalCount === 0) {
+        <p class="empty">
+          No scores yet. <a routerLink="/trivia">Play a game</a> to save your first score.
+        </p>
+      } @else {
+        <p class="total-grade">
+          Best score: <strong>{{ result.bestScore }}</strong>
+        </p>
+
+        <table class="grades">
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Themes</th>
+              <th scope="col">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (score of result.items; track score.id) {
+              <tr>
+                <td>{{ score.playedAt | date: 'medium' }}</td>
+                <td>{{ themeNames(score) }}</td>
+                <td>{{ score.score }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <nav class="pagination" aria-label="Pages of scores">
+          @if (result.page > 1) {
+            <button type="button" class="button-secondary" (click)="page.set(result.page - 1)">
+              ← Newer
+            </button>
+          }
+          <span class="meta"
+            >{{ result.totalCount }} {{ result.totalCount === 1 ? 'game' : 'games' }}</span
+          >
+          @if (hasNextPage(result)) {
+            <button type="button" class="button-secondary" (click)="page.set(result.page + 1)">
+              Older →
+            </button>
+          }
+        </nav>
+      }
+    }
+  }
+}

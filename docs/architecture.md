@@ -326,6 +326,11 @@ row.
 - **Scores never change.** Like attempts, they keep copies of the theme
   names; the links become null when a theme is deleted. Visitors can
   play, but only signed-in users save scores.
+- **Frontend:** `TriviaApi`, the game page (`/trivia`, `TriviaGame`),
+  which shuffles the questions and shows each one with
+  `ModulePlayerHost`, and the My scores page (`/trivia/scores`). The
+  header's drop-down menu is a native `<details>` element, closed by
+  `App` on a click outside of it or on Escape.
 
 ```
 trivia_scores
