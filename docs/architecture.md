@@ -163,7 +163,9 @@ and future personal activities must never be sent to other users.
   button and shared links keep the filters. `ActivityFilters` emits a new
   query (always on page 1) and `ActivityList` navigates to it; the list
   reloads when the URL changes. The course and theme fields use a native
-  `<datalist>` for text search in the existing names.
+  `<datalist>` for text search in the existing names. `ActivityApi` asks
+  for 12 activities per page; the pagination links to the first, last and
+  neighbouring pages (`pageLinks`), with "…" for the gaps.
 
 ### Completing an activity
 

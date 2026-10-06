@@ -44,14 +44,14 @@ describe('ActivityApi', () => {
 
   afterEach(() => http.verify());
 
-  it('gets a page of activities', () => {
-    const page: ActivityPage = { items: [summary], page: 2, pageSize: 20, totalCount: 21 };
+  it('gets a page of 12 activities', () => {
+    const page: ActivityPage = { items: [summary], page: 2, pageSize: 12, totalCount: 13 };
     let result: ActivityPage | undefined;
     api
       .getPage({ page: 2, title: null, courseId: null, themeIds: [], visibility: null })
       .subscribe((p) => (result = p));
 
-    http.expectOne({ method: 'GET', url: '/api/activities?page=2' }).flush(page);
+    http.expectOne({ method: 'GET', url: '/api/activities?page=2&pageSize=12' }).flush(page);
 
     expect(result).toEqual(page);
   });
@@ -63,9 +63,9 @@ describe('ActivityApi', () => {
 
     http
       .expectOne(
-        '/api/activities?page=1&title=cell&courseId=3&themeIds=1&themeIds=2&visibility=private',
+        '/api/activities?page=1&pageSize=12&title=cell&courseId=3&themeIds=1&themeIds=2&visibility=private',
       )
-      .flush({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+      .flush({ items: [], page: 1, pageSize: 12, totalCount: 0 });
   });
 
   it('gets one activity by id', () => {

@@ -294,6 +294,32 @@ a.button-secondary {
   margin-top: 1rem;
 }
 
+.page-links {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.page-links [aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.page-links .current-page {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+  cursor: default;
+}
+
+.page-gap {
+  padding: 0 0.25rem;
+  color: var(--color-muted);
+}
+
 .visibility {
   padding: 0;
   border: none;

@@ -3,13 +3,16 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Activity, ActivityListQuery, ActivityPage, SaveActivityRequest } from './activity';
 
+/** The number of activities on a page of the list. */
+export const ACTIVITY_PAGE_SIZE = 12;
+
 @Injectable({ providedIn: 'root' })
 export class ActivityApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/activities';
 
   getPage(query: ActivityListQuery): Observable<ActivityPage> {
-    let params = new HttpParams().set('page', query.page);
+    let params = new HttpParams().set('page', query.page).set('pageSize', ACTIVITY_PAGE_SIZE);
     if (query.title) {
       params = params.set('title', query.title);
     }
