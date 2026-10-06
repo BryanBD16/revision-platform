@@ -5,6 +5,7 @@ using RevisionPlatform.Api.Activities;
 using RevisionPlatform.Api.Attempts;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
+using RevisionPlatform.Api.Trivia;
 using RevisionPlatform.Api.Users;
 
 namespace RevisionPlatform.Api.Data;
@@ -22,6 +23,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<RoleChange> RoleChanges => Set<RoleChange>();
     public DbSet<ActivityAttempt> ActivityAttempts => Set<ActivityAttempt>();
     public DbSet<AttemptModule> AttemptModules => Set<AttemptModule>();
+    public DbSet<TriviaScore> TriviaScores => Set<TriviaScore>();
+    public DbSet<TriviaScoreTheme> TriviaScoreThemes => Set<TriviaScoreTheme>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -89,6 +92,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             module.Property(m => m.Label).HasMaxLength(AttemptModule.LabelMaxLength);
             module.HasOne<RevisionModule>().WithMany().HasForeignKey(m => m.ModuleId).OnDelete(DeleteBehavior.SetNull);
             module.HasIndex(m => new { m.AttemptId, m.Position }).IsUnique();
+        });
+
+        modelBuilder.Entity<TriviaScore>(score =>
+        {
+            // A user's scores are deleted with their account.
+            score.HasOne<AppUser>().WithMany().HasForeignKey(s => s.UserId).OnDelete(DeleteBehavior.Cascade);
+            score.HasMany(s => s.Themes).WithOne().HasForeignKey(t => t.TriviaScoreId).OnDelete(DeleteBehavior.Cascade);
+            // "My scores" lists a user's scores, newest first, with the best one.
+            score.HasIndex(s => new { s.UserId, s.PlayedAt });
+        });
+
+        modelBuilder.Entity<TriviaScoreTheme>(theme =>
+        {
+            theme.Property(t => t.ThemeName).HasMaxLength(Theme.NameMaxLength);
+            // Deleting the theme keeps the score, which has its own copy of the name.
+            theme.HasOne<Theme>().WithMany().HasForeignKey(t => t.ThemeId).OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Theme>(theme =>

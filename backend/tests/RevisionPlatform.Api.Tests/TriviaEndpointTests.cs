@@ -110,6 +110,116 @@ public class TriviaEndpointTests(ApiFactory factory) : IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    [Fact]
+    public async Task SaveScore_StoresTheScoreWithACopyOfTheThemeNames()
+    {
+        var cells = await CreatePublicAsync("Cells", ["Cells", "Biology"], [Question("Q1"), Question("Q2")]);
+
+        var response = await _ada.PostAsJsonAsync("/api/trivia/scores",
+            new SaveTriviaScoreRequest(2, [ThemeId(cells, "Cells"), ThemeId(cells, "Biology")]));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var score = (await response.Content.ReadFromJsonAsync<TriviaScoreResponse>())!;
+        Assert.Equal(2, score.Score);
+        Assert.Equal(["Biology", "Cells"], score.Themes.Select(t => t.Name));
+        Assert.Equal([ThemeId(cells, "Biology"), ThemeId(cells, "Cells")], score.Themes.Select(t => t.Id!.Value));
+        Assert.InRange(score.PlayedAt, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(1));
+    }
+
+    [Fact]
+    public async Task SaveScore_AcceptsAScoreOfZero()
+    {
+        var cells = await CreatePublicAsync("Cells", ["Biology"], [Question("Q1")]);
+
+        var response = await _ada.PostAsJsonAsync("/api/trivia/scores",
+            new SaveTriviaScoreRequest(0, [ThemeId(cells, "Biology")]));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SaveScore_RequiresASignedInUser()
+    {
+        var cells = await CreatePublicAsync("Cells", ["Biology"], [Question("Q1")]);
+
+        var response = await _visitor.PostAsJsonAsync("/api/trivia/scores",
+            new SaveTriviaScoreRequest(1, [ThemeId(cells, "Biology")]));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    public static TheoryData<string, string> InvalidScores => new()
+    {
+        { """{ "themeIds": [BIOLOGY] }""", "score" },
+        { """{ "score": -1, "themeIds": [BIOLOGY] }""", "score" },
+        // Biology has two public questions; the private one does not count.
+        { """{ "score": 3, "themeIds": [BIOLOGY] }""", "score" },
+        { """{ "score": 1, "themeIds": [] }""", "themeIds" },
+        { """{ "score": 1 }""", "themeIds" },
+        { """{ "score": 1, "themeIds": [BIOLOGY, 1000001, 1000002, 1000003] }""", "themeIds" },
+        { """{ "score": 1, "themeIds": [1000001] }""", "themeIds" },
+        { """{ "score": 1, "themeIds": [COURSE] }""", "themeIds" },
+    };
+
+    [Theory]
+    [MemberData(nameof(InvalidScores))]
+    public async Task SaveScore_RejectsAnInvalidScore(string json, string field)
+    {
+        var cells = await CreatePublicAsync("Cells", ["Biology"], [Question("Q1"), Question("Q2")], courses: ["BIO 101"]);
+        await CreateAsync(_ada, "Mine", ["Biology"], [Question("Private")], ActivityVisibility.Private);
+        json = json.Replace("BIOLOGY", ThemeId(cells, "Biology").ToString())
+            .Replace("COURSE", cells.Courses[0].Id.ToString());
+
+        var response = await _ada.PostAsync("/api/trivia/scores",
+            new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.Contains(field, problem!.Errors.Keys);
+    }
+
+    [Fact]
+    public async Task GetScores_ReturnsTheUserScoresNewestFirstWithTheBestOne()
+    {
+        var cells = await CreatePublicAsync("Cells", ["Biology"], [Question("Q1"), Question("Q2"), Question("Q3")]);
+        var biology = ThemeId(cells, "Biology");
+        await SaveScoreAsync(_ada, 1, biology);
+        await SaveScoreAsync(_ada, 3, biology);
+        await SaveScoreAsync(_ada, 2, biology);
+        var bob = factory.CreateApiClient();
+        await bob.RegisterAsync("bob@example.com", "Bob");
+        await SaveScoreAsync(bob, 0, biology);
+
+        var page = await _ada.GetFromJsonAsync<TriviaScorePageResponse>("/api/trivia/scores?pageSize=2");
+
+        Assert.Equal([2, 3], page!.Items.Select(s => s.Score));
+        Assert.Equal((1, 2, 3, 3), (page.Page, page.PageSize, page.TotalCount, page.BestScore));
+        Assert.Equal(["Biology"], page.Items[0].Themes.Select(t => t.Name));
+    }
+
+    [Fact]
+    public async Task GetScores_HasNoBestScoreWithoutScores()
+    {
+        var page = await _ada.GetFromJsonAsync<TriviaScorePageResponse>("/api/trivia/scores");
+
+        Assert.Empty(page!.Items);
+        Assert.Null(page.BestScore);
+    }
+
+    [Fact]
+    public async Task GetScores_RequiresASignedInUser()
+    {
+        var response = await _visitor.GetAsync("/api/trivia/scores");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    private static async Task SaveScoreAsync(HttpClient client, int score, int themeId)
+    {
+        var response = await client.PostAsJsonAsync("/api/trivia/scores", new SaveTriviaScoreRequest(score, [themeId]));
+        response.EnsureSuccessStatusCode();
+    }
+
     private static int ThemeId(ActivityResponse activity, string name) =>
         activity.Themes.Single(t => t.Name == name).Id;
 

@@ -471,6 +471,48 @@ Returns the multiple-choice modules of the public activities that have
 An unknown id, or the id of a course, matches no question. Too few or
 too many themes return `400` with an error on `themeIds`.
 
+### Trivia score
+
+```json
+{
+  "id": 5,
+  "score": 7,
+  "themes": [ { "id": 1, "name": "Biology" }, { "id": 4, "name": "Cells" } ],
+  "playedAt": "2026-10-06T14:02:11.123456Z"
+}
+```
+
+`score` is the number of correct answers in a row. The theme names are
+copies, sorted by name; a theme's `id` becomes `null` when the theme is
+deleted.
+
+### `POST /api/trivia/scores`
+
+Requires a signed-in user (`401` otherwise). Saves a finished game and
+returns `201` with the score.
+
+```json
+{ "score": 7, "themeIds": [1, 4] }
+```
+
+The score is computed by the browser. `400` with the errors keyed by
+field when:
+
+- `score` is missing, negative, or more than the number of questions of
+  these themes (`GET /api/trivia/questions`);
+- `themeIds` does not have between 1 and 3 different ids, or one of them
+  is not a theme (a course id is refused).
+
+### `GET /api/trivia/scores`
+
+Requires a signed-in user (`401` otherwise). Returns a page of the
+caller's scores, newest first, with `page` and `pageSize` as for the
+activity list, and the best score of all pages (`null` without scores):
+
+```json
+{ "items": [ /* trivia scores */ ], "page": 1, "pageSize": 20, "totalCount": 9, "bestScore": 12 }
+```
+
 ## Module types
 
 ### `reading`
