@@ -863,11 +863,18 @@ local$ git diff production..development -- backend/src/RevisionPlatform.Api/Data
 
 ```sh
 droplet$ cd ~/revision-platform
-droplet$ ./backup.sh                      # a backup just before, see section 9
 droplet$ git pull --ff-only               # --ff-only: refuses if the Droplet's copy diverged
 droplet$ make prod-up                     # rebuilds, migrates, restarts what changed
 droplet$ docker compose --env-file .env.production -f compose.prod.yaml logs --tail 20 migrate backend
 ```
+
+**If the release contains a migration, back up first**, before
+`git pull` ([section 8](#8-database-migrations-in-production), rule 4).
+The first deployment does not set up backups (see
+[deployment-log.md](deployment-log.md#decisions-and-their-reasons)), so
+`backup.sh` does not exist on the Droplet: run the
+[manual backup](#manual-backup) command instead. Once automatic backups
+are set up, `./backup.sh` does the same thing.
 
 During `make prod-up`, the backend and frontend containers are replaced:
 the application is unavailable for a few seconds. This is acceptable for
