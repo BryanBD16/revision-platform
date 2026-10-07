@@ -81,6 +81,9 @@ No database migration is needed: the content is stored as JSON.
 
 ## Database
 
+The diagrams of every table and their relations are in
+[database.md](database.md).
+
 ### First iteration
 
 ```

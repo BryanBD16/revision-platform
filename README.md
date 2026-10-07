@@ -1,10 +1,20 @@
 # Course Revision Platform
 
 A web application for reviewing course material through revision
-activities. See [docs/requirements.md](docs/requirements.md) for the
-current requirements, [docs/architecture.md](docs/architecture.md)
-for the architectural decisions and [docs/api.md](docs/api.md) for the
-REST API.
+activities.
+
+Documentation:
+
+- [Database schema](docs/database.md): diagrams of every table and
+  their relations.
+- [docs/requirements.md](docs/requirements.md): the current
+  requirements.
+- [docs/architecture.md](docs/architecture.md): the architectural
+  decisions.
+- [docs/api.md](docs/api.md): the REST API. While the backend runs in
+  development, **Swagger UI** at `http://localhost:5044/swagger` lists
+  every endpoint and can call the `GET` endpoints from the browser. It
+  is turned off in production.
 
 ## Prerequisites
 
