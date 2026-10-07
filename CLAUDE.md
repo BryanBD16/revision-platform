@@ -241,6 +241,22 @@ Update documentation when a change affects:
 Do not create documentation for trivial implementation details that are
 already clear from the code.
 
+### Database schema diagrams
+
+`docs/database.md` holds the Mermaid entity-relationship diagrams of
+every table. Keep it in sync with the EF Core migrations:
+
+- Any change that adds a migration must update `docs/database.md` in
+  the same commit: new tables, removed tables, new or changed columns,
+  keys, indexes marked as unique, and relations.
+- Add a new table to the overview diagram and to the detailed diagram
+  of its area (or a new area section), with its columns, types, `PK`,
+  `FK` and `UK` markers.
+- Update the "What happens on delete" table when a foreign key is added
+  or its delete rule changes.
+- Check the result against the migration itself, not from memory, and
+  make sure the Mermaid diagrams still render.
+
 ## Code Quality
 
 - Prefer readable code over clever code.
