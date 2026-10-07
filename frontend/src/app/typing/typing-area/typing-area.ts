@@ -52,13 +52,16 @@ export class TypingArea {
         this.focus();
       }
     });
-    // Keeps the next character on the first or second visible line.
+    // Scrolls by whole lines, so that the line being typed is the second visible one.
     afterRenderEffect(() => {
       this.typed();
       const box = this.box().nativeElement;
       const current = box.querySelector<HTMLElement>('.typing-char-current');
-      if (current) {
-        box.scrollTop = Math.max(0, current.offsetTop - current.offsetHeight);
+      const style = getComputedStyle(box);
+      const lineHeight = parseFloat(style.lineHeight);
+      if (current && lineHeight > 0) {
+        const line = Math.floor((current.offsetTop - parseFloat(style.paddingTop)) / lineHeight);
+        box.scrollTop = Math.max(0, (line - 1) * lineHeight);
       }
     });
   }

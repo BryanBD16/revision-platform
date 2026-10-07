@@ -74,6 +74,9 @@ a {
 }
 
 .main-nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
   margin-right: auto;
 }
 
@@ -591,9 +594,10 @@ a.button-secondary {
 /* Three lines of text; the typing area scrolls to keep the next character visible. */
 .typing-area {
   position: relative;
-  height: calc(3 * 2.25rem + 1rem + 2px);
+  height: calc(3 * 2.25rem + 2px);
   overflow: hidden;
-  padding: 0.5rem 0.75rem;
+  /* No vertical padding: scrolling by whole lines then shows exactly three lines. */
+  padding: 0 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-surface);
