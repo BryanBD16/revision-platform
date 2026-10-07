@@ -13,13 +13,13 @@
       "type": "reading",
       "content": {
         "title": "A language close to the machine",
-        "body": "C++ was created by Bjarne Stroustrup, starting in 1979 as \"C with Classes\" and renamed C++ in 1983. It adds classes, templates, exceptions and much more to the C language.\n\nA C++ program is compiled directly into native machine code for one processor and one operating system. There is no virtual machine and no garbage collector: the program runs straight on the hardware, and memory is released by the code itself.\n\nIts motto is \"you don't pay for what you don't use\": a feature you do not use costs nothing at run time. That is why C++ powers games, browsers, databases and embedded systems.\n\nThe language is standardized by ISO: C++11 started \"modern C++\", followed by C++14, 17, 20 and 23."
+        "body": "C++ was created by Bjarne Stroustrup, starting in 1979 as \"C with Classes\" and renamed C++ in 1983. It adds classes, templates, exceptions and much more to the C language.\n\nA C++ program is compiled directly into native machine code for one processor and one operating system. There is no virtual machine and no garbage collector: the program runs straight on the hardware, and memory is released by the code itself.\n\nIts motto is \"you don't pay for what you don't use\": a feature you do not use costs nothing at run time. That is why C++ powers games, browsers, databases and embedded systems.\n\nThe language is standardized by ISO: C`++11` started \"modern C++\", followed by C`++14`, 17, 20 and 23."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "You compile main.cpp with g++. What do you get?",
+        "question": "You compile `main.cpp` with `g++`. What do you get?",
         "choices": [
           {
             "id": "a",
@@ -104,17 +104,17 @@
       "type": "reading",
       "content": {
         "title": "Compiling and linking",
-        "body": "Building a C++ program has several steps:\n1. The preprocessor handles the lines starting with #, such as #include <iostream>, which pastes the content of a header file into the code.\n2. The compiler turns each .cpp file separately into an object file (.o or .obj).\n3. The linker combines the object files and the libraries into one executable.\n\nHeaders (.h or .hpp) usually declare functions and classes; .cpp files define them. The program starts in the main() function."
+        "body": "Building a C++ program has several steps:\n1. The preprocessor handles the lines starting with #, such as `#include <iostream>`, which pastes the content of a header file into the code.\n2. The compiler turns each `.cpp` file separately into an object file (`.o` or `.obj`).\n3. The linker combines the object files and the libraries into one executable.\n\nHeaders (`.h` or `.hpp`) usually declare functions and classes; `.cpp` files define them. The program starts in the `main()` function."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "#include <iostream>\n\nWhat does this line do?",
+        "question": "```\n#include <iostream>\n```\n\nWhat does this line do?",
         "choices": [
           {
             "id": "a",
-            "text": "Before compiling, the preprocessor pastes in the iostream header, which declares std::cout"
+            "text": "Before compiling, the preprocessor pastes in the iostream header, which declares `std::cout`"
           },
           {
             "id": "b",
@@ -132,13 +132,13 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "#include is simple text inclusion, done by the preprocessor before the compiler sees the code. C++20 adds modules (import) as a modern alternative."
+        "explanation": "```\n#include is simple text inclusion, done by the preprocessor before the compiler sees the code. C++20 adds modules (import) as a modern alternative.\n```"
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "A header declares int add(int a, int b);\nmain() calls add(1, 2), but nobody ever wrote the body of add.\n\nWhen does the build fail?",
+        "question": "A header declares `int add(int a, int b);`\n`main()` calls `add(1, 2)`, but nobody ever wrote the body of `add`.\n\nWhen does the build fail?",
         "choices": [
           {
             "id": "a",
@@ -146,7 +146,7 @@
           },
           {
             "id": "b",
-            "text": "When compiling main.cpp"
+            "text": "When compiling `main.cpp`"
           },
           {
             "id": "c",
@@ -160,7 +160,7 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "The declaration is enough to compile main.cpp. It is the linker that looks for the definition of add in all the object files, and fails because there is none."
+        "explanation": "The declaration is enough to compile `main.cpp`. It is the linker that looks for the definition of add in all the object files, and fails because there is none."
       }
     },
     {
@@ -200,12 +200,12 @@
           {
             "id": "p1",
             "concept": "Preprocessor",
-            "definition": "Handles #include and the other # lines before compiling"
+            "definition": "Handles `#include` and the other # lines before compiling"
           },
           {
             "id": "p2",
             "concept": "Compiler",
-            "definition": "Turns one .cpp file into an object file"
+            "definition": "Turns one `.cpp` file into an object file"
           },
           {
             "id": "p3",
@@ -215,16 +215,16 @@
           {
             "id": "p4",
             "concept": "Header file",
-            "definition": "Declares functions and classes to share between .cpp files"
+            "definition": "Declares functions and classes to share between `.cpp` files"
           },
           {
             "id": "p5",
             "concept": "Object file",
-            "definition": "The compiled machine code of one .cpp file, not yet runnable"
+            "definition": "The compiled machine code of one `.cpp` file, not yet runnable"
           },
           {
             "id": "p6",
-            "concept": "main()",
+            "concept": "`main()`",
             "definition": "The function where the program starts"
           }
         ]

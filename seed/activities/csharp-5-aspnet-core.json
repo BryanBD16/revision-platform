@@ -76,7 +76,7 @@
     {
       "type": "multiple-choice",
       "content": {
-        "question": "app.MapGet(\"/hello\", () => \"Hello!\");\n\nWhat does this line do?",
+        "question": "```\napp.MapGet(\"/hello\", () => \"Hello!\");\n```\n\nWhat does this line do?",
         "choices": [
           {
             "id": "a",
@@ -105,13 +105,13 @@
       "type": "reading",
       "content": {
         "title": "Pipeline, routing and dependency injection",
-        "body": "Middleware are steps that every request goes through, in the order they are added in Program.cs. Each one can do something before and after the next one, or stop the request.\n\nRouting picks the endpoint from the HTTP method and the URL, for example [HttpGet(\"{id:int}\")] on a controller whose route is api/cats.\n\nDependency injection creates the services your code needs. You register them once, such as builder.Services.AddScoped<CatService>(), and ASP.NET Core passes them to the constructors that ask for them."
+        "body": "Middleware are steps that every request goes through, in the order they are added in `Program.cs`. Each one can do something before and after the next one, or stop the request.\n\nRouting picks the endpoint from the HTTP method and the URL, for example `[HttpGet(\"{id:int}\")]` on a controller whose route is api/cats.\n\nDependency injection creates the services your code needs. You register them once, such as `builder.Services.AddScoped<CatService>()`, and ASP.NET Core passes them to the constructors that ask for them."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "[ApiController]\n[Route(\"api/cats\")]\npublic class CatsController : ControllerBase\n{\n    [HttpGet(\"{id:int}\")]\n    public ActionResult<Cat> Get(int id) => ...;\n}\n\nWhich request calls Get?",
+        "question": "```\n[ApiController]\n[Route(\"api/cats\")]\npublic class CatsController : ControllerBase\n{\n    [HttpGet(\"{id:int}\")]\n    public ActionResult<Cat> Get(int id) => ...;\n}\n```\n\nWhich request calls Get?",
         "choices": [
           {
             "id": "a",
@@ -133,13 +133,13 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "The controller's route (api/cats) and the action's template ({id:int}) combine into GET /api/cats/{id}. The :int constraint rejects \"seven\", and POST does not match [HttpGet]."
+        "explanation": "The controller's route (`api/cats`) and the action's template (`{id:int}`) combine into `GET /api/cats/{id}`. The `:int` constraint rejects \"seven\", and `POST` does not match `[HttpGet]`."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "Why must app.UseAuthentication() come before app.UseAuthorization() in Program.cs?",
+        "question": "Why must `app.UseAuthentication()` come before `app.UseAuthorization()` in `Program.cs`?",
         "choices": [
           {
             "id": "a",
@@ -167,7 +167,7 @@
     {
       "type": "multiple-choice",
       "content": {
-        "question": "A service is registered with builder.Services.AddScoped<CartService>(). How many instances are created?",
+        "question": "A service is registered with `builder.Services.AddScoped<CartService>()`. How many instances are created?",
         "choices": [
           {
             "id": "a",
@@ -195,7 +195,7 @@
     {
       "type": "multiple-choice",
       "content": {
-        "question": "What does the [ApiController] attribute give a controller?",
+        "question": "What does the `[ApiController]` attribute give a controller?",
         "choices": [
           {
             "id": "a",
@@ -203,7 +203,7 @@
           },
           {
             "id": "b",
-            "text": "Complex parameters read from the JSON body without writing [FromBody]"
+            "text": "Complex parameters read from the JSON body without writing `[FromBody]`"
           },
           {
             "id": "c",
@@ -218,7 +218,7 @@
           "a",
           "b"
         ],
-        "explanation": "[ApiController] turns on API conventions such as automatic validation responses and binding inference. Requiring sign-in is the job of [Authorize]."
+        "explanation": "`[ApiController]` turns on API conventions such as automatic validation responses and binding inference. Requiring sign-in is the job of `[Authorize]`."
       }
     },
     {
@@ -253,7 +253,7 @@
           },
           {
             "id": "p6",
-            "concept": "appsettings.json",
+            "concept": "`appsettings.json`",
             "definition": "The configuration file of the application"
           }
         ]

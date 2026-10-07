@@ -14,13 +14,13 @@
       "type": "reading",
       "content": {
         "title": "Static arrays and pointer arithmetic",
-        "body": "int a[5]; is an array of 5 ints whose size must be known at compile time. A local array is not initialized; int a[5] = {1, 2}; sets the rest to 0.\n\n- In most expressions, the name of an array decays into a pointer to its first element. sizeof(a) and &a are the exceptions.\n- a[i] is exactly *(a + i): adding 1 to a pointer moves it by one element, not one byte.\n- A function parameter written int a[10] is really int* a: the size is lost.\n- Arrays cannot be assigned, incremented or returned by value.\n- There is no bounds checking: reading or writing outside the array is undefined behaviour. A pointer one past the last element is allowed, but must not be dereferenced.\n- int a[n] with a variable n is not standard C++ (g++ accepts it as an extension)."
+        "body": "`int a[5];` is an array of 5 ints whose size must be known at compile time. A local array is not initialized; `int a[5] = {1, 2};` sets the rest to 0.\n\n- In most expressions, the name of an array decays into a pointer to its first element. `sizeof(a)` and `&a` are the exceptions.\n- `a[i]` is exactly `*(a + i)`: adding 1 to a pointer moves it by one element, not one byte.\n- A function parameter written `int a[10]` is really `int* a`: the size is lost.\n- Arrays cannot be assigned, incremented or returned by value.\n- There is no bounds checking: reading or writing outside the array is undefined behaviour. A pointer one past the last element is allowed, but must not be dereferenced.\n- `int a[n]` with a variable n is not standard C++ (`g++` accepts it as an extension)."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "On a typical 64-bit system (int is 4 bytes, pointers are 8 bytes):\n\nvoid print(int a[10]) {\n    std::cout << sizeof(a) / sizeof(a[0]);\n}\n\nint main() {\n    int arr[10] = {};\n    std::cout << sizeof(arr) / sizeof(arr[0]) << \" \";\n    print(arr);\n}\n\nWhat does it print?",
+        "question": "On a typical 64-bit system (`int` is 4 bytes, pointers are 8 bytes):\n\n```\nvoid print(int a[10]) {\n    std::cout << sizeof(a) / sizeof(a[0]);\n}\n\nint main() {\n    int arr[10] = {};\n    std::cout << sizeof(arr) / sizeof(arr[0]) << \" \";\n    print(arr);\n}\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
@@ -42,13 +42,13 @@
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "In main, sizeof(arr) is the size of the whole array: 40 / 4 = 10. The parameter int a[10] is really int* a, so in print, sizeof(a) is the size of a pointer: 8 / 4 = 2. This is why functions that take a C array also need its size, or should take a std::vector or std::array instead."
+        "explanation": "In main, `sizeof(arr)` is the size of the whole array: 40 / 4 = 10. The parameter `int a[10]` is really `int* a`, so in print, `sizeof(a)` is the size of a pointer: 8 / 4 = 2. This is why functions that take a C array also need its size, or should take a `std::vector` or `std::array` instead."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int a[] = {10, 20, 30, 40, 50};\nint* p = a + 1;\n\nstd::cout << *p++ << \" \";\nstd::cout << *++p << \" \";\nstd::cout << p[1] << \" \" << *(p - 2);\n\nWhat does it print?",
+        "question": "```\nint a[] = {10, 20, 30, 40, 50};\nint* p = a + 1;\n\nstd::cout << *p++ << \" \";\nstd::cout << *++p << \" \";\nstd::cout << p[1] << \" \" << *(p - 2);\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
@@ -70,17 +70,17 @@
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "p starts at a[1]. *p++ prints 20, then moves p to a[2]. *++p first moves p to a[3], then prints 40. p[1] is *(p + 1), a[4] = 50, and *(p - 2) is a[1] = 20."
+        "explanation": "p starts at `a[1]`. `*p++` prints 20, then moves p to `a[2]`. `*++p` first moves p to `a[3]`, then prints 40. `p[1]` is `*(p + 1)`, `a[4] = 50`, and `*(p - 2)` is `a[1] = 20`."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int a[] = {1, 2, 3, 4};\nstd::cout << 2[a] << \" \" << *(a + 3) - *a;\n\nWhat does it print?",
+        "question": "```\nint a[] = {1, 2, 3, 4};\nstd::cout << 2[a] << \" \" << *(a + 3) - *a;\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
-            "text": "It does not compile: 2[a] is not valid"
+            "text": "It does not compile: `2[a]` is not valid"
           },
           {
             "id": "b",
@@ -98,37 +98,37 @@
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "a[i] is defined as *(a + i), and addition is commutative, so 2[a] is *(2 + a), which is a[2] = 3. Never write this in real code. * binds tighter than -, and - tighter than <<, so the second value is a[3] - a[0] = 4 - 1 = 3."
+        "explanation": "`a[i]` is defined as `*(a + i)`, and addition is commutative, so `2[a]` is `*(2 + a)`, which is `a[2]`, 3. Never write this in real code. `*` binds tighter than `-`, and `-` tighter than `<<`, so the second value is `a[3] - a[0]`, 4 - 1 = 3."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int a[3] = {1, 2, 3};\nint b[3];\nint* p = a;\nint n = 3;\n\nWhich lines are NOT valid standard C++?",
+        "question": "```\nint a[3] = {1, 2, 3};\nint b[3];\nint* p = a;\nint n = 3;\n```\n\nWhich lines are NOT valid standard C++?",
         "choices": [
           {
             "id": "a",
-            "text": "b = a;"
+            "text": "`b = a;`"
           },
           {
             "id": "b",
-            "text": "p++;"
+            "text": "`p++;`"
           },
           {
             "id": "c",
-            "text": "a++;"
+            "text": "`a++;`"
           },
           {
             "id": "d",
-            "text": "int c[] = {4, 5};"
+            "text": "`int c[] = {4, 5};`"
           },
           {
             "id": "e",
-            "text": "int d[n];"
+            "text": "`int d[n];`"
           },
           {
             "id": "f",
-            "text": "p = b + 3;"
+            "text": "`p = b + 3;`"
           }
         ],
         "correctChoiceIds": [
@@ -136,24 +136,24 @@
           "c",
           "e"
         ],
-        "explanation": "Arrays cannot be assigned (b = a) or incremented (a++): an array is not a pointer, even though its name decays into one. int d[n] is a variable-length array, which is not standard C++ because n is not a compile-time constant (g++ only accepts it as an extension and warns with -pedantic). int c[] deduces a size of 2, and b + 3 is a valid one-past-the-end pointer."
+        "explanation": "Arrays cannot be assigned (`b = a`) or incremented (`a++`): an array is not a pointer, even though its name decays into one. `int d[n]` is a variable-length array, which is not standard C++ because n is not a compile-time constant (`g++` only accepts it as an extension and warns with `-pedantic`). `int c[]` deduces a size of 2, and `b + 3` is a valid one-past-the-end pointer."
       }
     },
     {
       "type": "reading",
       "content": {
         "title": "Arrays of pointers and pointers to arrays",
-        "body": "To read a declaration, start from the name, go right, then left, and read what is in parentheses first.\n\n- int* a[3]: a is an array of 3 pointers to int.\n- int (*p)[3]: p is a pointer to an array of 3 ints.\n- &arr has the type int (*)[N]: adding 1 to it skips the whole array, while arr + 1 skips one element.\n- int m[2][3] is 2 rows of 3 ints stored one after the other. m decays into int (*)[3], a pointer to its first row, not into int**.\n- A function taking a 2D array is written void f(int m[][3]) or void f(int (*m)[3]). Only the first size can be left out.\n- const char* names[] = {\"Ann\", \"Bob\"}; is an array of pointers to string literals."
+        "body": "To read a declaration, start from the name, go right, then left, and read what is in parentheses first.\n\n- `int* a[3]`: a is an array of 3 pointers to `int`.\n- `int (*p)[3]`: p is a pointer to an array of 3 ints.\n- `&arr` has the type `int (*)[N]`: adding 1 to it skips the whole array, while `arr + 1` skips one element.\n- `int m[2][3]` is 2 rows of 3 ints stored one after the other. m decays into `int (*)[3]`, a pointer to its first row, not into `int**`.\n- A function taking a 2D array is written `void f(int m[][3])` or `void f(int (*m)[3])`. Only the first size can be left out.\n- `const char* names[] = {\"Ann\", \"Bob\"};` is an array of pointers to string literals."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int (*p)[4];\n\nWhat is p?",
+        "question": "```\nint (*p)[4];\n```\n\nWhat is p?",
         "choices": [
           {
             "id": "a",
-            "text": "An array of 4 pointers to int"
+            "text": "An array of 4 pointers to `int`"
           },
           {
             "id": "b",
@@ -161,23 +161,23 @@
           },
           {
             "id": "c",
-            "text": "A pointer to a function that returns an int"
+            "text": "A pointer to a function that returns an `int`"
           },
           {
             "id": "d",
-            "text": "A pointer to an int, initialized to 4"
+            "text": "A pointer to an `int`, initialized to 4"
           }
         ],
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "The parentheses bind * to p first: p is a pointer, and what it points to is an int[4]. Without the parentheses, int* p[4] would be an array of 4 pointers to int."
+        "explanation": "The parentheses bind * to p first: p is a pointer, and what it points to is an `int[4]`. Without the parentheses, `int* p[4]` would be an array of 4 pointers to `int`."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "With 4-byte ints:\n\nint a[4] = {1, 2, 3, 4};\nint (*q)[4] = &a;\n\nstd::cout << (char*)(a + 1) - (char*)a << \" \";\nstd::cout << (char*)(q + 1) - (char*)q;\n\nWhat does it print?",
+        "question": "With 4-byte ints:\n\n```\nint a[4] = {1, 2, 3, 4};\nint (*q)[4] = &a;\n\nstd::cout << (char*)(a + 1) - (char*)a << \" \";\nstd::cout << (char*)(q + 1) - (char*)q;\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
@@ -199,13 +199,13 @@
         "correctChoiceIds": [
           "c"
         ],
-        "explanation": "Pointer arithmetic moves by the size of the pointed type. a decays into an int*, so a + 1 is 4 bytes further. q points to an int[4], so q + 1 is sizeof(int[4]) = 16 bytes further. The casts to char* measure the difference in bytes."
+        "explanation": "Pointer arithmetic moves by the size of the pointed type. a decays into an `int*`, so `a + 1` is 4 bytes further. q points to an `int[4]`, so `q + 1` is `sizeof(int[4])` = 16 bytes further. The casts to `char*` measure the difference in bytes."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int x = 1, y = 2, z = 3;\nint* ptrs[3] = {&x, &y, &z};\n\n*ptrs[1] = 20;\nptrs[2] = ptrs[0];\n*ptrs[2] += 5;\n\nstd::cout << x << \" \" << y << \" \" << z;\n\nWhat does it print?",
+        "question": "```\nint x = 1, y = 2, z = 3;\nint* ptrs[3] = {&x, &y, &z};\n\n*ptrs[1] = 20;\nptrs[2] = ptrs[0];\n*ptrs[2] += 5;\n\nstd::cout << x << \" \" << y << \" \" << z;\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
@@ -227,13 +227,13 @@
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "[] binds tighter than *, so *ptrs[1] is *(ptrs[1]), which is y. ptrs[2] = ptrs[0] makes the third pointer point to x, without changing z. *ptrs[2] += 5 therefore adds 5 to x."
+        "explanation": "`[]` binds tighter than *, so `*ptrs[1]` is `*(ptrs[1])`, which is y. `ptrs[2] = ptrs[0]` makes the third pointer point to x, without changing z. `*ptrs[2] += 5` therefore adds 5 to x."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int m[2][3] = {{1, 2, 3}, {4, 5, 6}};\nint (*row)[3] = m;\n\nstd::cout << row[1][0] << \" \";\nstd::cout << *(*(m + 1) + 2) << \" \";\nstd::cout << **m + 1;\n\nWhat does it print?",
+        "question": "```\nint m[2][3] = {{1, 2, 3}, {4, 5, 6}};\nint (*row)[3] = m;\n\nstd::cout << row[1][0] << \" \";\nstd::cout << *(*(m + 1) + 2) << \" \";\nstd::cout << **m + 1;\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
@@ -249,56 +249,56 @@
           },
           {
             "id": "d",
-            "text": "It does not compile: m cannot be stored in an int (*)[3]"
+            "text": "It does not compile: m cannot be stored in an `int (*)[3]`"
           }
         ],
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "m decays into a pointer to its first row, an int (*)[3], so row[1][0] is m[1][0] = 4. *(*(m + 1) + 2) is m[1][2] = 6. **m is m[0][0] = 1, and the + 1 applies to that value, giving 2 (it is not m[1][0])."
+        "explanation": "m decays into a pointer to its first row, an `int (*)[3]`, so `row[1][0]` is `m[1][0] = 4`. `*(*(m + 1) + 2)` is `m[1][2] = 6`. `**m` is `m[0][0] = 1`, and `the + 1` applies to that value, giving 2 (it is not `m[1][0]`)."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int m[2][3] = {};\nint* a[3];\n\nvoid f(int** p);\nvoid g(int (*p)[3]);\nvoid h(int p[][3]);\n\nWhich lines do NOT compile?",
+        "question": "```\nint m[2][3] = {};\nint* a[3];\n\nvoid f(int** p);\nvoid g(int (*p)[3]);\nvoid h(int p[][3]);\n```\n\nWhich lines do NOT compile?",
         "choices": [
           {
             "id": "a",
-            "text": "int (*p1)[3] = m;"
+            "text": "`int (*p1)[3] = m;`"
           },
           {
             "id": "b",
-            "text": "int** p2 = m;"
+            "text": "`int** p2 = m;`"
           },
           {
             "id": "c",
-            "text": "f(a);"
+            "text": "`f(a);`"
           },
           {
             "id": "d",
-            "text": "g(m);"
+            "text": "`g(m);`"
           },
           {
             "id": "e",
-            "text": "f(m);"
+            "text": "`f(m);`"
           },
           {
             "id": "f",
-            "text": "h(m);"
+            "text": "`h(m);`"
           }
         ],
         "correctChoiceIds": [
           "b",
           "e"
         ],
-        "explanation": "m decays into int (*)[3], a pointer to rows of 3 ints, not into int**: a 2D array contains no pointers at all. g and h take the same type, int (*)[3]. a is an array of pointers, so it decays into int**, which f accepts."
+        "explanation": "m decays into `int (*)[3]`, a pointer to rows of 3 ints, not into `int**`: a 2D array contains no pointers at all. g and h take the same type, `int (*)[3]`. a is an array of pointers, so it decays into `int**`, which f accepts."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "const char* names[] = {\"Ann\", \"Bob\", \"Cleo\"};\n\nstd::cout << sizeof(names) / sizeof(names[0]) << \" \";\nstd::cout << *names[2] << \" \" << names[1] + 1;\n\nWhat does it print?",
+        "question": "```\nconst char* names[] = {\"Ann\", \"Bob\", \"Cleo\"};\n\nstd::cout << sizeof(names) / sizeof(names[0]) << \" \";\nstd::cout << *names[2] << \" \" << names[1] + 1;\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
@@ -320,14 +320,14 @@
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "names is an array of 3 pointers, whatever the length of the strings. *names[2] is *(names[2]): the first char of \"Cleo\". names[1] + 1 is a const char* to the second char of \"Bob\", and << prints a const char* as a string from there: ob."
+        "explanation": "names is an array of 3 pointers, whatever the length of the strings. `*names[2]` is `*(names[2])`: the first `char` of \"Cleo\". `names[1]` + 1 is a `const char*` to the second `char` of \"Bob\", and `<<` prints a `const char*` as a string from there: ob."
       }
     },
     {
       "type": "reading",
       "content": {
         "title": "Dynamic allocation with new and delete",
-        "body": "new allocates on the heap and returns a pointer. The memory stays until it is freed explicitly.\n\n- new int(5) is freed with delete. new int[n] is freed with delete[]. Mixing them up is undefined behaviour.\n- With new[], n can be computed at run time. new int[n] leaves the values uninitialized; new int[n]() sets them to 0.\n- delete must receive exactly the pointer that new returned. Deleting nullptr does nothing; deleting twice is undefined behaviour.\n- delete does not set the pointer to nullptr: the pointer dangles.\n- When new cannot allocate, it throws std::bad_alloc. It does not return nullptr, unless you use new (std::nothrow).\n- A dynamic 2D array can be an array of pointers: new int*[rows], then new int[cols] for each row. Free each row, then the array of rows.\n- A class that owns a raw pointer must define its copy operations (rule of three), or use std::vector or smart pointers instead."
+        "body": "`new` allocates on the heap and returns a pointer. The memory stays until it is freed explicitly.\n\n- `new int(5)` is freed with `delete`. `new int[n]` is freed with `delete[]`. Mixing them up is undefined behaviour.\n- With `new[]`, n can be computed at run time. `new int[n]` leaves the values uninitialized; `new int[n]()` sets them to 0.\n- `delete` must receive exactly the pointer that `new` returned. Deleting `nullptr` does nothing; deleting twice is undefined behaviour.\n- `delete` does not set the pointer to `nullptr`: the pointer dangles.\n- When `new` cannot allocate, it throws `std::bad_alloc`. It does not return `nullptr`, unless you use `new (std::nothrow)`.\n- A dynamic 2D array can be an array of pointers: `new int*[rows]`, then `new int[cols]` for each row. Free each row, then the array of rows.\n- A class that owns a raw pointer must define its copy operations (rule of three), or use `std::vector` or smart pointers instead."
       }
     },
     {
@@ -337,27 +337,27 @@
         "choices": [
           {
             "id": "a",
-            "text": "int* p = new int[5];\ndelete p;"
+            "text": "`int* p = new int[5]; delete p;`"
           },
           {
             "id": "b",
-            "text": "int* p = nullptr;\ndelete p;"
+            "text": "`int* p = nullptr; delete p;`"
           },
           {
             "id": "c",
-            "text": "int* p = new int[3];\np++;\ndelete[] p;"
+            "text": "`int* p = new int[3]; p++; delete[] p;`"
           },
           {
             "id": "d",
-            "text": "int* p = new int(5);\nint* q = p;\ndelete q;\np = nullptr;"
+            "text": "`int* p = new int(5); int* q = p; delete q; p = nullptr;`"
           },
           {
             "id": "e",
-            "text": "int* p = new int[3]();\nstd::cout << p[2];\ndelete[] p;"
+            "text": "`int* p = new int[3](); std::cout << p[2]; delete[] p;`"
           },
           {
             "id": "f",
-            "text": "int* p = new int[3];\nstd::cout << p[3];\ndelete[] p;"
+            "text": "`int* p = new int[3]; std::cout << p[3]; delete[] p;`"
           }
         ],
         "correctChoiceIds": [
@@ -365,13 +365,13 @@
           "c",
           "f"
         ],
-        "explanation": "delete on memory from new[] is a mismatch. delete[] must receive the exact pointer returned by new[], not one that was moved. p[3] reads past the end of a 3-element array. Deleting nullptr is allowed. Deleting through a copy of the pointer is fine as long as it happens only once. new int[3]() initializes the values to 0, so p[2] is 0."
+        "explanation": "`delete` on memory from `new[]` is a mismatch. `delete[]` must receive the exact pointer returned by `new[]`, not one that was moved. `p[3]` reads past the end of a 3-element array. Deleting `nullptr` is allowed. Deleting through a copy of the pointer is fine as long as it happens only once. `new int[3]()` initializes the values to 0, so `p[2]` is 0."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "class Buffer {\n    int* data;\npublic:\n    Buffer(int n) : data(new int[n]) {}\n    ~Buffer() { delete[] data; }\n};\n\nint main() {\n    Buffer a(10);\n    Buffer b = a;\n}\n\nWhat happens?",
+        "question": "```\nclass Buffer {\n    int* data;\npublic:\n    Buffer(int n) : data(new int[n]) {}\n    ~Buffer() { delete[] data; }\n};\n\nint main() {\n    Buffer a(10);\n    Buffer b = a;\n}\n```\n\nWhat happens?",
         "choices": [
           {
             "id": "a",
@@ -383,7 +383,7 @@
           },
           {
             "id": "c",
-            "text": "Undefined behaviour: both objects delete[] the same memory at the end of main"
+            "text": "Undefined behaviour: both objects `delete[]` the same memory at the end of main"
           },
           {
             "id": "d",
@@ -393,49 +393,49 @@
         "correctChoiceIds": [
           "c"
         ],
-        "explanation": "The copy constructor generated by the compiler copies the pointer, not the array it points to (a shallow copy). At the end of main, b and then a both run delete[] on the same memory. You should either define the copy constructor and copy assignment (rule of three), or replace int* by std::vector<int>, which copies correctly."
+        "explanation": "The copy constructor generated by the compiler copies the pointer, not the array it points to (a shallow copy). At the end of main, b and then a both run `delete[]` on the same memory. You should either define the copy constructor and copy assignment (rule of three), or replace `int*` by `std::vector<int>`, which copies correctly."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int** grid = new int*[rows];\nfor (int i = 0; i < rows; ++i)\n    grid[i] = new int[cols];\n\nWhich code frees grid correctly?",
+        "question": "```\nint** grid = new int*[rows];\nfor (int i = 0; i < rows; ++i)\n    grid[i] = new int[cols];\n```\n\nWhich code frees grid correctly?",
         "choices": [
           {
             "id": "a",
-            "text": "delete[] grid;"
+            "text": "`delete[] grid;`"
           },
           {
             "id": "b",
-            "text": "for (int i = 0; i < rows; ++i)\n    delete[] grid[i];\ndelete[] grid;"
+            "text": "`for (int i = 0; i < rows; ++i) delete[] grid[i]; delete[] grid;`"
           },
           {
             "id": "c",
-            "text": "delete[] grid;\nfor (int i = 0; i < rows; ++i)\n    delete[] grid[i];"
+            "text": "`delete[] grid; for (int i = 0; i < rows; ++i) delete[] grid[i];`"
           },
           {
             "id": "d",
-            "text": "for (int i = 0; i < rows; ++i)\n    delete grid[i];\ndelete grid;"
+            "text": "`for (int i = 0; i < rows; ++i) delete grid[i]; delete grid;`"
           }
         ],
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "Every new[] needs its own delete[], in reverse order. Deleting only grid leaks every row. Deleting grid first and then reading grid[i] uses freed memory. delete instead of delete[] on memory from new[] is undefined behaviour. A std::vector<std::vector<int>> avoids all of this."
+        "explanation": "Every `new[]` needs its own `delete[]`, in reverse order. Deleting only grid leaks every row. Deleting grid first and then reading `grid[i]` uses freed memory. `delete` instead of `delete[]` on memory from `new[]` is undefined behaviour. A `std::vector<std::vector<int>>` avoids all of this."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int* p = new int[hugeNumber];\nif (p == nullptr) {\n    std::cout << \"Out of memory\";\n}\n\nWhat happens if there is not enough memory?",
+        "question": "```\nint* p = new int[hugeNumber];\nif (p == nullptr) {\n    std::cout << \"Out of memory\";\n}\n```\n\nWhat happens if there is not enough memory?",
         "choices": [
           {
             "id": "a",
-            "text": "p is nullptr and the message is printed"
+            "text": "p is `nullptr` and the message is printed"
           },
           {
             "id": "b",
-            "text": "new throws std::bad_alloc, so the if is never reached"
+            "text": "`new` throws `std::bad_alloc`, so the if is never reached"
           },
           {
             "id": "c",
@@ -449,20 +449,20 @@
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "A plain new never returns nullptr: it throws std::bad_alloc, which you can catch. Only int* p = new (std::nothrow) int[hugeNumber]; returns nullptr when it fails, and then this check makes sense."
+        "explanation": "A plain `new` never returns `nullptr`: it throws `std::bad_alloc`, which you can catch. Only `int* p = new (std::nothrow) int[hugeNumber];` returns `nullptr` when it fails, and then this check makes sense."
       }
     },
     {
       "type": "reading",
       "content": {
         "title": "std::vector",
-        "body": "std::vector<T> is a dynamic array that manages its own memory: its elements are contiguous, and they are freed automatically (RAII).\n\n- size() is the number of elements, capacity() the room already allocated. reserve(n) increases the capacity without changing the size.\n- When push_back needs more capacity, the vector allocates a bigger block and moves its elements there. Every pointer, reference and iterator to its elements is then invalid.\n- v[i] does not check bounds (undefined behaviour when out of range); v.at(i) throws std::out_of_range.\n- std::vector<int> v(3, 7) holds three 7s, while v{3, 7} holds 3 and 7: braces prefer the initializer list.\n- Passed by value, a vector is copied. Pass it by const reference to read it, or by reference to modify it.\n- v.data() gives a pointer to the first element, for functions that expect a C array.\n- For a fixed size known at compile time, std::array<int, 5> is a safer replacement for int[5]."
+        "body": "`std::vector<T>` is a dynamic array that manages its own memory: its elements are contiguous, and they are freed automatically (RAII).\n\n- `size()` is the number of elements, `capacity()` the room already allocated. `reserve(n)` increases the capacity without changing the size.\n- When `push_back` needs more capacity, the vector allocates a bigger block and moves its elements there. Every pointer, reference and iterator to its elements is then invalid.\n- `v[i]` does not check bounds (undefined behaviour when out of range); `v.at(i)` throws `std::out_of_range`.\n- `std::vector<int> v(3, 7)` holds three 7s, while `v{3, 7}` holds 3 and 7: braces prefer the initializer list.\n- Passed by value, a vector is copied. Pass it by `const` reference to read it, or by reference to modify it.\n- `v.data()` gives a pointer to the first element, for functions that expect a C array.\n- For a fixed size known at compile time, `std::array<int, 5>` is a safer replacement for `int[5]`."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "std::vector<int> a(3, 7);\nstd::vector<int> b{3, 7};\nstd::vector<int> c(3);\nstd::vector<int> d{3};\n\nstd::cout << a.size() << b.size() << c.size() << d.size();\n\nWhat does it print?",
+        "question": "```\nstd::vector<int> a(3, 7);\nstd::vector<int> b{3, 7};\nstd::vector<int> c(3);\nstd::vector<int> d{3};\n\nstd::cout << a.size() << b.size() << c.size() << d.size();\n```\n\nWhat does it print?",
         "choices": [
           {
             "id": "a",
@@ -484,13 +484,13 @@
         "correctChoiceIds": [
           "b"
         ],
-        "explanation": "Parentheses call the size constructors: a holds three 7s, c holds three 0s. Braces prefer the initializer_list constructor: b holds the two values 3 and 7, d holds the single value 3."
+        "explanation": "Parentheses call the size constructors: a holds three 7s, c holds three 0s. Braces prefer the `initializer_list` constructor: b holds the two values 3 and 7, d holds the single value 3."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "std::vector<int> v = {1, 2, 3};\nint& first = v[0];\nint* p = v.data();\n\nv.push_back(4);\nstd::cout << first << *p;\n\nWhat happens?",
+        "question": "```\nstd::vector<int> v = {1, 2, 3};\nint& first = v[0];\nint* p = v.data();\n\nv.push_back(4);\nstd::cout << first << *p;\n```\n\nWhat happens?",
         "choices": [
           {
             "id": "a",
@@ -502,7 +502,7 @@
           },
           {
             "id": "c",
-            "text": "Undefined behaviour if push_back reallocates (very likely here): first and p would point to freed memory"
+            "text": "Undefined behaviour if `push_back` reallocates (very likely here): first and p would point to freed memory"
           },
           {
             "id": "d",
@@ -512,13 +512,13 @@
         "correctChoiceIds": [
           "c"
         ],
-        "explanation": "A vector created from 3 values usually has a capacity of 3, so push_back must allocate a new block, move the elements and free the old one. first and p still point to the old block. Calling reserve beforehand, or keeping indexes instead of pointers, avoids the problem."
+        "explanation": "A vector created from 3 values usually has a capacity of 3, so `push_back` must allocate a new block, move the elements and free the old one. first and p still point to the old block. Calling reserve beforehand, or keeping indexes instead of pointers, avoids the problem."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "std::vector<int> v(3);\n\ntry {\n    v.at(3) = 1;\n    std::cout << \"A\";\n} catch (const std::out_of_range&) {\n    std::cout << \"B\";\n}\n\nv[3] = 1;\n\nWhich statements are true?",
+        "question": "```\nstd::vector<int> v(3);\n\ntry {\n    v.at(3) = 1;\n    std::cout << \"A\";\n} catch (const std::out_of_range&) {\n    std::cout << \"B\";\n}\n\nv[3] = 1;\n```\n\nWhich statements are true?",
         "choices": [
           {
             "id": "a",
@@ -526,11 +526,11 @@
           },
           {
             "id": "b",
-            "text": "v[3] = 1 is undefined behaviour: operator[] does not check bounds"
+            "text": "`v[3] = 1` is undefined behaviour: `operator[]` does not check bounds"
           },
           {
             "id": "c",
-            "text": "v[3] = 1 grows the vector to 4 elements"
+            "text": "`v[3] = 1` grows the vector to 4 elements"
           },
           {
             "id": "d",
@@ -541,17 +541,17 @@
           "a",
           "b"
         ],
-        "explanation": "v has 3 elements, indexes 0 to 2. at(3) throws std::out_of_range before anything is assigned, so A is never printed. operator[] never checks bounds and never grows the vector: writing v[3] is undefined behaviour. Use push_back or resize to add elements."
+        "explanation": "v has 3 elements, indexes 0 to 2. `at(3)` throws `std::out_of_range` before anything is assigned, so A is never printed. `operator[]` never checks bounds and never grows the vector: writing `v[3]` is undefined behaviour. Use `push_back` or resize to add elements."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "void fill(std::vector<int> v) { v.push_back(1); }\nvoid fillRef(std::vector<int>& v) { v.push_back(1); }\nvoid show(const std::vector<int>& v) { v.push_back(1); }\n\nint main() {\n    std::vector<int> v;\n    fill(v);\n    fillRef(v);\n    std::cout << v.size();\n}\n\nWhich statements are true?",
+        "question": "```\nvoid fill(std::vector<int> v) { v.push_back(1); }\nvoid fillRef(std::vector<int>& v) { v.push_back(1); }\nvoid show(const std::vector<int>& v) { v.push_back(1); }\n\nint main() {\n    std::vector<int> v;\n    fill(v);\n    fillRef(v);\n    std::cout << v.size();\n}\n```\n\nWhich statements are true?",
         "choices": [
           {
             "id": "a",
-            "text": "show does not compile: v is a reference to a const vector"
+            "text": "show does not compile: v is a reference to a `const` vector"
           },
           {
             "id": "b",
@@ -570,36 +570,36 @@
           "a",
           "b"
         ],
-        "explanation": "push_back is not a const member function, so it cannot be called through a const reference. fill receives a copy, so its push_back does not affect main's v. fillRef receives a reference, so it adds the only element that v ends up with."
+        "explanation": "`push_back` is not a `const` member function, so it cannot be called through a `const` reference. fill receives a copy, so its `push_back` does not affect main's v. fillRef receives a reference, so it adds the only element that v ends up with."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int x = 1, y = 2;\nconst std::vector<int*> v = {&x};\nstd::vector<const int*> w = {&x};\n\nWhich lines do NOT compile?",
+        "question": "```\nint x = 1, y = 2;\nconst std::vector<int*> v = {&x};\nstd::vector<const int*> w = {&x};\n```\n\nWhich lines do NOT compile?",
         "choices": [
           {
             "id": "a",
-            "text": "*v[0] = 5;"
+            "text": "`*v[0] = 5;`"
           },
           {
             "id": "b",
-            "text": "v[0] = &y;"
+            "text": "`v[0] = &y;`"
           },
           {
             "id": "c",
-            "text": "*w[0] = 5;"
+            "text": "`*w[0] = 5;`"
           },
           {
             "id": "d",
-            "text": "w[0] = &y;"
+            "text": "`w[0] = &y;`"
           }
         ],
         "correctChoiceIds": [
           "b",
           "c"
         ],
-        "explanation": "In a const vector, the elements are const: v[0] is an int* const, a pointer that cannot change but still points to a modifiable int, so *v[0] = 5 compiles. In w, the vector is not const, so its pointers can change, but each one points to a const int, so *w[0] cannot be modified."
+        "explanation": "In a `const` vector, the elements are `const`: `v[0]` is an `int* const`, a pointer that cannot change but still points to a modifiable `int`, so `*v[0] = 5` compiles. In w, the vector is not `const`, so its pointers can change, but each one points to a `const int`, so `*w[0]` cannot be modified."
       }
     },
     {
@@ -609,42 +609,42 @@
         "pairs": [
           {
             "id": "p1",
-            "concept": "int* a[3]",
-            "definition": "An array of 3 pointers to int"
+            "concept": "`int* a[3]`",
+            "definition": "An array of 3 pointers to `int`"
           },
           {
             "id": "p2",
-            "concept": "int (*a)[3]",
+            "concept": "`int (*a)[3]`",
             "definition": "A pointer to an array of 3 ints"
           },
           {
             "id": "p3",
-            "concept": "int a[2][3]",
+            "concept": "`int a[2][3]`",
             "definition": "2 rows of 3 ints stored contiguously"
           },
           {
             "id": "p4",
-            "concept": "new int[n]",
-            "definition": "n uninitialized ints on the heap, to free with delete[]"
+            "concept": "`new int[n]`",
+            "definition": "n uninitialized ints on the heap, to free with `delete[]`"
           },
           {
             "id": "p5",
-            "concept": "new int[n]()",
-            "definition": "n ints on the heap set to 0, to free with delete[]"
+            "concept": "`new int[n]()`",
+            "definition": "n ints on the heap set to 0, to free with `delete[]`"
           },
           {
             "id": "p6",
-            "concept": "std::vector<int> v(n);",
+            "concept": "`std::vector<int> v(n);`",
             "definition": "n ints set to 0, freed automatically"
           },
           {
             "id": "p7",
-            "concept": "v.reserve(n);",
+            "concept": "`v.reserve(n);`",
             "definition": "Increases the capacity without changing the size"
           },
           {
             "id": "p8",
-            "concept": "v.at(i)",
+            "concept": "`v.at(i)`",
             "definition": "Accesses an element and throws if i is out of range"
           }
         ]
