@@ -14,21 +14,21 @@
       "type": "reading",
       "content": {
         "title": "Classes and objects",
-        "body": "A class groups data members and member functions. Objects are often created directly as local variables, without new:\n\nclass Dog {\npublic:\n    Dog(std::string name) : name_(name) {}\n    std::string bark() const { return name_ + \" says woof\"; }\nprivate:\n    std::string name_;\n};\n\nDog rex(\"Rex\");\n\nThe constructor Dog(std::string name) initializes name_ in its initializer list (after the :). A local object like rex is destroyed automatically at the end of its block, which runs its destructor, written ~Dog()."
+        "body": "A class groups data members and member functions. Objects are often created directly as local variables, without `new`:\n\n```\nclass Dog {\npublic:\n    Dog(std::string name) : name_(name) {}\n    std::string bark() const { return name_ + \" says woof\"; }\nprivate:\n    std::string name_;\n};\n\nDog rex(\"Rex\");\n```\n\nThe constructor `Dog(std::string name)` initializes `name_` in its initializer list (after the :). A local object like rex is destroyed automatically at the end of its block, which runs its destructor, written `~Dog()`."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "void play() {\n    Dog rex(\"Rex\");\n    rex.bark();\n}\n\nWhere does rex live, and when is it destroyed?",
+        "question": "```\nvoid play() {\n    Dog rex(\"Rex\");\n    rex.bark();\n}\n```\n\nWhere does rex live, and when is it destroyed?",
         "choices": [
           {
             "id": "a",
-            "text": "On the stack; it is destroyed automatically when play() ends"
+            "text": "On the stack; it is destroyed automatically when `play()` ends"
           },
           {
             "id": "b",
-            "text": "On the heap; you have to delete it"
+            "text": "On the heap; you have to `delete` it"
           },
           {
             "id": "c",
@@ -42,41 +42,41 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "A local object has automatic storage: it is created where it is declared and destroyed at the end of the block, with no new and no delete."
+        "explanation": "A local object has automatic storage: it is created where it is declared and destroyed at the end of the block, with no `new` and no `delete`."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "What is the difference between class and struct in C++?",
+        "question": "What is the difference between class and `struct` in C++?",
         "choices": [
           {
             "id": "a",
-            "text": "Only the default access: private for class, public for struct"
+            "text": "Only the default access: private for class, public for `struct`"
           },
           {
             "id": "b",
-            "text": "A struct cannot have member functions"
+            "text": "A `struct` cannot have member functions"
           },
           {
             "id": "c",
-            "text": "A struct is a value type and a class a reference type"
+            "text": "A `struct` is a value type and a class a reference type"
           },
           {
             "id": "d",
-            "text": "A struct cannot be inherited from"
+            "text": "A `struct` cannot be inherited from"
           }
         ],
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "In C++ they are almost the same thing. The value/reference difference is true in C#, not in C++. By convention, struct is used for simple groups of public data."
+        "explanation": "In C++ they are almost the same thing. The value/reference difference is true in C#, not in C++. By convention, `struct` is used for simple groups of public data."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "class Logger {\npublic:\n    Logger()  { std::cout << \"open \"; }\n    ~Logger() { std::cout << \"close \"; }\n};\n\nint main() {\n    {\n        Logger logger;\n        std::cout << \"work \";\n    }\n    std::cout << \"end\";\n}\n\nWhat is printed?",
+        "question": "```\nclass Logger {\npublic:\n    Logger()  { std::cout << \"open \"; }\n    ~Logger() { std::cout << \"close \"; }\n};\n\nint main() {\n    {\n        Logger logger;\n        std::cout << \"work \";\n    }\n    std::cout << \"end\";\n}\n```\n\nWhat is printed?",
         "choices": [
           {
             "id": "a",
@@ -105,17 +105,17 @@
       "type": "reading",
       "content": {
         "title": "Encapsulation",
-        "body": "A class decides who can use its members with access specifiers, written as sections:\n- public: everyone.\n- private: only the class's own member functions (the default in a class).\n- protected: the class and the classes that inherit from it.\n\nEncapsulation keeps the data private and lets others use it only through member functions that enforce the rules.\n\nA member function marked const, like std::string bark() const, promises not to change the object. Only const member functions can be called on a const object."
+        "body": "A class decides who can use its members with access specifiers, written as sections:\n- `public`: everyone.\n- `private`: only the class's own member functions (the default in a class).\n- `protected`: the class and the classes that inherit from it.\n\nEncapsulation keeps the data private and lets others use it only through member functions that enforce the rules.\n\nA member function marked `const`, like `std::string bark() const`, promises not to change the object. Only `const` member functions can be called on a `const` object."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "class Account {\npublic:\n    void deposit(double amount) { if (amount > 0) balance_ += amount; }\nprivate:\n    double balance_ = 0;\n};\n\nAccount account;\naccount.balance_ = -500;\n\nWhat happens?",
+        "question": "```\nclass Account {\npublic:\n    void deposit(double amount) { if (amount > 0) balance_ += amount; }\nprivate:\n    double balance_ = 0;\n};\n\nAccount account;\naccount.balance_ = -500;\n```\n\nWhat happens?",
         "choices": [
           {
             "id": "a",
-            "text": "It does not compile: balance_ is private"
+            "text": "It does not compile: `balance_` is private"
           },
           {
             "id": "b",
@@ -139,11 +139,11 @@
     {
       "type": "multiple-choice",
       "content": {
-        "question": "std::string bark() const { ... }\n\nWhat does the const after the parentheses mean?",
+        "question": "```\nstd::string bark() const { ... }\n```\n\nWhat does the `const` after the parentheses mean?",
         "choices": [
           {
             "id": "a",
-            "text": "bark promises not to change the object, and can be called on a const object"
+            "text": "bark promises not to change the object, and can be called on a `const` object"
           },
           {
             "id": "b",
@@ -161,13 +161,13 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "The compiler refuses any change to the data members inside a const member function. Marking read-only functions const is part of a good class design."
+        "explanation": "The compiler refuses any change to the data members inside a `const` member function. Marking read-only functions `const` is part of a good class design."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "class Robot {\npublic:\n    static int built;\n    Robot() { ++built; }\n};\nint Robot::built = 0;\n\nRobot a;\nRobot b;\nRobot c;\n\nWhat is Robot::built?",
+        "question": "```\nclass Robot {\npublic:\n    static int built;\n    Robot() { ++built; }\n};\nint Robot::built = 0;\n\nRobot a;\nRobot b;\nRobot c;\n```\n\nWhat is `Robot::built`?",
         "choices": [
           {
             "id": "a",
@@ -189,7 +189,7 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "A static data member belongs to the class, not to each object: the three constructors increment the same counter."
+        "explanation": "A `static` data member belongs to the class, not to each object: the three constructors increment the same counter."
       }
     },
     {
@@ -203,7 +203,7 @@
           },
           {
             "id": "b",
-            "text": "Mark the member functions that do not change the object const"
+            "text": "Mark the member functions that do not change the object `const`"
           },
           {
             "id": "c",
@@ -211,14 +211,14 @@
           },
           {
             "id": "d",
-            "text": "Return a non-const reference to private data so callers can change it freely"
+            "text": "Return a non-`const` reference to private data so callers can change it freely"
           }
         ],
         "correctChoiceIds": [
           "a",
           "b"
         ],
-        "explanation": "Returning a non-const reference to a private member lets anyone change it and bypass the class's rules: it breaks encapsulation as much as making it public."
+        "explanation": "Returning a non-`const` reference to a private member lets anyone change it and bypass the class's rules: it breaks encapsulation as much as making it public."
       }
     },
     {
@@ -248,17 +248,17 @@
           },
           {
             "id": "p5",
-            "concept": "Destructor (~Name)",
+            "concept": "Destructor (`~Name`)",
             "definition": "Runs automatically when an object is destroyed"
           },
           {
             "id": "p6",
-            "concept": "const member function",
+            "concept": "`const` member function",
             "definition": "Promises not to change the object"
           },
           {
             "id": "p7",
-            "concept": "static data member",
+            "concept": "`static` data member",
             "definition": "Shared by all the objects of the class"
           }
         ]

@@ -1,5 +1,7 @@
 <p class="instructions">
-  {{ content().instructions ?? 'Match each concept with its definition.' }}
+  <app-formatted-text
+    [text]="content().instructions ?? 'Match each concept with its definition.'"
+  />
 </p>
 
 <ol class="pairs">
@@ -9,7 +11,9 @@
       [class.pair-correct]="answered() && isCorrect(pair.id)"
       [class.pair-wrong]="answered() && !isCorrect(pair.id)"
     >
-      <label class="concept" [for]="id + '-' + i">{{ pair.concept }}</label>
+      <label class="concept" [for]="id + '-' + i"
+        ><app-formatted-text [text]="pair.concept"
+      /></label>
       <select [id]="id + '-' + i" [disabled]="answered()" (change)="choose(pair.id, $event)">
         <option value="" [selected]="!answers().has(pair.id)">Choose a definition…</option>
         @for (option of options(); track option.id) {
@@ -22,7 +26,9 @@
         @if (isCorrect(pair.id)) {
           <span class="pair-tag">Correct</span>
         } @else {
-          <p class="correction">Correct definition: {{ pair.definition }}</p>
+          <p class="correction">
+            Correct definition: <app-formatted-text [text]="pair.definition" />
+          </p>
         }
       }
     </li>

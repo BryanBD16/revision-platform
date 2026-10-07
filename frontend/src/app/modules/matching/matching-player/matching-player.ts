@@ -1,4 +1,6 @@
 import { Component, computed, input, output, signal } from '@angular/core';
+import { FormattedText } from '../../../shared/formatted-text/formatted-text';
+import { toPlainText } from '../../../shared/formatted-text/text-segments';
 import { ModulePlayer, ModuleResult } from '../../module-type';
 import { scoreMatching } from '../grading';
 import { MatchingContent } from '../matching-content';
@@ -10,6 +12,7 @@ let nextId = 0;
   selector: 'app-matching-player',
   templateUrl: './matching-player.html',
   styleUrl: './matching-player.css',
+  imports: [FormattedText],
 })
 export class MatchingPlayer implements ModulePlayer<MatchingContent> {
   readonly content = input.required<MatchingContent>();
@@ -18,9 +21,12 @@ export class MatchingPlayer implements ModulePlayer<MatchingContent> {
   /** Unique prefix for the field ids of this module. */
   protected readonly id = `matching-answer-${nextId++}`;
 
-  /** The definitions offered in each dropdown, in a random order. */
+  /** The definitions offered in each dropdown, in a random order, as plain text: an option cannot show code. */
   protected readonly options = computed(() =>
-    shuffleAvoidingOriginalOrder(this.content().pairs).map(({ id, definition }) => ({ id, definition })),
+    shuffleAvoidingOriginalOrder(this.content().pairs).map(({ id, definition }) => ({
+      id,
+      definition: toPlainText(definition),
+    })),
   );
 
   /** For each concept's pair id, the pair id of the chosen definition. */

@@ -25,6 +25,16 @@ describe('ReadingPlayer', () => {
     expect(element.querySelector('h3')).toBeNull();
   });
 
+  it('shows the code of the text as code', async () => {
+    fixture.componentRef.setInput('content', {
+      title: null,
+      body: 'Example:\n```\nint x = 0;\n```',
+    });
+    await fixture.whenStable();
+
+    expect(element.querySelector('.code-block')?.textContent).toBe('int x = 0;');
+  });
+
   it('completes without a grade when the learner continues', async () => {
     fixture.componentRef.setInput('content', { title: null, body: 'Some text' });
     await fixture.whenStable();

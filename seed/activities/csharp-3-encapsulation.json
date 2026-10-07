@@ -14,13 +14,13 @@
       "type": "reading",
       "content": {
         "title": "Classes and objects",
-        "body": "A class is a blueprint: it describes the data (fields and properties) and the behaviour (methods) of a kind of thing. An object is one concrete instance of a class, created with new.\n\npublic class Dog\n{\n    public string Name { get; }\n    public Dog(string name) => Name = name;\n    public string Bark() => $\"{Name} says woof\";\n}\n\nvar rex = new Dog(\"Rex\");\n\nDog is the class, new Dog(\"Rex\") creates an object, and the constructor Dog(string name) gives it a valid starting state."
+        "body": "A class is a blueprint: it describes the data (fields and properties) and the behaviour (methods) of a kind of thing. An object is one concrete instance of a class, created with `new`.\n\n```\npublic class Dog\n{\n    public string Name { get; }\n    public Dog(string name) => Name = name;\n    public string Bark() => $\"{Name} says woof\";\n}\n\nvar rex = new Dog(\"Rex\");\n```\n\nDog is the class, `new Dog(\"Rex\")` creates an object, and the constructor `Dog(string name)` gives it a valid starting state."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "var rex = new Dog(\"Rex\");\nvar max = new Dog(\"Max\");\n\nHow many classes and how many objects are there?",
+        "question": "```\nvar rex = new Dog(\"Rex\");\nvar max = new Dog(\"Max\");\n```\n\nHow many classes and how many objects are there?",
         "choices": [
           {
             "id": "a",
@@ -77,13 +77,13 @@
       "type": "reading",
       "content": {
         "title": "Encapsulation",
-        "body": "Encapsulation means an object hides its internal state and only lets others use it through its methods and properties. The object stays in charge of its own rules.\n\nAccess modifiers decide who can use a member:\n- public: everyone.\n- private: only the class itself (the default for members).\n- protected: the class and the classes that inherit from it.\n- internal: any code in the same assembly (project).\n\nA property like public decimal Balance { get; private set; } can be read by everyone, but only changed by the class."
+        "body": "Encapsulation means an object hides its `internal` state and only lets others use it through its methods and properties. The object stays in charge of its own rules.\n\nAccess modifiers decide who can use a member:\n- `public`: everyone.\n- `private`: only the class itself (the default for members).\n- `protected`: the class and the classes that inherit from it.\n- `internal`: any code in the same assembly (project).\n\nA property like `public decimal Balance { get; private set; }` can be read by everyone, but only changed by the class."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "public class BankAccount\n{\n    public decimal Balance { get; private set; }\n\n    public void Deposit(decimal amount)\n    {\n        if (amount <= 0)\n            throw new ArgumentException(\"Positive amounts only\");\n        Balance += amount;\n    }\n}\n\nWhy is the setter of Balance private?",
+        "question": "```\npublic class BankAccount\n{\n    public decimal Balance { get; private set; }\n\n    public void Deposit(decimal amount)\n    {\n        if (amount <= 0)\n            throw new ArgumentException(\"Positive amounts only\");\n        Balance += amount;\n    }\n}\n```\n\nWhy is the setter of Balance private?",
         "choices": [
           {
             "id": "a",
@@ -95,7 +95,7 @@
           },
           {
             "id": "c",
-            "text": "Because properties of type decimal must have a private setter"
+            "text": "Because properties of type `decimal` must have a private setter"
           },
           {
             "id": "d",
@@ -111,7 +111,7 @@
     {
       "type": "multiple-choice",
       "content": {
-        "question": "A method is declared without any access modifier: void Recalculate() { ... } inside a class. Who can call it?",
+        "question": "A method is declared without any access modifier: `void Recalculate() { ... }` inside a class. Who can call it?",
         "choices": [
           {
             "id": "a",
@@ -143,7 +143,7 @@
         "choices": [
           {
             "id": "a",
-            "text": "internal"
+            "text": "`internal`"
           },
           {
             "id": "b",
@@ -161,35 +161,35 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "internal means \"visible inside this assembly\". It is handy for helpers that other projects should not depend on."
+        "explanation": "`internal` means \"visible inside this assembly\". It is handy for helpers that other projects should not depend on."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "class Counter\n{\n    public static int Total;\n    public int Mine;\n\n    public void Click() { Total++; Mine++; }\n}\n\nvar a = new Counter();\nvar b = new Counter();\na.Click();\nb.Click();\n\nWhat are Counter.Total and a.Mine?",
+        "question": "```\nclass Counter\n{\n    public static int Total;\n    public int Mine;\n\n    public void Click() { Total++; Mine++; }\n}\n\nvar a = new Counter();\nvar b = new Counter();\na.Click();\nb.Click();\n```\n\nWhat are `Counter.Total` and `a.Mine`?",
         "choices": [
           {
             "id": "a",
-            "text": "Total is 2 and a.Mine is 1"
+            "text": "Total is 2 and `a.Mine` is 1"
           },
           {
             "id": "b",
-            "text": "Total is 1 and a.Mine is 1"
+            "text": "Total is 1 and `a.Mine` is 1"
           },
           {
             "id": "c",
-            "text": "Total is 2 and a.Mine is 2"
+            "text": "Total is 2 and `a.Mine` is 2"
           },
           {
             "id": "d",
-            "text": "Total is 1 and a.Mine is 2"
+            "text": "Total is 1 and `a.Mine` is 2"
           }
         ],
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "A static field belongs to the class and is shared by all objects: both clicks add to the same Total. Mine is an instance field: each counter has its own."
+        "explanation": "A `static` field belongs to the class and is shared by all objects: both clicks add to the same Total. Mine is an instance field: each counter has its own."
       }
     },
     {
@@ -211,14 +211,14 @@
           },
           {
             "id": "d",
-            "text": "Return your internal List<T> directly so callers can add items to it"
+            "text": "Return your `internal List<T>` directly so callers can add items to it"
           }
         ],
         "correctChoiceIds": [
           "a",
           "b"
         ],
-        "explanation": "Returning the internal list lets anyone change it without going through your rules. Return a read-only view (IReadOnlyList<T>) or a copy instead."
+        "explanation": "Returning the `internal` list lets anyone change it without going through your rules. Return a read-only view (`IReadOnlyList<T>`) or a copy instead."
       }
     },
     {
@@ -243,17 +243,17 @@
           },
           {
             "id": "p4",
-            "concept": "internal",
+            "concept": "`internal`",
             "definition": "Usable by any code in the same assembly"
           },
           {
             "id": "p5",
-            "concept": "static",
+            "concept": "`static`",
             "definition": "Belongs to the class itself, shared by all its objects"
           },
           {
             "id": "p6",
-            "concept": "readonly",
+            "concept": "`readonly`",
             "definition": "A field that can only be set in its declaration or in a constructor"
           }
         ]

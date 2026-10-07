@@ -51,11 +51,11 @@
         "choices": [
           {
             "id": "a",
-            "text": "The compiler knows the type of every expression, so int n = \"hello\"; is rejected before the program runs"
+            "text": "The compiler knows the type of every expression, so `int n = \"hello\";` is rejected before the program runs"
           },
           {
             "id": "b",
-            "text": "Every variable has to be declared with the static keyword"
+            "text": "Every variable has to be declared with the `static` keyword"
           },
           {
             "id": "c",
@@ -63,23 +63,23 @@
           },
           {
             "id": "d",
-            "text": "You always have to write the type: var is not allowed"
+            "text": "You always have to write the type: `var` is not allowed"
           }
         ],
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "Static typing means type errors are found at compile time. static is an unrelated keyword, and var is still statically typed: the compiler infers the type."
+        "explanation": "Static typing means type errors are found at compile time. `static` is an unrelated keyword, and `var` is still statically typed: the compiler infers the type."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "var total = 42;\ntotal = \"forty-two\";\n\nWhat happens?",
+        "question": "```\nvar total = 42;\ntotal = \"forty-two\";\n```\n\nWhat happens?",
         "choices": [
           {
             "id": "a",
-            "text": "It does not compile: var made total an int"
+            "text": "It does not compile: `var` made total an `int`"
           },
           {
             "id": "b",
@@ -97,20 +97,20 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "var does not mean \"any type\". The compiler infers int from 42, and total stays an int forever, so assigning a string is a compile error."
+        "explanation": "`var` does not mean \"any type\". The compiler infers `int` from 42, and total stays an `int` forever, so assigning a string is a compile error."
       }
     },
     {
       "type": "reading",
       "content": {
         "title": "Value types and reference types",
-        "body": "Every C# type is either a value type or a reference type.\n\nValue types (int, double, bool, char, enums and structs) hold their value directly. Copying the variable copies the value: the two copies are independent.\n\nReference types (classes, arrays, lists, string...) live on the heap; the variable only holds a reference to the object. Copying the variable copies the reference, so both variables point to the same object.\n\nstring is a reference type, but it is immutable: a method like ToUpper() returns a new string instead of changing the existing one."
+        "body": "Every C# type is either a value type or a reference type.\n\nValue types (`int`, `double`, `bool`, `char`, enums and structs) hold their value directly. Copying the variable copies the value: the two copies are independent.\n\nReference types (classes, arrays, lists, string...) live on the heap; the variable only holds a reference to the object. Copying the variable copies the reference, so both variables point to the same object.\n\nstring is a reference type, but it is immutable: a method like `ToUpper()` returns a `new` string instead of changing the existing one."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int a = 1;\nint b = a;\nb = 2;\n\nWhat is the value of a now?",
+        "question": "```\nint a = 1;\nint b = a;\nb = 2;\n```\n\nWhat is the value of a now?",
         "choices": [
           {
             "id": "a",
@@ -132,13 +132,13 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "int is a value type: b = a copies the value 1 into b. Changing b afterwards does not touch a."
+        "explanation": "`int` is a value type: `b = a` copies the value 1 into b. Changing b afterwards does not touch a."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "var p = new List<int> { 1 };\nvar q = p;\nq.Add(2);\n\nHow many items does p contain?",
+        "question": "```\nvar p = new List<int> { 1 };\nvar q = p;\nq.Add(2);\n```\n\nHow many items does p contain?",
         "choices": [
           {
             "id": "a",
@@ -160,7 +160,7 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "List<int> is a class, so a reference type: q = p copies the reference, and p and q are the same list. Adding through q is visible through p."
+        "explanation": "`List<int>` is a class, so a reference type: `q = p` copies the reference, and p and q are the same list. Adding through q is visible through p."
       }
     },
     {
@@ -182,7 +182,7 @@
           },
           {
             "id": "d",
-            "text": "The compiler, which inserts free() calls at build time"
+            "text": "The compiler, which inserts `free()` calls at build time"
           }
         ],
         "correctChoiceIds": [

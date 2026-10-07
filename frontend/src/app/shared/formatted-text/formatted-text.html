@@ -1,0 +1,13 @@
+@for (segment of segments(); track $index) {
+  @switch (segment.kind) {
+    @case ('code-block') {
+      <code class="code-block">{{ segment.text }}</code>
+    }
+    @case ('inline-code') {
+      <code class="inline-code">{{ segment.text }}</code>
+    }
+    @default {
+      <span class="text">{{ segment.text }}</span>
+    }
+  }
+}

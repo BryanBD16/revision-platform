@@ -1,0 +1,30 @@
+:host {
+  white-space: pre-wrap;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875em;
+  font-weight: normal;
+  background: var(--color-surface);
+  border-radius: 4px;
+}
+
+.inline-code {
+  padding: 0.1em 0.3em;
+  border: 1px solid var(--color-border);
+  /* Keeps the border on both lines when the code wraps. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* A <code> shown as a block: a <pre> is not allowed inside a label, a legend or a paragraph. */
+.code-block {
+  display: block;
+  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.45;
+}

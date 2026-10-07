@@ -68,8 +68,9 @@ to them.
 It also contains three general knowledge activities that are not part of
 a course (`general-…`): literature, cult films and Greek mythology.
 
-Each file has the format of a `POST /api/activities` request body. The
-backend does not need to be running:
+Each file has the format of a `POST /api/activities` request body, and
+marks its code as described in "Code in texts" in
+[docs/api.md](docs/api.md). The backend does not need to be running:
 
 ```sh
 make db-clear                        # optional: delete all activities, modules and themes

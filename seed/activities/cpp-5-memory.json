@@ -13,13 +13,13 @@
       "type": "reading",
       "content": {
         "title": "Stack and heap",
-        "body": "Local variables live on the stack: they are created where they are declared and destroyed automatically at the end of their block.\n\nnew creates an object on the heap, where it stays until someone calls delete (delete[] for arrays). That gives two classic bugs:\n- A memory leak: the memory is never deleted, so the program uses more and more memory.\n- A dangling pointer: the memory was deleted, but a pointer still points to it; using it is undefined behaviour, anything can happen.\n\nModern C++ code rarely writes new and delete directly."
+        "body": "Local variables live on the stack: they are created where they are declared and destroyed automatically at the end of their block.\n\n`new` creates an object on the heap, where it stays until someone calls `delete` (`delete[]` for arrays). That gives two classic bugs:\n- A memory leak: the memory is never deleted, so the program uses more and more memory.\n- A dangling pointer: the memory was deleted, but a pointer still points to it; using it is undefined behaviour, anything can happen.\n\nModern C++ code rarely writes `new` and `delete` directly."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "void load() {\n    int* data = new int[1000];\n    // ... uses data, never deletes it\n}\n\nload() is called in a loop. What happens?",
+        "question": "```\nvoid load() {\n    int* data = new int[1000];\n    // ... uses data, never deletes it\n}\n```\n\n`load()` is called in a loop. What happens?",
         "choices": [
           {
             "id": "a",
@@ -27,7 +27,7 @@
           },
           {
             "id": "b",
-            "text": "Nothing: data is released at the end of load()"
+            "text": "Nothing: data is released at the end of `load()`"
           },
           {
             "id": "c",
@@ -35,19 +35,19 @@
           },
           {
             "id": "d",
-            "text": "It does not compile without delete"
+            "text": "It does not compile without `delete`"
           }
         ],
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "The pointer data is destroyed at the end of the function, but not the memory it points to. delete[] data; is needed, or better, a std::vector<int> that releases it by itself."
+        "explanation": "The pointer data is destroyed at the end of the function, but not the memory it points to. `delete[] data;` is needed, or better, a `std::vector<int>` that releases it by itself."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "int* p = new int(42);\ndelete p;\nstd::cout << *p;\n\nWhat happens?",
+        "question": "```\nint* p = new int(42);\ndelete p;\nstd::cout << *p;\n```\n\nWhat happens?",
         "choices": [
           {
             "id": "a",
@@ -69,28 +69,28 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "After delete, the memory no longer belongs to the program. It may print 42, garbage, or crash: that uncertainty is what makes these bugs so hard to find."
+        "explanation": "After `delete`, the memory no longer belongs to the program. It may print 42, garbage, or crash: that uncertainty is what makes these bugs so hard to find."
       }
     },
     {
       "type": "reading",
       "content": {
         "title": "RAII and smart pointers",
-        "body": "RAII (Resource Acquisition Is Initialization) is the key idea of C++: an object owns a resource (memory, file, lock...). Its constructor acquires it and its destructor releases it. Since destructors run automatically, even when an exception is thrown, the resource can never be forgotten.\n\nThe standard library applies it everywhere: std::vector and std::string manage their memory, and smart pointers manage heap objects:\n- std::unique_ptr: a single owner; it deletes the object when it is destroyed. It cannot be copied, only moved.\n- std::shared_ptr: shared ownership; it counts its owners and deletes the object when the last one disappears.\n\nCreate them with std::make_unique and std::make_shared."
+        "body": "RAII (Resource Acquisition Is Initialization) is the key idea of C++: an object owns a resource (memory, file, lock...). Its constructor acquires it and its destructor releases it. Since destructors run automatically, even when an exception is thrown, the resource can never be forgotten.\n\nThe standard library applies it everywhere: `std::vector` and `std::string` manage their memory, and smart pointers manage heap objects:\n- `std::unique_ptr`: a single owner; it deletes the object when it is destroyed. It cannot be copied, only moved.\n- `std::shared_ptr`: shared ownership; it counts its owners and deletes the object when the last one disappears.\n\nCreate them with `std::make_unique` and `std::make_shared`."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "void walk() {\n    auto dog = std::make_unique<Dog>(\"Rex\");\n    dog->bark();\n}\n\nWhen is the Dog deleted?",
+        "question": "```\nvoid walk() {\n    auto dog = std::make_unique<Dog>(\"Rex\");\n    dog->bark();\n}\n```\n\nWhen is the Dog deleted?",
         "choices": [
           {
             "id": "a",
-            "text": "When walk() ends: dog's destructor deletes it"
+            "text": "When `walk()` ends: dog's destructor deletes it"
           },
           {
             "id": "b",
-            "text": "Never, because nobody calls delete"
+            "text": "Never, because nobody calls `delete`"
           },
           {
             "id": "c",
@@ -104,25 +104,25 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "dog is a local unique_ptr: at the end of the function it is destroyed, and its destructor deletes the Dog. No leak, even if bark() throws an exception."
+        "explanation": "dog is a local `unique_ptr`: at the end of the function it is destroyed, and its destructor deletes the Dog. No leak, even if `bark()` throws an exception."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "auto a = std::make_unique<int>(5);\nauto b = a;\n\nWhat happens?",
+        "question": "```\nauto a = std::make_unique<int>(5);\nauto b = a;\n```\n\nWhat happens?",
         "choices": [
           {
             "id": "a",
-            "text": "It does not compile: a unique_ptr cannot be copied"
+            "text": "It does not compile: a `unique_ptr` cannot be copied"
           },
           {
             "id": "b",
-            "text": "a and b both own the int"
+            "text": "a and b both own the `int`"
           },
           {
             "id": "c",
-            "text": "b is a copy of the int, with its own memory"
+            "text": "b is a copy of the `int`, with its own memory"
           },
           {
             "id": "d",
@@ -132,13 +132,13 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "A unique_ptr is the only owner, so copying is forbidden. auto b = std::move(a); transfers the ownership: b owns the int and a becomes null."
+        "explanation": "A `unique_ptr` is the only owner, so copying is forbidden. `auto b = std::move(a);` transfers the ownership: b owns the `int` and a becomes null."
       }
     },
     {
       "type": "multiple-choice",
       "content": {
-        "question": "auto a = std::make_shared<int>(5);\n{\n    auto b = a;\n    std::cout << a.use_count();\n}\nstd::cout << a.use_count();\n\nWhat are the two numbers printed?",
+        "question": "```\nauto a = std::make_shared<int>(5);\n{\n    auto b = a;\n    std::cout << a.use_count();\n}\nstd::cout << a.use_count();\n```\n\nWhat are the two numbers printed?",
         "choices": [
           {
             "id": "a",
@@ -160,7 +160,7 @@
         "correctChoiceIds": [
           "a"
         ],
-        "explanation": "Copying a shared_ptr adds an owner: 2 while b exists. When b is destroyed at the closing brace, the count drops back to 1. The int is deleted when the count reaches 0."
+        "explanation": "Copying a `shared_ptr` adds an owner: 2 while b exists. When b is destroyed at the closing brace, the count drops back to 1. The `int` is deleted when the count reaches 0."
       }
     },
     {
@@ -198,26 +198,26 @@
         "choices": [
           {
             "id": "a",
-            "text": "Use std::vector and std::string instead of new[] and char*"
+            "text": "Use `std::vector` and `std::string` instead of `new[]` and `char*`"
           },
           {
             "id": "b",
-            "text": "Use std::make_unique for an object with a single owner"
+            "text": "Use `std::make_unique` for an object with a single owner"
           },
           {
             "id": "c",
-            "text": "Write new and delete by hand for every object"
+            "text": "Write `new` and `delete` by hand for every object"
           },
           {
             "id": "d",
-            "text": "Use std::shared_ptr everywhere, just in case"
+            "text": "Use `std::shared_ptr` everywhere, just in case"
           }
         ],
         "correctChoiceIds": [
           "a",
           "b"
         ],
-        "explanation": "Prefer containers and unique_ptr; use shared_ptr only when ownership is really shared, since counting owners has a cost and makes lifetimes harder to follow."
+        "explanation": "Prefer containers and `unique_ptr`; use `shared_ptr` only when ownership is really shared, since counting owners has a cost and makes lifetimes harder to follow."
       }
     },
     {
@@ -233,7 +233,7 @@
           {
             "id": "p2",
             "concept": "Heap",
-            "definition": "Where new creates objects, which stay until they are deleted"
+            "definition": "Where `new` creates objects, which stay until they are deleted"
           },
           {
             "id": "p3",
@@ -252,12 +252,12 @@
           },
           {
             "id": "p6",
-            "concept": "std::unique_ptr",
+            "concept": "`std::unique_ptr`",
             "definition": "A smart pointer with a single owner"
           },
           {
             "id": "p7",
-            "concept": "std::shared_ptr",
+            "concept": "`std::shared_ptr`",
             "definition": "A smart pointer that counts its owners"
           }
         ]

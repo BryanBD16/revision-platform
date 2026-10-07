@@ -1,4 +1,5 @@
 import { Component, computed, input, output, signal } from '@angular/core';
+import { FormattedText } from '../../../shared/formatted-text/formatted-text';
 import { shuffle } from '../../../shared/shuffle';
 import { ModulePlayer, ModuleResult } from '../../module-type';
 import { isCorrectAnswer } from '../grading';
@@ -10,6 +11,7 @@ let nextId = 0;
   selector: 'app-multiple-choice-player',
   templateUrl: './multiple-choice-player.html',
   styleUrl: './multiple-choice-player.css',
+  imports: [FormattedText],
 })
 export class MultipleChoicePlayer implements ModulePlayer<MultipleChoiceContent> {
   readonly content = input.required<MultipleChoiceContent>();

@@ -1,4 +1,6 @@
 .multiple-choice {
+  /* A fieldset is at least as wide as its content by default: long code would widen the page. */
+  min-width: 0;
   margin: 0 0 1rem;
   padding: 0;
   border: none;
@@ -7,14 +9,16 @@
 }
 
 .multiple-choice .question {
+  /* A legend is only as wide as its content: a short code block would not use the full width. */
+  width: 100%;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
-/* Keeps the line breaks and indentation of code in questions and choices. */
-.multiple-choice .question,
+/* Lets a long code block scroll inside its choice instead of widening it. */
 .choice-text {
-  white-space: pre-wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .choice {
@@ -54,8 +58,4 @@
 
 .feedback-wrong {
   color: var(--color-error);
-}
-
-.explanation {
-  white-space: pre-line;
 }

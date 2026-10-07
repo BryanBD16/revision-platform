@@ -72,7 +72,10 @@ No database migration is needed: the content is stored as JSON.
    implementing `ModulePlayer`, and the `ModuleTypeDefinition` (see
    `modules/reading/`). Put the type's styles in its components' CSS
    files, not in the global `styles.css`, which only holds shared styles
-   (layout, fields, buttons, colors).
+   (layout, fields, buttons, colors). Show the texts written by authors
+   with `<app-formatted-text>` (`shared/formatted-text/`), which keeps
+   their line breaks and shows their code (see "Code in texts" in
+   [api.md](api.md)).
 2. Add the definition to `MODULE_TYPES` in `modules/module-types.ts`.
 3. Add tests for the definition, the editor and the player.
 

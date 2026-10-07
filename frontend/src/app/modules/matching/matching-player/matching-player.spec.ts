@@ -56,6 +56,22 @@ describe('MatchingPlayer', () => {
     expect(options.slice(1)).not.toEqual(content.pairs.map((p) => p.definition));
   });
 
+  it('shows the code of a concept as code, and the definitions without code markers', async () => {
+    fixture.componentRef.setInput('content', {
+      instructions: null,
+      pairs: [
+        { id: 'p1', concept: '`int* a[3]`', definition: 'An array of 3 `int*`' },
+        { id: 'p2', concept: '`int (*a)[3]`', definition: 'A pointer to an array' },
+      ],
+    });
+    await fixture.whenStable();
+
+    expect(element.querySelector('.concept .inline-code')?.textContent).toBe('int* a[3]');
+    expect([...select('int* a[3]').options].map((o) => o.text.trim())).toContain(
+      'An array of 3 int*',
+    );
+  });
+
   it('shows the default instructions, or the ones of the module', async () => {
     expect(element.textContent).toContain('Match each concept with its definition.');
 
