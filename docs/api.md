@@ -520,6 +520,58 @@ activity list, and the best score of all pages (`null` without scores):
 { "items": [ /* trivia scores */ ], "page": 1, "pageSize": 20, "totalCount": 9, "bestScore": 12 }
 ```
 
+## Typing test
+
+The typing test runs in the browser, independently of the activities:
+its texts are part of the frontend. Anyone can take a test; only
+signed-in users save their results.
+
+### Typing result
+
+```json
+{
+  "id": 3,
+  "mode": "timed",
+  "durationSeconds": 120,
+  "averageWpm": 54,
+  "peakWpm": 71,
+  "playedAt": "2026-10-07T14:02:11.123456Z"
+}
+```
+
+`mode` is the game mode; `timed` is the only one so far.
+`durationSeconds` is the length of a timed test (`null` for a mode that
+is not timed). The speeds are in words per minute (a word is 5 correct
+characters): `averageWpm` over the whole test, `peakWpm` the highest
+speed reached.
+
+### `POST /api/typing/results`
+
+Requires a signed-in user (`401` otherwise). Saves a finished test and
+returns `201` with the result.
+
+```json
+{ "mode": "timed", "durationSeconds": 120, "averageWpm": 54, "peakWpm": 71 }
+```
+
+The speeds are computed by the browser. `400` with the errors keyed by
+field when:
+
+- `mode` is not `timed`;
+- `durationSeconds` is not `60`, `120` or `300`;
+- `averageWpm` or `peakWpm` is missing or not between 0 and 300;
+- `peakWpm` is lower than `averageWpm`.
+
+### `GET /api/typing/results`
+
+Requires a signed-in user (`401` otherwise). Returns a page of the
+caller's results, newest first, with `page` and `pageSize` as for the
+activity list:
+
+```json
+{ "items": [ /* typing results */ ], "page": 1, "pageSize": 20, "totalCount": 9 }
+```
+
 ## Module types
 
 ### Code in texts

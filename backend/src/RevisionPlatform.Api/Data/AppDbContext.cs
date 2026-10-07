@@ -6,6 +6,7 @@ using RevisionPlatform.Api.Attempts;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
 using RevisionPlatform.Api.Trivia;
+using RevisionPlatform.Api.Typing;
 using RevisionPlatform.Api.Users;
 
 namespace RevisionPlatform.Api.Data;
@@ -25,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<AttemptModule> AttemptModules => Set<AttemptModule>();
     public DbSet<TriviaScore> TriviaScores => Set<TriviaScore>();
     public DbSet<TriviaScoreTheme> TriviaScoreThemes => Set<TriviaScoreTheme>();
+    public DbSet<TypingResult> TypingResults => Set<TypingResult>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -108,6 +110,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             theme.Property(t => t.ThemeName).HasMaxLength(Theme.NameMaxLength);
             // Deleting the theme keeps the score, which has its own copy of the name.
             theme.HasOne<Theme>().WithMany().HasForeignKey(t => t.ThemeId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<TypingResult>(result =>
+        {
+            result.Property(r => r.Mode).HasMaxLength(TypingResult.ModeMaxLength);
+            // A user's results are deleted with their account.
+            result.HasOne<AppUser>().WithMany().HasForeignKey(r => r.UserId).OnDelete(DeleteBehavior.Cascade);
+            // "My results" lists a user's results, newest first.
+            result.HasIndex(r => new { r.UserId, r.PlayedAt });
         });
 
         modelBuilder.Entity<Theme>(theme =>

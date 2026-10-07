@@ -8,6 +8,7 @@ using RevisionPlatform.Api.Data;
 using RevisionPlatform.Api.Modules;
 using RevisionPlatform.Api.Themes;
 using RevisionPlatform.Api.Trivia;
+using RevisionPlatform.Api.Typing;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,7 @@ builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<AttemptService>();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<TriviaService>();
+builder.Services.AddScoped<TypingService>();
 
 // Every POST, PUT and DELETE request needs the anti-forgery token (see XsrfCookie).
 builder.Services.AddControllers(options => options.Filters.Add<ValidateAntiforgeryFilter>());
