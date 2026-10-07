@@ -10,6 +10,12 @@
         }
       </div>
     </details>
+    <details #typingMenu class="nav-menu">
+      <summary>Typing test</summary>
+      <div class="nav-menu-items">
+        <a routerLink="/typing" (click)="typingMenu.open = false">Play</a>
+      </div>
+    </details>
   </nav>
   <nav class="user-nav" aria-label="Account">
     @if (user(); as user) {

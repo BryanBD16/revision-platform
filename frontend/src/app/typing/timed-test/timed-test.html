@@ -1,0 +1,67 @@
+<div class="page-header">
+  <h2>Typing test</h2>
+  <a routerLink="/typing/wpm">How WPM works</a>
+</div>
+
+@switch (phase()) {
+  @case ('choosing') {
+    <p>
+      Type the text as fast and as accurately as you can until the time is up. The clock starts with
+      your first key. Mistakes are shown in red: correct them with Backspace, or a whole word with
+      Ctrl+Backspace. Only correct characters count toward your speed.
+    </p>
+    <div class="typing-durations" role="group" aria-label="Test length">
+      @for (seconds of durations; track seconds) {
+        <button type="button" class="button" (click)="start(seconds)">
+          {{ durationLabel(seconds) }}
+        </button>
+      }
+    </div>
+  }
+  @case ('over') {
+    @if (result(); as result) {
+      <app-typing-summary heading="Time is up!" [result]="result" [accuracy]="accuracy()">
+        <button type="button" class="button" (click)="restart()">Try again</button>
+        <button type="button" class="button-secondary" (click)="chooseOtherDuration()">
+          Choose another length
+        </button>
+      </app-typing-summary>
+    }
+  }
+  @default {
+    <div class="typing-layout">
+      <aside class="card typing-sidebar" aria-label="Your speed">
+        <app-wpm-meter [wpm]="currentWpm()" />
+        <dl class="typing-stats">
+          <div>
+            <dt>Average</dt>
+            <dd>{{ averageWpm() }} WPM</dd>
+          </div>
+          <div>
+            <dt>Time left</dt>
+            <dd class="typing-time-left">{{ timeLeft() }}</dd>
+          </div>
+        </dl>
+      </aside>
+      <div class="typing-main">
+        <!-- A new run recreates the typing area, which then starts empty. -->
+        @for (current of [run()]; track current) {
+          <app-typing-area [text]="text()" [autofocus]="true" (progress)="onProgress($event)" />
+        }
+        <p class="meta">
+          @if (phase() === 'ready') {
+            {{ durationLabel(durationSeconds()) }}: the clock starts with your first key.
+          } @else {
+            Keep typing until the time is up.
+          }
+        </p>
+        <div class="actions">
+          <button type="button" class="button-secondary" (click)="restart()">Restart</button>
+          <button type="button" class="button-secondary" (click)="chooseOtherDuration()">
+            Choose another length
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}

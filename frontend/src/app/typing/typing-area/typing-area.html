@@ -1,0 +1,19 @@
+<div
+  #box
+  class="typing-area"
+  [class.typing-area-disabled]="disabled()"
+  tabindex="0"
+  role="textbox"
+  aria-label="Text to type"
+  [attr.aria-readonly]="disabled()"
+  (keydown)="onKeydown($event)"
+  (focus)="focused.set(true)"
+  (blur)="focused.set(false)"
+>
+  @for (char of chars(); track $index) {
+    <span class="typing-char" [class]="'typing-char-' + charState($index)">{{ char }}</span>
+  }
+</div>
+@if (!focused() && !disabled()) {
+  <p class="hint typing-focus-hint">Click the text to type.</p>
+}

@@ -1,0 +1,39 @@
+<section class="card completed typing-summary">
+  <h3>{{ heading() }}</h3>
+  <div class="typing-summary-speeds">
+    <app-wpm-meter label="Average speed" [wpm]="result().averageWpm" />
+    <app-wpm-meter label="Highest speed" [wpm]="result().peakWpm" />
+  </div>
+  <p class="meta">
+    Accuracy: <strong>{{ accuracy() }}%</strong> of the characters were right when typed.
+    <a routerLink="/typing/wpm">How are these speeds measured?</a>
+  </p>
+
+  <div class="save-status" aria-live="polite">
+    @if (!signedIn()) {
+      <p class="meta">
+        <a routerLink="/sign-in" [queryParams]="{ returnUrl: '/typing' }">Sign in</a>
+        to save your results next time.
+      </p>
+    } @else {
+      @switch (saveStatus()) {
+        @case ('saving') {
+          <p class="meta">Saving your result…</p>
+        }
+        @case ('saved') {
+          <p class="success">
+            Your result is saved. <a routerLink="/typing/results">See all your results</a>
+          </p>
+        }
+        @case ('error') {
+          <p class="error">Your result could not be saved. Please try again later.</p>
+          <button type="button" class="button-secondary" (click)="save()">Try again</button>
+        }
+      }
+    }
+  </div>
+
+  <div class="actions">
+    <ng-content />
+  </div>
+</section>
