@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { RevisionModule } from '../../activities/activity';
 import { AuthService } from '../../auth/auth.service';
 import { ModulePlayerHost } from '../../modules/module-player-host/module-player-host';
@@ -24,9 +25,25 @@ export class TriviaGame implements OnInit {
   protected readonly signedIn = inject(AuthService).signedIn;
   protected readonly limits = TRIVIA_THEME_LIMITS;
 
+  /** The themes, sorted by name. */
   protected readonly themes = signal<TriviaTheme[]>([]);
   protected readonly themesStatus = signal<'loading' | 'loaded' | 'error'>('loading');
   protected readonly selectedIds = signal<number[]>([]);
+  /** The search text, which filters the listed themes by name. */
+  protected readonly search = signal('');
+  protected readonly visibleThemes = computed(() => {
+    const search = normalize(this.search().trim());
+    return this.themes().filter((theme) => normalize(theme.name).includes(search));
+  });
+  protected readonly selectedThemes = computed(() =>
+    this.selectedIds()
+      .map((id) => this.themes().find((theme) => theme.id === id))
+      .filter((theme) => theme !== undefined),
+  );
+  protected readonly limitReached = computed(() => this.selectedIds().length >= this.limits.max);
+  /** The number of questions of the chosen themes; null while unknown. */
+  protected readonly selectionQuestionCount = signal<number | null>(null);
+  private countSubscription?: Subscription;
   protected readonly canStart = computed(
     () =>
       this.selectedIds().length >= this.limits.min && this.selectedIds().length <= this.limits.max,
@@ -60,7 +77,7 @@ export class TriviaGame implements OnInit {
   );
 
   protected readonly selectedThemeNames = computed(() =>
-    this.selectedIds().map((id) => this.themes().find((theme) => theme.id === id)?.name ?? ''),
+    this.selectedThemes().map((theme) => theme.name),
   );
 
   /** Saving the score of a finished game; visitors' scores are not saved. */
@@ -69,7 +86,11 @@ export class TriviaGame implements OnInit {
   ngOnInit(): void {
     this.triviaApi.getThemes().subscribe({
       next: (themes) => {
-        this.themes.set(themes);
+        this.themes.set(
+          [...themes].sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+          ),
+        );
         this.themesStatus.set('loaded');
       },
       error: () => this.themesStatus.set('error'),
@@ -82,13 +103,33 @@ export class TriviaGame implements OnInit {
 
   /** A theme cannot be added once the maximum is reached, but can always be removed. */
   protected isDisabled(id: number): boolean {
-    return !this.isSelected(id) && this.selectedIds().length >= this.limits.max;
+    return !this.isSelected(id) && this.limitReached();
   }
 
   protected toggleTheme(id: number): void {
     this.selectedIds.update((ids) =>
       ids.includes(id) ? ids.filter((selected) => selected !== id) : [...ids, id],
     );
+    this.countSelectionQuestions();
+  }
+
+  protected removeTheme(id: number): void {
+    this.selectedIds.update((ids) => ids.filter((selected) => selected !== id));
+    this.countSelectionQuestions();
+  }
+
+  /** Counts the questions of the chosen themes; only the answer for the latest choice is kept. */
+  private countSelectionQuestions(): void {
+    this.countSubscription?.unsubscribe();
+    this.selectionQuestionCount.set(null);
+    if (this.selectedIds().length === 0) {
+      return;
+    }
+    this.countSubscription = this.triviaApi.countQuestions(this.selectedIds()).subscribe({
+      next: ({ questionCount }) => this.selectionQuestionCount.set(questionCount),
+      // The count is only a help: without it, the player can still start.
+      error: () => this.selectionQuestionCount.set(null),
+    });
   }
 
   protected start(): void {
@@ -140,4 +181,12 @@ export class TriviaGame implements OnInit {
     this.saveStatus.set('idle');
     this.phase.set(questions.length > 0 ? 'playing' : 'over');
   }
+}
+
+/** Lower case and without accents, so that searching "ecole" finds "École". */
+function normalize(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
 }

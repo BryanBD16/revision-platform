@@ -63,6 +63,16 @@ public class TriviaService(AppDbContext db)
     }
 
     /// <summary>
+    /// The number of questions of the public activities that have at least one of
+    /// <paramref name="themeIds"/>, each counted once: the length of a perfect game.
+    /// </summary>
+    public Task<int> CountQuestionsAsync(IReadOnlyCollection<int> themeIds) =>
+        PublicActivities()
+            .Where(a => a.Themes.Any(t => t.Kind == ThemeKind.Topic && themeIds.Contains(t.Id)))
+            .SelectMany(a => a.Modules)
+            .CountAsync(m => m.Type == MultipleChoiceModuleType.TypeKey);
+
+    /// <summary>
     /// Saves a finished game for <paramref name="userId"/>. The score comes from the browser; the
     /// server checks that the themes exist and that the score is not more than their number of
     /// questions, and copies the theme names.
@@ -89,10 +99,7 @@ public class TriviaService(AppDbContext db)
             return Invalid("themeIds", "A theme does not exist.");
         }
 
-        var questionCount = await PublicActivities()
-            .Where(a => a.Themes.Any(t => themeIds.Contains(t.Id)))
-            .SelectMany(a => a.Modules)
-            .CountAsync(m => m.Type == MultipleChoiceModuleType.TypeKey);
+        var questionCount = await CountQuestionsAsync(themeIds);
         if (request.Score > questionCount)
         {
             return Invalid("score", $"The score cannot be more than the {questionCount} questions of these themes.");
