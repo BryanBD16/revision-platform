@@ -11,6 +11,12 @@
   font-weight: 600;
 }
 
+/* Keeps the line breaks and indentation of code in questions and choices. */
+.multiple-choice .question,
+.choice-text {
+  white-space: pre-wrap;
+}
+
 .choice {
   display: flex;
   align-items: center;
