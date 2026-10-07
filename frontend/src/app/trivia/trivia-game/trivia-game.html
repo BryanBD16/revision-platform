@@ -21,27 +21,82 @@
         } @else {
           <fieldset class="card trivia-themes">
             <legend>Themes ({{ selectedIds().length }} / {{ limits.max }})</legend>
-            @for (theme of themes(); track theme.id) {
-              <label class="trivia-theme" [class.trivia-theme-disabled]="isDisabled(theme.id)">
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(theme.id)"
-                  [disabled]="isDisabled(theme.id)"
-                  (change)="toggleTheme(theme.id)"
-                />
-                {{ theme.name }}
-                <span class="meta">
-                  {{ theme.questionCount }}
-                  {{ theme.questionCount === 1 ? 'question' : 'questions' }}
-                </span>
-              </label>
+            <div class="field">
+              <label for="trivia-theme-search">Search a theme</label>
+              <input
+                id="trivia-theme-search"
+                type="search"
+                placeholder="Theme name"
+                [value]="search()"
+                (input)="search.set($any($event.target).value)"
+              />
+            </div>
+            @if (visibleThemes().length === 0) {
+              <p class="empty">No theme matches “{{ search().trim() }}”.</p>
+            } @else {
+              <div class="trivia-theme-list">
+                @for (theme of visibleThemes(); track theme.id) {
+                  <label class="trivia-theme" [class.trivia-theme-disabled]="isDisabled(theme.id)">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(theme.id)"
+                      [disabled]="isDisabled(theme.id)"
+                      (change)="toggleTheme(theme.id)"
+                    />
+                    {{ theme.name }}
+                    <span class="meta">
+                      {{ theme.questionCount }}
+                      {{ theme.questionCount === 1 ? 'question' : 'questions' }}
+                    </span>
+                  </label>
+                }
+              </div>
             }
           </fieldset>
+
+          <div class="trivia-selection" aria-live="polite">
+            @if (selectedThemes().length === 0) {
+              <p class="hint">Choose at least {{ limits.min }} theme to start.</p>
+            } @else {
+              <ul class="themes" aria-label="Chosen themes">
+                @for (theme of selectedThemes(); track theme.id) {
+                  <li class="theme">
+                    {{ theme.name }}
+                    <button
+                      type="button"
+                      class="remove-theme"
+                      (click)="removeTheme(theme.id)"
+                      [attr.aria-label]="'Remove the theme ' + theme.name"
+                    >
+                      ×
+                    </button>
+                  </li>
+                }
+              </ul>
+              @if (selectionQuestionCount(); as count) {
+                <p class="meta">
+                  {{ count }} {{ count === 1 ? 'question' : 'questions' }} to answer in a perfect
+                  game
+                </p>
+              }
+              @if (limitReached()) {
+                <p class="hint">
+                  You can choose up to {{ limits.max }} themes: remove one to choose another.
+                </p>
+              }
+            }
+          </div>
+
           @if (loadError()) {
             <p class="error">The questions could not be loaded. Please try again later.</p>
           }
           <button type="button" class="button" (click)="start()" [disabled]="!canStart()">
-            Start the game
+            @if (selectedThemes().length === 0) {
+              Start the game
+            } @else {
+              Start with {{ selectedThemes().length }}
+              {{ selectedThemes().length === 1 ? 'theme' : 'themes' }}
+            }
           </button>
         }
       }

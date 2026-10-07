@@ -18,6 +18,11 @@ export interface TriviaQuestion {
   content: MultipleChoiceContent;
 }
 
+/** The number of questions of some themes, each counted once. */
+export interface TriviaQuestionCount {
+  questionCount: number;
+}
+
 /** A finished game. A theme's `id` is null once the theme is deleted. */
 export interface TriviaScore {
   id: number;

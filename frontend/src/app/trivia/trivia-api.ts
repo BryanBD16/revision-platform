@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   SaveTriviaScoreRequest,
   TriviaQuestion,
+  TriviaQuestionCount,
   TriviaScore,
   TriviaScorePage,
   TriviaTheme,
@@ -20,11 +21,16 @@ export class TriviaApi {
 
   /** The questions of the activities that have at least one of the themes, sorted by module id. */
   getQuestions(themeIds: number[]): Observable<TriviaQuestion[]> {
-    let params = new HttpParams();
-    for (const themeId of themeIds) {
-      params = params.append('themeIds', themeId);
-    }
-    return this.http.get<TriviaQuestion[]>(`${this.baseUrl}/questions`, { params });
+    return this.http.get<TriviaQuestion[]>(`${this.baseUrl}/questions`, {
+      params: themeIdParams(themeIds),
+    });
+  }
+
+  /** The number of questions of the themes, each counted once. */
+  countQuestions(themeIds: number[]): Observable<TriviaQuestionCount> {
+    return this.http.get<TriviaQuestionCount>(`${this.baseUrl}/questions/count`, {
+      params: themeIdParams(themeIds),
+    });
   }
 
   saveScore(request: SaveTriviaScoreRequest): Observable<TriviaScore> {
@@ -37,4 +43,13 @@ export class TriviaApi {
       params: new HttpParams().set('page', page),
     });
   }
+}
+
+/** Theme ids as a repeated parameter: `themeIds=1&themeIds=4`. */
+function themeIdParams(themeIds: number[]): HttpParams {
+  let params = new HttpParams();
+  for (const themeId of themeIds) {
+    params = params.append('themeIds', themeId);
+  }
+  return params;
 }

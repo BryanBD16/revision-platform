@@ -29,6 +29,14 @@ describe('TriviaApi', () => {
     http.expectOne({ method: 'GET', url: '/api/trivia/questions?themeIds=1&themeIds=4' }).flush([]);
   });
 
+  it('counts the questions of the chosen themes', () => {
+    api.countQuestions([1, 4]).subscribe();
+
+    http
+      .expectOne({ method: 'GET', url: '/api/trivia/questions/count?themeIds=1&themeIds=4' })
+      .flush({ questionCount: 0 });
+  });
+
   it('saves a score', () => {
     api.saveScore({ score: 3, themeIds: [1] }).subscribe();
 
