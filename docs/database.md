@@ -44,6 +44,8 @@ erDiagram
     trivia_scores ||--o{ trivia_score_themes : "played on"
     themes |o--o{ trivia_score_themes : "played in"
 
+    users ||--o{ typing_results : types
+
     users ||--o{ user_roles : has
     roles ||--o{ user_roles : "given to"
     users ||--o{ role_changes : "role changed"
@@ -161,6 +163,29 @@ erDiagram
     }
 ```
 
+## Typing test results
+
+The typing test is independent of the activities: its results are only
+linked to the user.
+
+```mermaid
+erDiagram
+    users ||--o{ typing_results : types
+
+    typing_results {
+        int id PK
+        int user_id FK "indexed with played_at"
+        varchar(30) mode "game mode, e.g. timed"
+        int duration_seconds "timed tests only, nullable"
+        int average_wpm "words per minute"
+        int peak_wpm "words per minute"
+        datetime(6) played_at "UTC"
+    }
+    users {
+        int id PK
+    }
+```
+
 ## Accounts and roles
 
 The tables of ASP.NET Core Identity, plus `role_changes`, the audit
@@ -251,5 +276,5 @@ erDiagram
 | `themes`             | Its `activity_themes` are deleted; `trivia_score_themes.theme_id` becomes null. |
 | `activity_attempts`  | Its `attempt_modules` are deleted. |
 | `trivia_scores`      | Its `trivia_score_themes` are deleted. |
-| `users`              | Their private activities, attempts, trivia scores, roles, claims, logins and tokens are deleted; `revision_activities.last_edited_by_user_id` becomes null. **Refused** while `role_changes` references the user. |
+| `users`              | Their private activities, attempts, trivia scores, typing results, roles, claims, logins and tokens are deleted; `revision_activities.last_edited_by_user_id` becomes null. **Refused** while `role_changes` references the user. |
 | `roles`              | Its `user_roles` and `role_claims` are deleted. |

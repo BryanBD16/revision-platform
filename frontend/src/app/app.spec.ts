@@ -60,20 +60,45 @@ describe('App', () => {
     expect(links).toContain('/admin');
   });
 
+  /** The drop-down menu of the header whose summary is `title`. */
+  function menu(element: HTMLElement, title: string): HTMLDetailsElement {
+    return [...element.querySelectorAll<HTMLDetailsElement>('.nav-menu')].find((m) =>
+      m.querySelector('summary')?.textContent?.includes(title),
+    )!;
+  }
+
+  function menuLinks(element: HTMLElement, title: string): (string | null)[] {
+    return [...menu(element, title).querySelectorAll('a')].map((a) => a.getAttribute('href'));
+  }
+
   it('offers visitors to play the trivia game, without their scores', async () => {
     const element = await create();
 
-    const links = [...element.querySelectorAll('.nav-menu a')].map((a) => a.getAttribute('href'));
-    expect(element.querySelector('.nav-menu summary')?.textContent).toContain('Trivia game');
-    expect(links).toEqual(['/trivia']);
+    expect(menuLinks(element, 'Trivia game')).toEqual(['/trivia']);
   });
 
   it('links signed-in users to their trivia scores', async () => {
     signIn();
     const element = await create();
 
-    const links = [...element.querySelectorAll('.nav-menu a')].map((a) => a.getAttribute('href'));
-    expect(links).toEqual(['/trivia', '/trivia/scores']);
+    expect(menuLinks(element, 'Trivia game')).toEqual(['/trivia', '/trivia/scores']);
+  });
+
+  it('offers visitors to take the typing test', async () => {
+    const element = await create();
+
+    expect(menuLinks(element, 'Typing test')).toEqual(['/typing', '/typing/wpm']);
+  });
+
+  it('links signed-in users to their typing results', async () => {
+    signIn();
+    const element = await create();
+
+    expect(menuLinks(element, 'Typing test')).toEqual([
+      '/typing',
+      '/typing/results',
+      '/typing/wpm',
+    ]);
   });
 
   it('closes the trivia menu on a click outside of it or on Escape', async () => {
@@ -90,6 +115,19 @@ describe('App', () => {
 
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(menu.open).toBe(false);
+  });
+
+  it('closes the other drop-down menu when one is used', async () => {
+    const element = await create();
+    const trivia = menu(element, 'Trivia game');
+    const typing = menu(element, 'Typing test');
+
+    trivia.open = true;
+    typing.open = true;
+    typing.querySelector<HTMLElement>('.nav-menu-items')!.click();
+
+    expect(trivia.open).toBe(false);
+    expect(typing.open).toBe(true);
   });
 
   it('shows the signed-in user and signs out', async () => {

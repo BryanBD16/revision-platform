@@ -10,6 +10,16 @@
         }
       </div>
     </details>
+    <details #typingMenu class="nav-menu">
+      <summary>Typing test</summary>
+      <div class="nav-menu-items">
+        <a routerLink="/typing" (click)="typingMenu.open = false">Play</a>
+        @if (user()) {
+          <a routerLink="/typing/results" (click)="typingMenu.open = false">My results</a>
+        }
+        <a routerLink="/typing/wpm" (click)="typingMenu.open = false">How WPM works</a>
+      </div>
+    </details>
   </nav>
   <nav class="user-nav" aria-label="Account">
     @if (user(); as user) {

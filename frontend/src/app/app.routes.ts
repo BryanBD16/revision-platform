@@ -14,6 +14,9 @@ import { Register } from './auth/register/register';
 import { SignIn } from './auth/sign-in/sign-in';
 import { TriviaGame } from './trivia/trivia-game/trivia-game';
 import { TriviaScores } from './trivia/trivia-scores/trivia-scores';
+import { TimedTest } from './typing/timed-test/timed-test';
+import { TypingResults } from './typing/typing-results/typing-results';
+import { WpmGuide } from './typing/wpm-guide/wpm-guide';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'activities' },
@@ -46,6 +49,14 @@ export const routes: Routes = [
     title: 'My trivia scores',
     canActivate: [signedInGuard],
   },
+  { path: 'typing', component: TimedTest, title: 'Typing test' },
+  {
+    path: 'typing/results',
+    component: TypingResults,
+    title: 'My typing results',
+    canActivate: [signedInGuard],
+  },
+  { path: 'typing/wpm', component: WpmGuide, title: 'How WPM works' },
   { path: 'sign-in', component: SignIn, title: 'Sign in' },
   { path: 'register', component: Register, title: 'Create an account' },
   { path: 'account', component: Account, title: 'Account', canActivate: [signedInGuard] },

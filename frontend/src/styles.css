@@ -74,6 +74,9 @@ a {
 }
 
 .main-nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
   margin-right: auto;
 }
 
@@ -502,4 +505,170 @@ a.button-secondary {
 
 .trivia-selection .hint {
   margin: 0.5rem 0;
+}
+
+.typing-durations {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* The side panel stays visible while the text scrolls. */
+.typing-layout {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.typing-sidebar {
+  position: sticky;
+  top: 1rem;
+  margin: 0;
+}
+
+@media (max-width: 40rem) {
+  .typing-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .typing-sidebar {
+    top: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+.typing-stats {
+  margin: 0.75rem 0 0;
+}
+
+.typing-stats dt {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.typing-stats dd {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.wpm-meter {
+  display: flex;
+  flex-direction: column;
+}
+
+.wpm-meter-label,
+.wpm-meter-unit {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.wpm-meter-value {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.6s ease;
+}
+
+.wpm-meter-slow .wpm-meter-value {
+  color: var(--color-muted);
+}
+
+.wpm-meter-good .wpm-meter-value {
+  color: var(--color-success);
+}
+
+.wpm-meter-fast .wpm-meter-value {
+  color: var(--color-error);
+}
+
+.wpm-meter-expert .wpm-meter-value {
+  color: #000000;
+  font-weight: 800;
+}
+
+/* Three lines of text; the typing area scrolls to keep the next character visible. */
+.typing-area {
+  position: relative;
+  height: calc(3 * 2.25rem + 2px);
+  overflow: hidden;
+  /* No vertical padding: scrolling by whole lines then shows exactly three lines. */
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.25rem;
+  line-height: 2.25rem;
+  white-space: pre-wrap;
+  cursor: text;
+}
+
+.typing-area:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.typing-area-disabled {
+  opacity: 0.6;
+}
+
+.typing-char-pending {
+  color: var(--color-muted);
+}
+
+.typing-char-incorrect {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* The caret, drawn before the next character without moving the text. */
+.typing-area:focus .typing-char-current {
+  box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
+.typing-focus-hint {
+  margin: 0.5rem 0 0;
+}
+
+.typing-summary-speeds {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.wpm-guide-section {
+  margin-bottom: 1.5rem;
+}
+
+.wpm-guide-formula {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  background: var(--color-surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-align: center;
+}
+
+.wpm-guide-terms dt {
+  font-weight: 600;
+}
+
+.wpm-guide-terms dd {
+  margin: 0 0 0.5rem;
+}
+
+/* A smaller meter, on one line, as an example in a table. */
+.grades .wpm-meter {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.grades .wpm-meter-value {
+  font-size: 1.25rem;
 }

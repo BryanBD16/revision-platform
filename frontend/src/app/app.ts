@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, inject, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService, PERMISSIONS } from './auth/auth.service';
 
@@ -19,13 +19,14 @@ export class App {
   protected readonly user = this.auth.user;
   protected readonly canManageRoles = computed(() => this.auth.can(PERMISSIONS.manageRoles));
 
-  private readonly triviaMenu = viewChild.required<ElementRef<HTMLDetailsElement>>('triviaMenu');
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  /** Closes the drop-down menu on a click outside of it, or on Escape. */
+  /** Closes the drop-down menus on a click outside of them, or on Escape. */
   protected closeMenu(event?: Event): void {
-    const menu = this.triviaMenu().nativeElement;
-    if (!event || !menu.contains(event.target as Node)) {
-      menu.open = false;
+    for (const menu of this.host.nativeElement.querySelectorAll('details.nav-menu')) {
+      if (!event || !menu.contains(event.target as Node)) {
+        (menu as HTMLDetailsElement).open = false;
+      }
     }
   }
 
