@@ -90,6 +90,13 @@ describe('App', () => {
     expect(menuLinks(element, 'Typing test')).toEqual(['/typing']);
   });
 
+  it('links signed-in users to their typing results', async () => {
+    signIn();
+    const element = await create();
+
+    expect(menuLinks(element, 'Typing test')).toEqual(['/typing', '/typing/results']);
+  });
+
   it('closes the trivia menu on a click outside of it or on Escape', async () => {
     const element = await create();
     const menu = element.querySelector<HTMLDetailsElement>('.nav-menu')!;

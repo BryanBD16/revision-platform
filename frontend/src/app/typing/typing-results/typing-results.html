@@ -1,0 +1,60 @@
+<div class="page-header">
+  <h2>My typing results</h2>
+  <a class="button" routerLink="/typing">Take a test</a>
+</div>
+
+@switch (status()) {
+  @case ('loading') {
+    <p>Loading your results…</p>
+  }
+  @case ('error') {
+    <p class="error">Your results could not be loaded. Please try again later.</p>
+  }
+  @case ('loaded') {
+    @if (result(); as result) {
+      @if (result.totalCount === 0) {
+        <p class="empty">
+          No results yet. <a routerLink="/typing">Take a test</a> to save your first result.
+        </p>
+      } @else {
+        <table class="grades">
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Test</th>
+              <th scope="col">Average speed</th>
+              <th scope="col">Highest speed</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of result.items; track item.id) {
+              <tr>
+                <td>{{ item.playedAt | date: 'medium' }}</td>
+                <td>{{ testLabel(item) }}</td>
+                <td>{{ item.averageWpm }} WPM</td>
+                <td>{{ item.peakWpm }} WPM</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <nav class="pagination" aria-label="Pages of results">
+          @if (result.page > 1) {
+            <button type="button" class="button-secondary" (click)="page.set(result.page - 1)">
+              ← Newer
+            </button>
+          }
+          <span class="meta"
+            >{{ result.totalCount }} {{ result.totalCount === 1 ? 'test' : 'tests' }}</span
+          >
+          @if (hasNextPage(result)) {
+            <button type="button" class="button-secondary" (click)="page.set(result.page + 1)">
+              Older →
+            </button>
+          }
+        </nav>
+        <p class="meta"><a routerLink="/typing/wpm">How are these speeds measured?</a></p>
+      }
+    }
+  }
+}
