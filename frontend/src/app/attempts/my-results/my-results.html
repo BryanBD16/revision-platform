@@ -24,7 +24,9 @@
         <ul class="activity-list">
           @for (attempt of result.items; track attempt.id) {
             <li class="card">
-              <a class="activity-title" [routerLink]="['/results', attempt.id]">{{ attempt.activityTitle }}</a>
+              <a class="activity-title" [routerLink]="['/results', attempt.id]">{{
+                attempt.activityTitle
+              }}</a>
               @if (attempt.activityId === null) {
                 <span class="badge-private">Activity deleted</span>
               }
@@ -38,11 +40,17 @@
 
         <nav class="pagination" aria-label="Pages of results">
           @if (result.page > 1) {
-            <button type="button" class="button-secondary" (click)="page.set(result.page - 1)">← Newer</button>
+            <button type="button" class="button-secondary" (click)="page.set(result.page - 1)">
+              ← Newer
+            </button>
           }
-          <span class="meta">{{ result.totalCount }} {{ result.totalCount === 1 ? 'result' : 'results' }}</span>
+          <span class="meta"
+            >{{ result.totalCount }} {{ result.totalCount === 1 ? 'result' : 'results' }}</span
+          >
           @if (hasNextPage(result)) {
-            <button type="button" class="button-secondary" (click)="page.set(result.page + 1)">Older →</button>
+            <button type="button" class="button-secondary" (click)="page.set(result.page + 1)">
+              Older →
+            </button>
           }
         </nav>
       }

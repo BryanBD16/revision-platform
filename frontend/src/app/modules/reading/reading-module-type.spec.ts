@@ -23,7 +23,9 @@ describe('readingModuleType', () => {
   });
 
   it('is summarized by its title, or else by the start of its text', () => {
-    expect(readingModuleType.summarize({ title: 'Introduction', body: 'Text' })).toBe('Introduction');
+    expect(readingModuleType.summarize({ title: 'Introduction', body: 'Text' })).toBe(
+      'Introduction',
+    );
     expect(readingModuleType.summarize({ title: null, body: 'Short text' })).toBe('Short text');
     const summary = readingModuleType.summarize({ title: null, body: 'word '.repeat(50) });
     expect(summary.length).toBe(100);

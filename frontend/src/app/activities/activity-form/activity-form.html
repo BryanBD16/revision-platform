@@ -71,12 +71,38 @@
         <div class="module-header">
           <h3>{{ i + 1 }}. {{ moduleLabel(module.controls.type.value) }}</h3>
           <div class="module-actions">
-            <button type="button" class="button-secondary" (click)="moveModule(i, -1)" [disabled]="first" [attr.aria-label]="'Move module ' + (i + 1) + ' up'">↑</button>
-            <button type="button" class="button-secondary" (click)="moveModule(i, 1)" [disabled]="last" [attr.aria-label]="'Move module ' + (i + 1) + ' down'">↓</button>
-            <button type="button" class="button-secondary" (click)="removeModule(i)" [attr.aria-label]="'Remove module ' + (i + 1)">Remove</button>
+            <button
+              type="button"
+              class="button-secondary"
+              (click)="moveModule(i, -1)"
+              [disabled]="first"
+              [attr.aria-label]="'Move module ' + (i + 1) + ' up'"
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              class="button-secondary"
+              (click)="moveModule(i, 1)"
+              [disabled]="last"
+              [attr.aria-label]="'Move module ' + (i + 1) + ' down'"
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              class="button-secondary"
+              (click)="removeModule(i)"
+              [attr.aria-label]="'Remove module ' + (i + 1)"
+            >
+              Remove
+            </button>
           </div>
         </div>
-        <app-module-editor-host [type]="module.controls.type.value" [form]="module.controls.content" />
+        <app-module-editor-host
+          [type]="module.controls.type.value"
+          [form]="module.controls.content"
+        />
       </section>
     } @empty {
       <p class="empty">No modules yet. Add the steps of the activity below.</p>

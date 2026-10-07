@@ -1,4 +1,11 @@
-import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { newItemId } from '../../shared/item-ids';
 import { notBlank } from '../../shared/validators';
 import { ModuleTypeDefinition } from '../module-type';

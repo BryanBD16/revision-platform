@@ -45,7 +45,9 @@ export class ModulePlayerHost {
           container.createComponent(player, {
             bindings: [
               inputBinding('content', () => content),
-              outputBinding<ModuleResult | null>('completed', (result) => this.completed.emit(result)),
+              outputBinding<ModuleResult | null>('completed', (result) =>
+                this.completed.emit(result),
+              ),
             ],
           });
         }

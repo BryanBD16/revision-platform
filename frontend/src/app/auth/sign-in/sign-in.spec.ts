@@ -57,7 +57,13 @@ describe('SignIn', () => {
       email: 'ada@example.com',
       password: 'correct horse battery',
     });
-    request.flush({ id: 1, email: 'ada@example.com', displayName: 'Ada', roles: [], permissions: [] });
+    request.flush({
+      id: 1,
+      email: 'ada@example.com',
+      displayName: 'Ada',
+      roles: [],
+      permissions: [],
+    });
 
     expect(navigate).toHaveBeenCalledWith('/activities/new');
   });
@@ -68,7 +74,9 @@ describe('SignIn', () => {
     type('#password', 'correct horse battery');
 
     await submit();
-    http.expectOne('/api/auth/sign-in').flush({ id: 1, email: 'a', displayName: 'Ada', roles: [], permissions: [] });
+    http
+      .expectOne('/api/auth/sign-in')
+      .flush({ id: 1, email: 'a', displayName: 'Ada', roles: [], permissions: [] });
 
     expect(navigate).toHaveBeenCalledWith('/activities');
   });

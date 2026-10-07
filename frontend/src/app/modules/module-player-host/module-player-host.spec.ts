@@ -28,11 +28,17 @@ describe('ModulePlayerHost', () => {
 
   it('replaces the player when the module changes', async () => {
     fixture.componentRef.setInput('module', {
-      id: 1, position: 0, type: 'reading', content: { title: null, body: 'First' },
+      id: 1,
+      position: 0,
+      type: 'reading',
+      content: { title: null, body: 'First' },
     });
     await fixture.whenStable();
     fixture.componentRef.setInput('module', {
-      id: 2, position: 1, type: 'reading', content: { title: null, body: 'Second' },
+      id: 2,
+      position: 1,
+      type: 'reading',
+      content: { title: null, body: 'Second' },
     });
     await fixture.whenStable();
 

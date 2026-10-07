@@ -19,7 +19,9 @@ describe('MatchingPlayer', () => {
   };
 
   function select(concept: string): HTMLSelectElement {
-    const label = [...element.querySelectorAll('label')].find((l) => l.textContent?.trim() === concept)!;
+    const label = [...element.querySelectorAll('label')].find(
+      (l) => l.textContent?.trim() === concept,
+    )!;
     return element.querySelector<HTMLSelectElement>(`#${label.htmlFor}`)!;
   }
 

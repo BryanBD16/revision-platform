@@ -1,13 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  Component,
-  OnInit,
-  computed,
-  inject,
-  input,
-  numberAttribute,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, computed, inject, input, numberAttribute, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SaveAttemptRequest } from '../../attempts/attempt';
 import { AttemptApi } from '../../attempts/attempt-api';

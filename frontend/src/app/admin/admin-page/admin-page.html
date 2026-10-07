@@ -9,7 +9,12 @@
 
   <div class="field">
     <label for="user-search">Search</label>
-    <input id="user-search" type="search" [formControl]="search" placeholder="Email or display name" />
+    <input
+      id="user-search"
+      type="search"
+      [formControl]="search"
+      placeholder="Email or display name"
+    />
   </div>
 
   @if (users(); as page) {
@@ -62,11 +67,15 @@
 
     <nav class="pagination" aria-label="Pages of users">
       @if (page.page > 1) {
-        <button type="button" class="button-secondary" (click)="showUsersPage(page.page - 1)">← Previous</button>
+        <button type="button" class="button-secondary" (click)="showUsersPage(page.page - 1)">
+          ← Previous
+        </button>
       }
       <span class="meta">{{ page.totalCount }} {{ page.totalCount === 1 ? 'user' : 'users' }}</span>
       @if (hasNextPage(page)) {
-        <button type="button" class="button-secondary" (click)="showUsersPage(page.page + 1)">Next →</button>
+        <button type="button" class="button-secondary" (click)="showUsersPage(page.page + 1)">
+          Next →
+        </button>
       }
     </nav>
   } @else {
@@ -86,18 +95,23 @@
           <li>
             <span class="meta">{{ change.changedAt | date: 'medium' }}</span>
             {{ change.changedBy?.displayName ?? 'A server command' }}
-            {{ change.action === 'granted' ? 'gave' : 'removed' }} the role <strong>{{ change.role }}</strong>
-            {{ change.action === 'granted' ? 'to' : 'from' }} {{ change.user.displayName }} ({{ change.user.email }})
+            {{ change.action === 'granted' ? 'gave' : 'removed' }} the role
+            <strong>{{ change.role }}</strong> {{ change.action === 'granted' ? 'to' : 'from' }}
+            {{ change.user.displayName }} ({{ change.user.email }})
             <span class="meta">· {{ change.origin }}</span>
           </li>
         }
       </ul>
       <nav class="pagination" aria-label="Pages of role changes">
         @if (page.page > 1) {
-          <button type="button" class="button-secondary" (click)="showChangesPage(page.page - 1)">← Newer</button>
+          <button type="button" class="button-secondary" (click)="showChangesPage(page.page - 1)">
+            ← Newer
+          </button>
         }
         @if (hasNextPage(page)) {
-          <button type="button" class="button-secondary" (click)="showChangesPage(page.page + 1)">Older →</button>
+          <button type="button" class="button-secondary" (click)="showChangesPage(page.page + 1)">
+            Older →
+          </button>
         }
       </nav>
     }

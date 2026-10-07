@@ -21,7 +21,9 @@
       }
 
       @if (scoreText(attempt.score, attempt.maxScore); as total) {
-        <p class="total-grade">Total grade: <strong>{{ total }}</strong></p>
+        <p class="total-grade">
+          Total grade: <strong>{{ total }}</strong>
+        </p>
       } @else {
         <p class="meta">This activity had no graded modules.</p>
       }
