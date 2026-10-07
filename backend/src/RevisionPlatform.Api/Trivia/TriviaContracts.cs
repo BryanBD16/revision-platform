@@ -11,6 +11,9 @@ public record TriviaThemeResponse(int Id, string Name, int QuestionCount);
 /// </summary>
 public record TriviaQuestionResponse(int ModuleId, int ActivityId, string ActivityTitle, JsonElement Content);
 
+/// <summary>The number of questions of some themes, each counted once.</summary>
+public record TriviaQuestionCountResponse(int QuestionCount);
+
 // Request properties are nullable so that missing values reach TriviaService
 // instead of being rejected by the framework with a different error format.
 

@@ -30,6 +30,20 @@ public class TriviaController(TriviaService triviaService) : ControllerBase
         return Ok(await triviaService.GetQuestionsAsync(validThemeIds));
     }
 
+    /// <summary>The number of questions of the themes, so that players see it before starting.</summary>
+    [HttpGet("questions/count")]
+    public async Task<ActionResult<TriviaQuestionCountResponse>> CountQuestions([FromQuery] List<int>? themeIds)
+    {
+        var errors = new Dictionary<string, string[]>();
+        var validThemeIds = TriviaService.ValidateThemeIds(themeIds, errors);
+        if (errors.Count > 0)
+        {
+            return ValidationProblem(new ValidationProblemDetails(errors));
+        }
+
+        return Ok(new TriviaQuestionCountResponse(await triviaService.CountQuestionsAsync(validThemeIds)));
+    }
+
     /// <summary>Saves a finished game. Scores cannot be changed or deleted afterwards.</summary>
     [Authorize]
     [HttpPost("scores")]

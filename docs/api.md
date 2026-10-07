@@ -471,6 +471,13 @@ Returns the multiple-choice modules of the public activities that have
 An unknown id, or the id of a course, matches no question. Too few or
 too many themes return `400` with an error on `themeIds`.
 
+### `GET /api/trivia/questions/count`
+
+Returns the number of questions that `GET /api/trivia/questions` would
+return for the same `themeIds` (same rules and errors), each counted
+once even when its activity has several of the themes:
+`{ "questionCount": 14 }`. The game shows it while the player chooses.
+
 ### Trivia score
 
 ```json

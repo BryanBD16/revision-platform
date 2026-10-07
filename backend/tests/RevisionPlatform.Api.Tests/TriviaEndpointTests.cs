@@ -111,6 +111,33 @@ public class TriviaEndpointTests(ApiFactory factory) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task CountQuestions_CountsEachPublicQuestionOfTheThemesOnce()
+    {
+        var cells = await CreatePublicAsync("Cells", ["Biology", "Cells"], [Question("Q1"), Reading(), Question("Q2")]);
+        var atoms = await CreatePublicAsync("Atoms", ["Chemistry"], [Question("Q3")]);
+        await CreatePublicAsync("Wars", ["History"], [Question("Q4")]);
+        await CreateAsync(_ada, "Mine", ["Biology"], [Question("Private")], ActivityVisibility.Private);
+
+        var count = await _visitor.GetFromJsonAsync<TriviaQuestionCountResponse>(
+            $"/api/trivia/questions/count?themeIds={ThemeId(cells, "Biology")}&themeIds={ThemeId(cells, "Cells")}&themeIds={ThemeId(atoms, "Chemistry")}");
+
+        // The questions of an activity with two of the themes are counted once.
+        Assert.Equal(3, count!.QuestionCount);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("?themeIds=1&themeIds=2&themeIds=3&themeIds=4")]
+    public async Task CountQuestions_RequiresOneToThreeThemes(string query)
+    {
+        var response = await _visitor.GetAsync($"/api/trivia/questions/count{query}");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+        Assert.Contains("themeIds", problem!.Errors.Keys);
+    }
+
+    [Fact]
     public async Task SaveScore_StoresTheScoreWithACopyOfTheThemeNames()
     {
         var cells = await CreatePublicAsync("Cells", ["Cells", "Biology"], [Question("Q1"), Question("Q2")]);
