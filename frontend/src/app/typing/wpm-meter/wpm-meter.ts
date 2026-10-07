@@ -10,7 +10,9 @@ import { SPEED_LEVELS, speedLevel } from '../typing-stats';
   selector: 'app-wpm-meter',
   template: `
     <div class="wpm-meter" [class]="'wpm-meter-' + level()">
-      <span class="wpm-meter-label">{{ label() }}</span>
+      @if (label()) {
+        <span class="wpm-meter-label">{{ label() }}</span>
+      }
       <span class="wpm-meter-value">{{ wpm() }}</span>
       <span class="wpm-meter-unit">WPM · {{ levelLabel() }}</span>
     </div>

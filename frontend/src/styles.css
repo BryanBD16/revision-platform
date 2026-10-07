@@ -637,3 +637,34 @@ a.button-secondary {
   flex-wrap: wrap;
   margin-bottom: 1rem;
 }
+
+.wpm-guide-section {
+  margin-bottom: 1.5rem;
+}
+
+.wpm-guide-formula {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  background: var(--color-surface);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  text-align: center;
+}
+
+.wpm-guide-terms dt {
+  font-weight: 600;
+}
+
+.wpm-guide-terms dd {
+  margin: 0 0 0.5rem;
+}
+
+/* A smaller meter, on one line, as an example in a table. */
+.grades .wpm-meter {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.grades .wpm-meter-value {
+  font-size: 1.25rem;
+}

@@ -87,14 +87,18 @@ describe('App', () => {
   it('offers visitors to take the typing test', async () => {
     const element = await create();
 
-    expect(menuLinks(element, 'Typing test')).toEqual(['/typing']);
+    expect(menuLinks(element, 'Typing test')).toEqual(['/typing', '/typing/wpm']);
   });
 
   it('links signed-in users to their typing results', async () => {
     signIn();
     const element = await create();
 
-    expect(menuLinks(element, 'Typing test')).toEqual(['/typing', '/typing/results']);
+    expect(menuLinks(element, 'Typing test')).toEqual([
+      '/typing',
+      '/typing/results',
+      '/typing/wpm',
+    ]);
   });
 
   it('closes the trivia menu on a click outside of it or on Escape', async () => {

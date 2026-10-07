@@ -1,0 +1,125 @@
+<div class="page-header">
+  <h2>How WPM works</h2>
+  <a class="button" routerLink="/typing">Take a test</a>
+</div>
+
+<section class="wpm-guide-section">
+  <h3>What WPM measures</h3>
+  <p>
+    WPM means <strong>words per minute</strong>. Real words have very different lengths, so typing
+    tests use a standard word instead: <strong>{{ charsPerWord }} characters</strong>, spaces and
+    punctuation included. This way, a text full of short words and a text full of long words give
+    comparable speeds.
+  </p>
+  <p class="wpm-guide-formula">WPM = (correct characters ÷ {{ charsPerWord }}) ÷ minutes</p>
+  <p>
+    For example, typing 1,250 correct characters in 5 minutes makes 250 standard words, which is 50
+    WPM.
+  </p>
+</section>
+
+<section class="wpm-guide-section">
+  <h3>Mistakes and accuracy</h3>
+  <p>
+    Only <strong>correct characters</strong> count. A mistake left in the text adds nothing to your
+    speed, and correcting it with Backspace costs the time it takes. Some tests call this the
+    <em>net</em> speed, as opposed to the <em>gross</em> speed, which counts every key.
+  </p>
+  <p>
+    The <strong>accuracy</strong> shown at the end is the share of characters that were right when
+    you typed them. A mistake you corrected still lowers it: accuracy measures how cleanly you type,
+    while WPM measures how fast the right text appears.
+  </p>
+</section>
+
+<section class="wpm-guide-section">
+  <h3>The speeds shown during a test</h3>
+  <dl class="wpm-guide-terms">
+    <dt>Speed</dt>
+    <dd>
+      Your current speed, measured over the last {{ windowSeconds }} seconds. It rises when you
+      speed up and falls when you hesitate.
+    </dd>
+    <dt>Average</dt>
+    <dd>Your speed since the start of the test. At the end, it is your result.</dd>
+    <dt>Highest speed</dt>
+    <dd>
+      The highest current speed you reached. It is only measured after the first
+      {{ peakDelaySeconds }} seconds, when a few quick words are not enough to make a record.
+    </dd>
+  </dl>
+  <p>The color of the speed changes with its level:</p>
+  <table class="grades">
+    <thead>
+      <tr>
+        <th scope="col">Level</th>
+        <th scope="col">Speed</th>
+        <th scope="col">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (level of levels; track level.level) {
+        <tr>
+          <td>{{ level.label }}</td>
+          <td>{{ level.range }}</td>
+          <td><app-wpm-meter label="" [wpm]="level.example" /></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
+
+<section class="wpm-guide-section">
+  <h3>Good speeds by age</h3>
+  <p>
+    Typing speed depends far more on practice than on age: a teenager who chats every day can be
+    faster than an adult who rarely types. The ranges below are rough averages reported by typing
+    schools and online typing tests, not scientific norms.
+  </p>
+  <table class="grades">
+    <thead>
+      <tr>
+        <th scope="col">Age</th>
+        <th scope="col">Typical speed</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of speedsByAge; track row.group) {
+        <tr>
+          <td>{{ row.group }}</td>
+          <td>{{ row.range }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <p class="meta">
+    Across all ages, the average adult types about 40 WPM. Above 70 WPM is fast for anyone, and
+    above 100 WPM is rare.
+  </p>
+</section>
+
+<section class="wpm-guide-section">
+  <h3>Good speeds by kind of work</h3>
+  <p>
+    What counts as a good speed depends on how much of the work is typing. These are the speeds
+    usually expected, again as rough guides.
+  </p>
+  <table class="grades">
+    <thead>
+      <tr>
+        <th scope="col">Work</th>
+        <th scope="col">Expected speed</th>
+        <th scope="col">Why</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of speedsByWork; track row.work) {
+        <tr>
+          <td>{{ row.work }}</td>
+          <td>{{ row.range }}</td>
+          <td>{{ row.note }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
