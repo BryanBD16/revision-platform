@@ -55,7 +55,9 @@
         <select id="filter-visibility" (change)="selectVisibility($any($event.target).value)">
           <option value="" [selected]="query().visibility === null">All</option>
           <option value="public" [selected]="query().visibility === 'public'">Public</option>
-          <option value="private" [selected]="query().visibility === 'private'">Private (mine)</option>
+          <option value="private" [selected]="query().visibility === 'private'">
+            Private (mine)
+          </option>
         </select>
       </div>
     }
@@ -67,7 +69,14 @@
         @for (theme of selectedThemes(); track theme.id) {
           <li class="theme">
             {{ theme.name }}
-            <button type="button" class="remove-theme" (click)="removeTheme(theme.id)" [attr.aria-label]="'Remove the theme ' + theme.name">×</button>
+            <button
+              type="button"
+              class="remove-theme"
+              (click)="removeTheme(theme.id)"
+              [attr.aria-label]="'Remove the theme ' + theme.name"
+            >
+              ×
+            </button>
           </li>
         }
       </ul>

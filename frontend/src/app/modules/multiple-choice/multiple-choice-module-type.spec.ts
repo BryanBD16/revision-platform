@@ -90,7 +90,12 @@ describe('multipleChoiceModuleType', () => {
   });
 
   it('is summarized by its question', () => {
-    const content = { question: 'What is a cell?', choices: [], correctChoiceIds: [], explanation: null };
+    const content = {
+      question: 'What is a cell?',
+      choices: [],
+      correctChoiceIds: [],
+      explanation: null,
+    };
 
     expect(multipleChoiceModuleType.summarize(content)).toBe('What is a cell?');
   });

@@ -48,7 +48,9 @@ describe('ActivityPlayer', () => {
   }
 
   async function answer(choiceText: string): Promise<void> {
-    const label = [...element.querySelectorAll('.choice')].find((l) => l.textContent?.includes(choiceText));
+    const label = [...element.querySelectorAll('.choice')].find((l) =>
+      l.textContent?.includes(choiceText),
+    );
     label!.querySelector('input')!.click();
     await fixture.whenStable();
     await clickButton('Check answer');
@@ -152,7 +154,9 @@ describe('ActivityPlayer', () => {
       ['2. Multiple choice', '1 / 1'],
       ['3. Multiple choice', '0 / 1'],
     ]);
-    expect(element.querySelector('.total-grade')?.textContent).toMatch(/Total grade:\s*1 \/ 2\s*\(50%\)/);
+    expect(element.querySelector('.total-grade')?.textContent).toMatch(
+      /Total grade:\s*1 \/ 2\s*\(50%\)/,
+    );
   });
 
   it('includes partial matching grades in the total', async () => {
@@ -161,8 +165,13 @@ describe('ActivityPlayer', () => {
     await answer('Right answer');
 
     // Match Mitosis correctly and Meiosis wrongly.
-    for (const [concept, definition] of [['Mitosis', 'Two identical cells'], ['Meiosis', 'Two identical cells']]) {
-      const label = [...element.querySelectorAll('label')].find((l) => l.textContent?.trim() === concept)!;
+    for (const [concept, definition] of [
+      ['Mitosis', 'Two identical cells'],
+      ['Meiosis', 'Two identical cells'],
+    ]) {
+      const label = [...element.querySelectorAll('label')].find(
+        (l) => l.textContent?.trim() === concept,
+      )!;
       const select = element.querySelector<HTMLSelectElement>(`#${label.htmlFor}`)!;
       select.value = [...select.options].find((o) => o.text.trim() === definition)!.value;
       select.dispatchEvent(new Event('change'));

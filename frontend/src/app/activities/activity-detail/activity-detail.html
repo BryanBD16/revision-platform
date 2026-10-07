@@ -23,8 +23,8 @@
         <p class="description">{{ activity.description }}</p>
       }
       <p class="meta">
-        {{ activity.modules.length }} {{ activity.modules.length === 1 ? 'module' : 'modules' }}
-        · Created {{ activity.createdAt | date: 'medium' }}
+        {{ activity.modules.length }} {{ activity.modules.length === 1 ? 'module' : 'modules' }} ·
+        Created {{ activity.createdAt | date: 'medium' }}
         @if (activity.lastEditedBy; as editor) {
           · Last edited by {{ editor.displayName }} on {{ activity.updatedAt | date: 'medium' }}
         }
@@ -32,7 +32,12 @@
       @if (activity.canEdit) {
         <div class="owner-actions">
           <a class="button-secondary" [routerLink]="['/activities', activity.id, 'edit']">Edit</a>
-          <button type="button" class="button-danger" [disabled]="deleting()" (click)="delete(activity)">
+          <button
+            type="button"
+            class="button-danger"
+            [disabled]="deleting()"
+            (click)="delete(activity)"
+          >
             {{ deleting() ? 'Deleting…' : 'Delete' }}
           </button>
         </div>
@@ -53,7 +58,9 @@
             <ul>
               @for (attempt of attempts.items; track attempt.id) {
                 <li>
-                  <a [routerLink]="['/results', attempt.id]">{{ attempt.completedAt | date: 'medium' }}</a>
+                  <a [routerLink]="['/results', attempt.id]">{{
+                    attempt.completedAt | date: 'medium'
+                  }}</a>
                   · {{ scoreText(attempt.score, attempt.maxScore) ?? 'Not graded' }}
                 </li>
               }

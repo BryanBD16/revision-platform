@@ -11,7 +11,12 @@
 
   <div class="field">
     <label for="password">Password</label>
-    <input id="password" type="password" formControlName="password" autocomplete="current-password" />
+    <input
+      id="password"
+      type="password"
+      formControlName="password"
+      autocomplete="current-password"
+    />
     @if (form.controls.password.touched && form.controls.password.hasError('required')) {
       <p class="error">The password is required.</p>
     }

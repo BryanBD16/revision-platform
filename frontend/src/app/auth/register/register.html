@@ -10,7 +10,9 @@
       <p class="error">The display name is required.</p>
     }
     @if (displayName.hasError('maxlength')) {
-      <p class="error">The display name must be at most {{ limits.displayNameMaxLength }} characters.</p>
+      <p class="error">
+        The display name must be at most {{ limits.displayNameMaxLength }} characters.
+      </p>
     }
   </div>
 
@@ -29,7 +31,9 @@
   <div class="field">
     <label for="password">Password</label>
     <input id="password" type="password" formControlName="password" autocomplete="new-password" />
-    <p class="hint">At least {{ limits.passwordMinLength }} characters. A few words make a good password.</p>
+    <p class="hint">
+      At least {{ limits.passwordMinLength }} characters. A few words make a good password.
+    </p>
     @let password = form.controls.password;
     @if (password.touched && password.hasError('required')) {
       <p class="error">The password is required.</p>
@@ -44,7 +48,12 @@
 
   <div class="field">
     <label for="confirmation">Confirm the password</label>
-    <input id="confirmation" type="password" formControlName="confirmation" autocomplete="new-password" />
+    <input
+      id="confirmation"
+      type="password"
+      formControlName="confirmation"
+      autocomplete="new-password"
+    />
     @if (form.controls.confirmation.touched && form.hasError('passwordsDiffer')) {
       <p class="error">The passwords are different.</p>
     }

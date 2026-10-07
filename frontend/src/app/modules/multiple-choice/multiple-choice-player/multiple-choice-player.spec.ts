@@ -29,7 +29,9 @@ describe('MultipleChoicePlayer', () => {
   }
 
   async function choose(text: string): Promise<void> {
-    const label = [...element.querySelectorAll('.choice')].find((l) => l.textContent?.includes(text));
+    const label = [...element.querySelectorAll('.choice')].find((l) =>
+      l.textContent?.includes(text),
+    );
     label!.querySelector('input')!.click();
     await fixture.whenStable();
   }
@@ -79,7 +81,9 @@ describe('MultipleChoicePlayer', () => {
 
     await show({});
 
-    const texts = [...element.querySelectorAll('.choice')].map((choice) => choice.textContent?.trim());
+    const texts = [...element.querySelectorAll('.choice')].map((choice) =>
+      choice.textContent?.trim(),
+    );
     expect(texts).toEqual(['A planet', 'A living unit', 'The basic unit of life']);
   });
 
@@ -112,7 +116,9 @@ describe('MultipleChoicePlayer', () => {
 
     expect(element.textContent).toContain('Incorrect.');
     expect(element.textContent).toContain('All living organisms are made of cells.');
-    expect(element.querySelector('.choice-correct')?.textContent).toContain('The basic unit of life');
+    expect(element.querySelector('.choice-correct')?.textContent).toContain(
+      'The basic unit of life',
+    );
     expect(element.querySelector('.choice-wrong')?.textContent).toContain('A planet');
     expect(inputs().every((input) => input.closest('fieldset')!.disabled)).toBe(true);
 

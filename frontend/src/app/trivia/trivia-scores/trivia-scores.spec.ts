@@ -73,15 +73,13 @@ describe('TriviaScores', () => {
     element.querySelector<HTMLButtonElement>('.pagination button')!.click();
     await fixture.whenStable();
 
-    http
-      .expectOne('/api/trivia/scores?page=2')
-      .flush({
-        items: [score(2, 5, ['History'])],
-        page: 2,
-        pageSize: 1,
-        totalCount: 2,
-        bestScore: 5,
-      });
+    http.expectOne('/api/trivia/scores?page=2').flush({
+      items: [score(2, 5, ['History'])],
+      page: 2,
+      pageSize: 1,
+      totalCount: 2,
+      bestScore: 5,
+    });
     await fixture.whenStable();
     expect(element.querySelector('tbody')?.textContent).toContain('History');
   });

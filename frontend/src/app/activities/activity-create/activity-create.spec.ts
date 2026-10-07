@@ -31,7 +31,9 @@ describe('ActivityCreate', () => {
 
   async function addReadingModule(body: string): Promise<void> {
     element.querySelector<HTMLSelectElement>('#new-module-type')!.value = 'reading';
-    [...element.querySelectorAll('button')].find((b) => b.textContent?.includes('Add module'))!.click();
+    [...element.querySelectorAll('button')]
+      .find((b) => b.textContent?.includes('Add module'))!
+      .click();
     await fixture.whenStable();
     const bodies = element.querySelectorAll<HTMLTextAreaElement>('textarea[id$="-body"]');
     const textarea = bodies[bodies.length - 1];
@@ -143,17 +145,15 @@ describe('ActivityCreate', () => {
     await addReadingModule('Text');
 
     await submit();
-    http
-      .expectOne('/api/activities')
-      .flush(
-        {
-          errors: {
-            title: ['The title must be at most 200 characters.'],
-            'modules[0].content': ['The text to read is required.'],
-          },
+    http.expectOne('/api/activities').flush(
+      {
+        errors: {
+          title: ['The title must be at most 200 characters.'],
+          'modules[0].content': ['The text to read is required.'],
         },
-        { status: 400, statusText: 'Bad Request' },
-      );
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
     await fixture.whenStable();
 
     expect(element.textContent).toContain('The title must be at most 200 characters.');
