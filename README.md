@@ -60,9 +60,10 @@ to them.
   `Angular` or `Testing`.
 - `Introduction to C#` (`csharp-…`): five short activities on the
   language, its syntax, encapsulation, inheritance and ASP.NET Core.
-- `Introduction to C++` (`cpp-…`): five short activities on the
-  language and its build, its syntax, encapsulation, inheritance, and
-  memory with RAII.
+- `Introduction to C++` (`cpp-…`): seven activities on the language and
+  its build, its syntax, encapsulation, inheritance, memory with RAII,
+  then two harder ones on abstraction, pointers and `const`, and on
+  arrays, vectors and dynamic allocation.
 
 It also contains three general knowledge activities that are not part of
 a course (`general-…`): literature, cult films and Greek mythology.

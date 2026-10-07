@@ -1,0 +1,566 @@
+{
+  "title": "Abstraction, pointers and const",
+  "description": "Abstract classes and pure virtual functions, pointers and references, and what const means in each position.",
+  "themes": [
+    "C++",
+    "Abstraction",
+    "Pointers",
+    "Const"
+  ],
+  "courses": [
+    "Introduction to C++"
+  ],
+  "modules": [
+    {
+      "type": "reading",
+      "content": {
+        "title": "Abstraction with abstract classes",
+        "body": "Abstraction means showing what an object does and hiding how it does it. In C++, an abstract class describes that \"what\".\n\n- A pure virtual function is declared with = 0: virtual double area() const = 0;\n- A class with at least one pure virtual function is abstract: you cannot create an object of that type, by value, as an array element or with new.\n- A derived class becomes concrete only when it overrides every pure virtual function with exactly the same signature, const included. Write override so that the compiler checks it.\n- You use an abstract class through pointers or references: Shape* or Shape&.\n- When objects are deleted through a base pointer, the base class needs a virtual destructor.\n- A pure virtual function can still have a definition, written outside the class, that derived classes may call explicitly."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Shape {\npublic:\n    virtual double area() const = 0;\n    virtual ~Shape() = default;\n};\n\nclass Square : public Shape {\npublic:\n    double area() { return 4.0; }\n};\n\nint main() {\n    Square s;\n}\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It compiles: Square overrides area()"
+          },
+          {
+            "id": "b",
+            "text": "It does not compile: Square is still abstract, because area() without const does not override area() const"
+          },
+          {
+            "id": "c",
+            "text": "It compiles, but calling s.area() is undefined behaviour"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile: a pure virtual function needs a body"
+          }
+        ],
+        "correctChoiceIds": [
+          "b"
+        ],
+        "explanation": "const is part of a member function's signature. Square::area() is a new function that hides Shape::area() instead of overriding it, so Square still has a pure virtual function and stays abstract. Declaring double area() override would have made the compiler report the mistake right on that line."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Shape is an abstract class, and Circle is a concrete class derived from it (it overrides every pure virtual function).\n\nShape* p = new Circle(1.0);\n\nWhich of these lines compile?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Shape s;"
+          },
+          {
+            "id": "b",
+            "text": "Shape& r = *p;"
+          },
+          {
+            "id": "c",
+            "text": "Shape* shapes = new Shape[2];"
+          },
+          {
+            "id": "d",
+            "text": "Shape copy = *p;"
+          },
+          {
+            "id": "e",
+            "text": "std::unique_ptr<Shape> u = std::make_unique<Circle>(2.0);"
+          },
+          {
+            "id": "f",
+            "text": "Circle* c = new Circle(3.0);"
+          }
+        ],
+        "correctChoiceIds": [
+          "b",
+          "e",
+          "f"
+        ],
+        "explanation": "Any line that creates a Shape object fails: Shape s;, new Shape[2] (an array of Shape objects) and Shape copy = *p; (a copy that would slice the Circle down to an abstract Shape). References and pointers to Shape are fine, including smart pointers that point to a Circle."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "struct Base {\n    ~Base() { std::cout << \"B\"; }\n};\n\nstruct Derived : Base {\n    ~Derived() { std::cout << \"D\"; }\n};\n\nBase* p = new Derived;\ndelete p;\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It prints DB"
+          },
+          {
+            "id": "b",
+            "text": "It prints BD"
+          },
+          {
+            "id": "c",
+            "text": "Undefined behaviour, because ~Base() is not virtual (in practice it often prints only B)"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile: a Derived* cannot be stored in a Base*"
+          }
+        ],
+        "correctChoiceIds": [
+          "c"
+        ],
+        "explanation": "Deleting a derived object through a base pointer whose destructor is not virtual is undefined behaviour. In practice only ~Base() usually runs, so the Derived part is never cleaned up. With virtual ~Base(), it prints DB: the derived destructor runs first, then the base one."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "struct Base {\n    Base() { hello(); }\n    virtual void hello() { std::cout << \"Base \"; }\n};\n\nstruct Derived : Base {\n    void hello() override { std::cout << \"Derived \"; }\n};\n\nint main() {\n    Derived d;\n    d.hello();\n}\n\nWhat does it print?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "Derived Derived"
+          },
+          {
+            "id": "b",
+            "text": "Base Derived"
+          },
+          {
+            "id": "c",
+            "text": "Base Base"
+          },
+          {
+            "id": "d",
+            "text": "Derived"
+          }
+        ],
+        "correctChoiceIds": [
+          "b"
+        ],
+        "explanation": "While the Base constructor runs, the Derived part does not exist yet, so the object behaves as a Base and the virtual call resolves to Base::hello(). Once d is fully built, d.hello() calls Derived::hello(). Calling virtual functions from constructors and destructors rarely does what people expect."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "struct Logger {\n    virtual void log() = 0;\n};\n\nvoid Logger::log() { std::cout << \"default\"; }\n\nstruct File : Logger {\n    void log() override {\n        Logger::log();\n        std::cout << \" file\";\n    }\n};\n\nFile f;\nf.log();\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It does not compile: a pure virtual function cannot have a body"
+          },
+          {
+            "id": "b",
+            "text": "It does not compile: File is abstract"
+          },
+          {
+            "id": "c",
+            "text": "It prints default file"
+          },
+          {
+            "id": "d",
+            "text": "It prints  file"
+          }
+        ],
+        "correctChoiceIds": [
+          "c"
+        ],
+        "explanation": "A pure virtual function may have a definition outside the class. Logger stays abstract, but derived classes can call that definition explicitly with Logger::log(). File overrides log(), so it is concrete."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "Pointers and references",
+        "body": "A pointer stores an address. &x takes the address of x and *p gives access to the object p points to. p->member is short for (*p).member.\n\n- A pointer can be null (nullptr), can be changed to point somewhere else, and can point to another pointer (int** pp).\n- A local pointer that is not initialized contains garbage: dereferencing it, or dereferencing nullptr, is undefined behaviour.\n- A reference is another name for an existing object. It must be initialized, it cannot be null, and it can never be made to refer to another object: r = y; assigns y's value to the object r refers to.\n- Parameters are passed by value: a function that receives an int* gets a copy of the pointer. It can change the object pointed to, but not the caller's pointer, unless it receives int*& or int**.\n- Never return a pointer or reference to a local variable: the variable is destroyed when the function returns."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int a = 1, b = 2;\nint* p = &a;\nint* q = p;\np = &b;\n*q = 10;\n*p += *q;\n\nstd::cout << a << \" \" << b;\n\nWhat does it print?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1 12"
+          },
+          {
+            "id": "b",
+            "text": "10 12"
+          },
+          {
+            "id": "c",
+            "text": "10 20"
+          },
+          {
+            "id": "d",
+            "text": "20 2"
+          }
+        ],
+        "correctChoiceIds": [
+          "b"
+        ],
+        "explanation": "q copies the address in p, so q points to a. Then p is changed to point to b, which does not affect q. *q = 10 sets a to 10, and *p += *q adds 10 to b, which becomes 12."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int a = 1, b = 2;\nint& r = a;\nr = b;\nr = 5;\n\nstd::cout << a << \" \" << b;\n\nWhat does it print?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "1 5"
+          },
+          {
+            "id": "b",
+            "text": "2 5"
+          },
+          {
+            "id": "c",
+            "text": "5 2"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile: a reference cannot be assigned"
+          }
+        ],
+        "correctChoiceIds": [
+          "c"
+        ],
+        "explanation": "A reference can never be changed to refer to another object. r = b; copies the value of b (2) into a. r = 5; then sets a to 5. b is never modified."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "void reset(int* p) { p = nullptr; }\nvoid resetRef(int*& p) { p = nullptr; }\n\nint x = 3;\nint* a = &x;\nint* b = &x;\nreset(a);\nresetRef(b);\n\nstd::cout << (a == nullptr) << (b == nullptr);\n\nWhat does it print?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "00"
+          },
+          {
+            "id": "b",
+            "text": "01"
+          },
+          {
+            "id": "c",
+            "text": "10"
+          },
+          {
+            "id": "d",
+            "text": "11"
+          }
+        ],
+        "correctChoiceIds": [
+          "b"
+        ],
+        "explanation": "reset receives a copy of the pointer a: setting the copy to nullptr leaves a unchanged. resetRef receives a reference to the pointer b itself, so b becomes nullptr. A bool printed with << shows 0 or 1."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which snippets have undefined behaviour?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "int* p;\n*p = 5;"
+          },
+          {
+            "id": "b",
+            "text": "int* p = nullptr;\nif (p) *p = 5;"
+          },
+          {
+            "id": "c",
+            "text": "int* make() { int x = 4; return &x; }\n...\nstd::cout << *make();"
+          },
+          {
+            "id": "d",
+            "text": "int x = 4;\nint* p = &x;\nint** pp = &p;\n**pp = 7;"
+          },
+          {
+            "id": "e",
+            "text": "int* p = new int(1);\ndelete p;\ndelete p;"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "c",
+          "e"
+        ],
+        "explanation": "Writing through an uninitialized pointer, dereferencing a pointer to a local variable that has been destroyed, and deleting the same memory twice are all undefined behaviour. Checking for nullptr before dereferencing is correct, and **pp = 7 simply sets x to 7 through two levels of pointers."
+      }
+    },
+    {
+      "type": "reading",
+      "content": {
+        "title": "const in every position",
+        "body": "Read a declaration from right to left: const applies to what is on its left, or to what is on its right when nothing is on its left.\n\n- const int* p (same as int const* p): pointer to a const int. *p cannot be changed, p can.\n- int* const p: const pointer to an int. p cannot be changed, *p can.\n- const int* const p: neither can change.\n- const int& r: cannot modify its target, and can also bind to a temporary such as n + 1. A non-const int& cannot.\n- void get() const: a const member function cannot modify the object's members, except those declared mutable. Only const member functions can be called on a const object or through a const reference.\n- Member functions can be overloaded on const: the const version is chosen for const objects.\n- An int* converts implicitly to const int*, never the opposite. const_cast removes const, but modifying an object that was really defined const is undefined behaviour."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "int x = 1, y = 2;\nconst int* a = &x;\nint* const b = &x;\nconst int* const c = &x;\n\nWhich lines do NOT compile?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "*a = 5;"
+          },
+          {
+            "id": "b",
+            "text": "a = &y;"
+          },
+          {
+            "id": "c",
+            "text": "*b = 5;"
+          },
+          {
+            "id": "d",
+            "text": "b = &y;"
+          },
+          {
+            "id": "e",
+            "text": "*c = 5;"
+          },
+          {
+            "id": "f",
+            "text": "c = &y;"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "d",
+          "e",
+          "f"
+        ],
+        "explanation": "a points to a const int: the pointer can move, but *a cannot be modified. b is a const pointer: *b can be modified, but b cannot point elsewhere. c is both, so neither *c nor c can change. Note that x itself is not const; only the access through a and c is read-only."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "Which declarations give p the same type as\nconst int* p = nullptr;",
+        "choices": [
+          {
+            "id": "a",
+            "text": "int const* p = nullptr;"
+          },
+          {
+            "id": "b",
+            "text": "int* const p = nullptr;"
+          },
+          {
+            "id": "c",
+            "text": "const int *p = nullptr;"
+          },
+          {
+            "id": "d",
+            "text": "using IntPtr = int*;\nconst IntPtr p = nullptr;"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "c"
+        ],
+        "explanation": "const int and int const are the same type, and spaces around * change nothing. With an alias, const applies to the whole aliased type: const IntPtr is a const pointer to int (int* const), not a pointer to a const int."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Counter {\n    int value = 0;\npublic:\n    int get() { return value; }\n    void increment() { ++value; }\n};\n\nvoid show(const Counter& c) {\n    std::cout << c.get();\n}\n\nWhat happens?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "It compiles: get() does not modify value"
+          },
+          {
+            "id": "b",
+            "text": "It does not compile: get() is not a const member function, so it cannot be called through a const reference"
+          },
+          {
+            "id": "c",
+            "text": "It does not compile: a const reference cannot be passed to a function"
+          },
+          {
+            "id": "d",
+            "text": "It compiles, but calling c.increment() in show would also compile"
+          }
+        ],
+        "correctChoiceIds": [
+          "b"
+        ],
+        "explanation": "The compiler does not look at what get() actually does: only member functions declared const can be called on a const object. The fix is int get() const { return value; }. increment() could never be const, since it modifies value."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Cache {\n    mutable int hits = 0;\n    int value = 42;\npublic:\n    int read() const { ++hits; return value; }\n    void reset() const { value = 0; }\n};\n\nWhich statements are true?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "read() compiles, because hits is mutable"
+          },
+          {
+            "id": "b",
+            "text": "reset() does not compile, because value cannot be modified in a const member function"
+          },
+          {
+            "id": "c",
+            "text": "Both compile: const only applies to the return type"
+          },
+          {
+            "id": "d",
+            "text": "read() does not compile: a const member function cannot modify any member"
+          }
+        ],
+        "correctChoiceIds": [
+          "a",
+          "b"
+        ],
+        "explanation": "In a const member function, this points to a const object, so members are read-only, except those declared mutable. mutable is meant for members that do not change the observable state, such as caches, counters or mutexes."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "void byRef(int& x);\nvoid byConstRef(const int& x);\n\nint n = 3;\n\nWhich calls do NOT compile?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "byRef(n);"
+          },
+          {
+            "id": "b",
+            "text": "byRef(n + 1);"
+          },
+          {
+            "id": "c",
+            "text": "byConstRef(n + 1);"
+          },
+          {
+            "id": "d",
+            "text": "byConstRef(5);"
+          },
+          {
+            "id": "e",
+            "text": "byRef(5);"
+          }
+        ],
+        "correctChoiceIds": [
+          "b",
+          "e"
+        ],
+        "explanation": "n + 1 and 5 are temporaries (rvalues). A non-const reference cannot bind to a temporary, because modifications would be lost. A const reference can: the temporary lives until the end of the call."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "const int a = 1;\nint b = 2;\n\nint* pa = const_cast<int*>(&a);\nint* pb = const_cast<int*>(static_cast<const int*>(&b));\n\n*pa = 10;  // X\n*pb = 20;  // Y\n\nWhich statement is true?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "X is undefined behaviour, Y is fine"
+          },
+          {
+            "id": "b",
+            "text": "Both are fine: const_cast removes const"
+          },
+          {
+            "id": "c",
+            "text": "Both are undefined behaviour"
+          },
+          {
+            "id": "d",
+            "text": "Neither line compiles"
+          }
+        ],
+        "correctChoiceIds": [
+          "a"
+        ],
+        "explanation": "const_cast only removes const from the pointer type. Modifying an object that was defined const (a) is undefined behaviour: the compiler may have put it in read-only memory or replaced its uses by 1. b was never const, so modifying it through pb is defined."
+      }
+    },
+    {
+      "type": "multiple-choice",
+      "content": {
+        "question": "class Box {\npublic:\n    void show() { std::cout << \"A\"; }\n    void show() const { std::cout << \"B\"; }\n};\n\nBox b;\nconst Box cb{};\nconst Box& r = b;\n\nb.show();\ncb.show();\nr.show();\n\nWhat does it print?",
+        "choices": [
+          {
+            "id": "a",
+            "text": "AAA"
+          },
+          {
+            "id": "b",
+            "text": "ABA"
+          },
+          {
+            "id": "c",
+            "text": "ABB"
+          },
+          {
+            "id": "d",
+            "text": "It does not compile: show() is defined twice"
+          }
+        ],
+        "correctChoiceIds": [
+          "c"
+        ],
+        "explanation": "Member functions can be overloaded on const. b is not const, so the non-const version is chosen. cb is const, and r is a const reference (even though b itself is not const), so both call the const version."
+      }
+    },
+    {
+      "type": "matching",
+      "content": {
+        "instructions": "Match each declaration with its meaning.",
+        "pairs": [
+          {
+            "id": "p1",
+            "concept": "const int* p",
+            "definition": "Pointer to a const int: *p cannot change, p can"
+          },
+          {
+            "id": "p2",
+            "concept": "int* const p",
+            "definition": "Const pointer to an int: p cannot change, *p can"
+          },
+          {
+            "id": "p3",
+            "concept": "const int* const p",
+            "definition": "Neither p nor *p can change"
+          },
+          {
+            "id": "p4",
+            "concept": "const int& r",
+            "definition": "Read-only reference that can also bind to a temporary"
+          },
+          {
+            "id": "p5",
+            "concept": "int** pp",
+            "definition": "Pointer to a pointer to an int"
+          },
+          {
+            "id": "p6",
+            "concept": "void f() const",
+            "definition": "Member function that cannot modify the object, except mutable members"
+          },
+          {
+            "id": "p7",
+            "concept": "mutable int n;",
+            "definition": "Member that can change even in a const member function"
+          },
+          {
+            "id": "p8",
+            "concept": "virtual void f() = 0;",
+            "definition": "Pure virtual function that makes the class abstract"
+          }
+        ]
+      }
+    }
+  ]
+}
