@@ -348,6 +348,45 @@ trivia_score_themes
   theme_id -> themes (set null on delete), theme_name (copy)
 ```
 
+## Typing test
+
+A typing speed game, independent of the revision activities: nothing in
+it reads or writes an activity, a module or a theme.
+
+- **The test runs in the browser.** The texts are a frontend file
+  (`typing/text-bank.ts`): no API serves them, and adding a paragraph
+  only changes that file. The browser computes the speeds and sends the
+  final ones; like the trivia scores, they could be faked, which only
+  matters for the user's own results. The server checks that they are
+  plausible (0 to 300 WPM, highest at least the average).
+- **Game modes share building blocks** (`frontend/src/app/typing/`):
+  - `typing-stats.ts`: pure functions and `SpeedTracker` (speed in WPM,
+    current speed over the last 10 seconds, highest speed after the
+    first 5 seconds, accuracy, speed levels and their thresholds);
+  - `TextPicker`: random paragraphs, without repeating one before all
+    were used;
+  - `TypingArea`: shows the text and takes the keys; it knows nothing
+    of time or scores;
+  - `WpmMeter`: a speed colored by its level;
+  - `TypingSummary`: the end of a test and the saving of its result.
+
+  A mode is a component that assembles them with its own rules: the
+  first one, `TimedTest` (`/typing`), adds the clock and the choice of
+  1, 2 or 5 minutes, and appends paragraphs so that the text never runs
+  out. A new mode adds its key to `TypingMode` (frontend) and
+  `TypingModes` (backend) with the rules of its fields.
+- **A result stores its mode** (`mode`, and `duration_seconds` for timed
+  tests), so the results of every mode share one table and one page.
+- **Frontend:** `TypingApi`, the test (`/typing`), My results
+  (`/typing/results`) and the How WPM works page (`/typing/wpm`), which
+  reads its formula and levels from `typing-stats.ts`.
+
+```
+typing_results
+  id, user_id -> users (cascade delete), mode, duration_seconds,
+  average_wpm, peak_wpm, played_at; index (user_id, played_at)
+```
+
 ## Designed to evolve toward progress
 
 Long term, the application will track learning progress. The design

@@ -133,6 +133,31 @@ The first version should allow a user to:
   the chosen themes and the date; scores cannot be changed or deleted,
   and only their owner sees them, with their best score.
 
+### Typing Test
+
+- A separate game, **independent of the activities**, reached from a
+  **Typing test** drop-down menu in the header: *Play* and *How WPM
+  works* for everyone, *My results* for signed-in users.
+- The game will have several modes, built from shared pieces. The first
+  mode is a **timed test** of 1, 2 or 5 minutes; the clock starts with
+  the first key.
+- The text is made of random paragraphs of about 100 words from a bank
+  of English texts on: SOLID, object-oriented vs functional vs
+  structured programming, Agile and Scrum, testing practices, Linux vs
+  Windows vs macOS, and computer hardware.
+- Mistakes are shown in red and can be corrected with Backspace. Only
+  correct characters count toward the speed, in words per minute (a
+  word is 5 characters).
+- A side panel shows the current speed (over the last 10 seconds) at
+  all times, colored by level: grey, then green, red, and bold black
+  for the fastest speeds.
+- At the end, the test shows the average speed, the highest speed
+  (measured after the first 5 seconds) and the accuracy. For signed-in
+  users, the average and highest speeds are saved with the kind of test
+  and the date; only their owner sees them.
+- The *How WPM works* page explains the calculation and the speeds
+  considered good by age and by kind of work. All texts are in English.
+
 ### Initial Module Types
 
 The MVP supports the following module types:
