@@ -18,7 +18,7 @@
         [checked]="isSelected"
         (change)="toggle(choice.id)"
       />
-      <span>{{ choice.text }}</span>
+      <span class="choice-text">{{ choice.text }}</span>
       @if (answered() && isCorrect) {
         <span class="choice-tag">Correct answer</span>
       }
