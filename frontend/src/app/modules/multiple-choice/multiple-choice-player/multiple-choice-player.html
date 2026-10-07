@@ -1,5 +1,5 @@
 <fieldset class="multiple-choice" [disabled]="answered()">
-  <legend class="question">{{ content().question }}</legend>
+  <legend class="question"><app-formatted-text [text]="content().question" /></legend>
   @if (severalAnswers()) {
     <p class="hint">Select all the correct answers.</p>
   }
@@ -18,7 +18,7 @@
         [checked]="isSelected"
         (change)="toggle(choice.id)"
       />
-      <span class="choice-text">{{ choice.text }}</span>
+      <span class="choice-text"><app-formatted-text [text]="choice.text" /></span>
       @if (answered() && isCorrect) {
         <span class="choice-tag">Correct answer</span>
       }
@@ -37,8 +37,8 @@
   <p class="feedback" [class.feedback-correct]="correct()" [class.feedback-wrong]="!correct()">
     {{ correct() ? 'Correct!' : 'Incorrect.' }}
   </p>
-  @if (content().explanation) {
-    <p class="explanation">{{ content().explanation }}</p>
+  @if (content().explanation; as explanation) {
+    <p class="explanation"><app-formatted-text [text]="explanation" /></p>
   }
   <button type="button" class="button" (click)="continue()">Continue</button>
 }

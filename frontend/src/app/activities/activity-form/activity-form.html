@@ -61,6 +61,10 @@
 
   <fieldset class="modules">
     <legend>Modules</legend>
+    <p class="hint">
+      In texts, write code between two lines containing only <code>```</code>, or inline between
+      backticks: <code>`int* p`</code>. Choices and matching concepts can only hold inline code.
+    </p>
 
     @for (module of modules.controls; track module; let i = $index, first = $first, last = $last) {
       <section class="card module">

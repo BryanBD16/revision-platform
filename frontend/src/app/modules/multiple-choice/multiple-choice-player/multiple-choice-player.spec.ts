@@ -60,6 +60,19 @@ describe('MultipleChoicePlayer', () => {
     expect(element.textContent).not.toContain('Select all the correct answers.');
   });
 
+  it('shows the code of the question and of the choices as code', async () => {
+    await show({
+      question: '```\nint* p = nullptr;\n```\nWhat is p?',
+      choices: [
+        { id: 'a', text: 'A null `int*`' },
+        { id: 'b', text: 'An int' },
+      ],
+    });
+
+    expect(element.querySelector('.question .code-block')?.textContent).toBe('int* p = nullptr;');
+    expect(element.querySelector('.choice .inline-code')?.textContent).toBe('int*');
+  });
+
   it('shows the choices in a shuffled order', async () => {
     // With 0, the shuffle turns [a, b, c] into [b, c, a].
     vi.spyOn(Math, 'random').mockReturnValue(0);

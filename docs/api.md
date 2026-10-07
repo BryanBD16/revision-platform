@@ -515,6 +515,30 @@ activity list, and the best score of all pages (`null` without scores):
 
 ## Module types
 
+### Code in texts
+
+The texts of the modules are plain text, shown with their line breaks.
+The application also shows code in them, which the API stores as is:
+
+- A code block is the lines between two lines containing only ```` ``` ````
+  (the opening one may name a language, such as ```` ```cpp ````, which
+  is ignored for now). It is shown in a monospace font, with its
+  indentation.
+- Inline code is the text between two backticks on one line:
+  `` `int* p` ``.
+
+````text
+```
+int* p = nullptr;
+```
+What is p?
+````
+
+Code blocks need line breaks, so they are meant for the fields edited
+in a text area: reading bodies, questions, explanations and matching
+instructions. Choices and matching concepts can hold inline code.
+Matching definitions are shown in a dropdown, without the code markers.
+
 ### `reading`
 
 A text to read.
