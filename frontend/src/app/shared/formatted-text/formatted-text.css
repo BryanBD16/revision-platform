@@ -13,6 +13,9 @@ code {
 .inline-code {
   padding: 0.1em 0.3em;
   border: 1px solid var(--color-border);
+  /* Keeps the border on both lines when the code wraps. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* A <code> shown as a block: a <pre> is not allowed inside a label, a legend or a paragraph. */
